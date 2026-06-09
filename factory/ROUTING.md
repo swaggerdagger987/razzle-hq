@@ -23,7 +23,18 @@ Partner/senior-manager seats may always work *down* the ladder when no cheaper s
 - **Rework is the write-off.** A reopened slice costs triple (build + diagnose + rebuild, usually at a higher seat). Never weaken a gate to make a session "profitable" — that converts margin into write-offs later.
 - **One model per session.** Switching models mid-session discards the prompt cache. To use a cheaper seat mid-session, spawn a subagent pinned to that model instead.
 
-## Taste latitude
+## Engagement runs (the client says "start")
+
+The Founder is the client; the factory is the firm. When the Founder says **start** (or "go"), the session becomes the **engagement lead** and runs without further instruction:
+
+1. Claim the topmost execution-ready card. Delegate its implementation to a **fresh associate subagent** (Sonnet-class), whose entire brief is CLAUDE.md + the card — the workpaper standard means it needs nothing else. Analyst subagents (Haiku-class) handle local gate-failure fix loops.
+2. The lead reviews the associate's gate evidence (sampling, not redoing), commits per the session protocol, pushes, and confirms CI green.
+3. Repeat with the next card. If no card is execution-ready, the lead does a frontier pass to detail the top sketches, then continues.
+4. The run ends only on: usage limits (log `limit-cut`, leave a clean resume state), all remaining work blocked on client deliverables, or the Founder saying stop.
+
+**Client deliverables** (things only the Founder can provide — credentials, DNS, approvals on identity-load-bearing calls): log each as a `CLIENT:` line under Blockers in `factory/STATE.md`, route around it to the next workable card, and **batch requests** — present the full list at the end of the run, not one interruption at a time. A run that ends because the client owes materials is a healthy run; a run that stalls without logging what it needs is a failed one.
+
+
 
 Frontier sessions have **explicit creative license** inside the rulebook: within `spec/DESIGN.md` and `spec/VOICE.md`, add taste, wit, and craft freely — margin notes, loading copy, the extra 10% that makes a surface screenshot-worthy. Don't ask permission to be excellent. The line: when a choice is **identity-load-bearing** (changes what Razzle *is* — a room's purpose, the free/paid line, the valuation philosophy, the mascot's character) and not derivable from `spec/`, surface it to the Founder instead of silently choosing. Liberties within the lines: take them. Liberties *with* the lines: discuss first.
 
