@@ -2,7 +2,7 @@
 
 ## NOW
 
-- **Active slice:** none — S-001 is next
+- **Active slice:** S-001 nflverse-ingest
 - **Launch deadline:** **2026-07-28** (live + Reddit-shareable before draft season; scope bends, date doesn't)
 - **Launch-critical path:** S-001 ingest → S-002 screener → S-003 player sheet → S-004 custom scoring → S-005 valuation workbench → S-006 Sleeper connect → S-007 watermarked export → deploy
 - **Blockers:** none
@@ -11,7 +11,7 @@
 
 ## BACKLOG
 
-### S-001 nflverse-ingest [OPEN — execution-ready]
+### S-001 nflverse-ingest [ACTIVE]
 - **Pillar/Layer:** Data (Explore L0 prerequisite) · **Trust:** T1 substrate
 - **Goal:** `uv run python scripts/sync_data.py --quick` fills `players` + `player_week_stats` from nflverse for seasons 2024–2025; `GET /api/players` serves it.
 - **File plan:**
