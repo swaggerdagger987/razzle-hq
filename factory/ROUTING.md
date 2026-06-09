@@ -15,6 +15,8 @@ Run the factory like a services firm: the expensive seat signs the work, the che
 
 Partner/senior-manager seats may always work *down* the ladder when no cheaper session is available — but a card detailed to the execution-ready standard exists precisely so they don't have to.
 
+**Solo sessions:** the ladder describes seats, not required ceremony. When the Founder starts a session directly at any seat (no engagement lead), that session owns the full protocol at its own ceiling — claim, mark ACTIVE, implement, gates, commit with evidence, push, client memo if the run batched asks. A Sonnet-class solo session may claim any execution-ready card. A Haiku-class solo session claims only fully-specified mechanical cards (gate fixes, data spot-checks, ports with a complete mapping table); anything requiring judgment waits for a higher seat. The escalation rule applies unchanged.
+
 ## Engagement economics
 
 - **The execution-ready card is the leverage instrument.** It is the partner-reviewed workpaper that lets a Sonnet-class session finish a slice with zero judgment calls. Money spent detailing a card at the top of the ladder is recovered many times over at the bottom. A defective card (associate had to guess) is a routing failure — fix the card standard, not just the slice.
@@ -42,11 +44,13 @@ The Founder is the client; the factory is the firm. When the Founder says **star
 
 Frontier sessions have **explicit creative license** inside the rulebook: within `spec/DESIGN.md` and `spec/VOICE.md`, add taste, wit, and craft freely — margin notes, loading copy, the extra 10% that makes a surface screenshot-worthy. Don't ask permission to be excellent. The line: when a choice is **identity-load-bearing** (changes what Razzle *is* — a room's purpose, the free/paid line, the valuation philosophy, the mascot's character) and not derivable from `spec/`, surface it to the Founder instead of silently choosing. Liberties within the lines: take them. Liberties *with* the lines: discuss first.
 
+Associate seats hold the same license one notch down: **taste-within-spec** — choosing among VOICE.md loading lines, DESIGN.md-consistent micro-copy, hover/empty/error states — is the implementer's job, not an escalation. T6 lives or dies at this seat; competent-but-flat is a gate failure, not a safe default. To make taste ship in the first pass, execution-ready cards for user-facing surfaces carry a short **T6 note** (loading/empty/error copy, the margin wit) written at the frontier seat. Identity-load-bearing choices still go up.
+
 ## The escalation rule
 
-A cheap-model session that hits a decision **not answerable from `spec/`** does not guess. It writes the question on the slice card, marks it BLOCKED, finishes what is safely in scope, and ends clean — a review note up the ladder. A higher seat (or the Founder) answers on the card, flips it back to OPEN, and the next cheap session proceeds.
+A cheap-model session that hits a decision **not answerable from `spec/`** does not guess. It writes the question on the slice card, marks it BLOCKED, finishes what is safely in scope, and ends clean — a review note up the ladder. **Commit what is green before stopping; resume state lives on the card, never in your head.** A higher seat (or the Founder) answers on the card, flips it back to OPEN, and the next cheap session proceeds.
 
-Signals you must escalate: the fix wants a new dependency · two specs appear to conflict · the slice needs a product call the card didn't make · the gate itself seems wrong.
+Signals you must escalate: the fix wants a new dependency · two specs appear to conflict · the slice needs a product call the card didn't make · the gate itself seems wrong · **a referenced item cannot be found** (a token, schema field, fixture pattern the card names) — that is a defective card, not an invitation to improvise a substitute. Reading files the card references is always in scope; silently patching around a card's gap is never in scope.
 
 ## Budget (hard constraints)
 
@@ -54,6 +58,7 @@ Signals you must escalate: the fix wants a new dependency · two specs appear to
 - **API credits: $150 total, overflow only.** Spend them solely to *finish* something a session ran out of limits mid-way through — never to start work a future session could do. Log any API spend as a line in the STATE.md ledger row for that slice.
 - A session that hits usage limits mid-slice commits what is green, marks the card with exactly what remains, and ends clean — the next session resumes from the card. Never leave the resume state in your head. **Also log it:** append `limit-cut` to that slice's LEDGER row note.
 - **Plan-upgrade trigger (Pro → Max):** the upgrade decision is evidence-based, not vibes. Stay on the current plan while it isn't the binding constraint. Upgrade when the LEDGER shows **2+ `limit-cut` sessions in a week** while launch-path slices remain — at that point window capacity, not judgment or card quality, is what's throttling the July 28 date. Until then, the proof of the system is throughput: slices shipped fully gated, zero reopened.
+- **Starvation is the other constraint — watch it separately.** A session that arrives to build and finds no execution-ready card logs `starved` in its LEDGER row note (the session then does the frontier detailing pass itself, per the engagement-run rules). **2+ `starved` sessions in a week** means the frontier seat's card-detailing rate — not window capacity — is the binding constraint: the fix is scheduling frontier planning passes earlier in usage windows, not buying capacity. `limit-cut` says the windows are too small; `starved` says the planning seat is behind. Read the right signal before spending money.
 
 ## Founder-only
 

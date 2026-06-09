@@ -31,6 +31,9 @@ An execution-ready card contains ALL of:
 - **Gates:** G1–G4 plus G5 as exact replayable commands with expected output.
 - **Out of scope:** explicit list of adjacent things NOT to build.
 - **Pitfalls:** known traps, verified against reference code where it exists.
+- **T6 note** (user-facing surfaces only): loading/empty/error copy and the
+  margin wit, written at the frontier seat so taste ships in the first pass
+  (`factory/ROUTING.md`, taste-within-spec).
 ```
 
 The standard: **a competent implementer who has read only CLAUDE.md and this card can finish the slice without making a single product or architecture decision.** If the implementer hits a decision anyway, the card was defective — mark BLOCKED with the question (that is the escalation working, not a failure).
