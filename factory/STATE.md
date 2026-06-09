@@ -2,16 +2,16 @@
 
 ## NOW
 
-- **Active slice:** S-001 nflverse-ingest
+- **Active slice:** none — S-002 is next (needs a frontier pass to become execution-ready)
 - **Launch deadline:** **2026-07-28** (live + Reddit-shareable before draft season; scope bends, date doesn't)
 - **Launch-critical path:** S-001 ingest → S-002 screener → S-003 player sheet → S-004 custom scoring → S-005 valuation workbench → S-006 Sleeper connect → S-007 watermarked export → deploy
 - **Blockers:** none
-- **Last commit:** (seed)
+- **Last commit:** S-001 nflverse ingest — players + week stats synced, /api/players live
 - **Date:** 2026-06-09
 
 ## BACKLOG
 
-### S-001 nflverse-ingest [ACTIVE]
+### S-001 nflverse-ingest [DONE]
 - **Pillar/Layer:** Data (Explore L0 prerequisite) · **Trust:** T1 substrate
 - **Goal:** `uv run python scripts/sync_data.py --quick` fills `players` + `player_week_stats` from nflverse for seasons 2024–2025; `GET /api/players` serves it.
 - **File plan:**
@@ -90,3 +90,4 @@
 | Slice | Date | Commit | Gates | Note |
 |-------|------|--------|-------|------|
 | seed | 2026-06-09 | — | G1–G4 | Repo seeded: specs, factory, domain spine (scoring+VORP), tokens, personas, web skeleton |
+| S-001 | 2026-06-09 | (this) | G1–G5 | nflverse adapter + sync CLI; 8364 players, 11891 week rows (2024–2025), idempotent, db 1.6MB; GET /api/players live |
