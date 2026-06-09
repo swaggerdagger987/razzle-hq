@@ -34,6 +34,10 @@ The Founder is the client; the factory is the firm. When the Founder says **star
 
 **Client deliverables** (things only the Founder can provide — credentials, DNS, approvals on identity-load-bearing calls): log each as a `CLIENT:` line under Blockers in `factory/STATE.md`, route around it to the next workable card, and **batch requests** — present the full list at the end of the run, not one interruption at a time. A run that ends because the client owes materials is a healthy run; a run that stalls without logging what it needs is a failed one.
 
+**The client memo:** every engagement run ends with a status memo to the Founder, written like an email a client actually wants to read. Fixed shape: **Shipped** (slices DONE, one line each) · **Proof** (gates green, CI run links, screenshots of any user-facing surface attached) · **Usage** (slices this run, whether the run was limit-cut) · **Asks** (the batched `CLIENT:` list, or "nothing needed") · **Next** (the card the next run will claim). No memo, no finished run. The STATE.md LEDGER is the cumulative record behind the memos.
+
+**Run lock:** if a run starts and STATE.md already shows an ACTIVE slice, the prior run was interrupted — resume that card from its logged state; never start a parallel copy.
+
 
 
 Frontier sessions have **explicit creative license** inside the rulebook: within `spec/DESIGN.md` and `spec/VOICE.md`, add taste, wit, and craft freely — margin notes, loading copy, the extra 10% that makes a surface screenshot-worthy. Don't ask permission to be excellent. The line: when a choice is **identity-load-bearing** (changes what Razzle *is* — a room's purpose, the free/paid line, the valuation philosophy, the mascot's character) and not derivable from `spec/`, surface it to the Founder instead of silently choosing. Liberties within the lines: take them. Liberties *with* the lines: discuss first.
