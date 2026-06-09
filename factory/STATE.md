@@ -2,7 +2,7 @@
 
 ## NOW
 
-- **Active slice:** none — S-002 is next (needs a frontier pass to become execution-ready)
+- **Active slice:** none — S-002 is next (execution-ready)
 - **Launch deadline:** **2026-07-28** (live + Reddit-shareable before draft season; scope bends, date doesn't)
 - **Launch-critical path:** S-001 ingest → S-002 screener → S-003 player sheet → S-004 custom scoring → S-005 valuation workbench → S-006 Sleeper connect → S-007 watermarked export → deploy
 - **Blockers:** none
@@ -41,11 +41,40 @@
 - **Out of scope:** kicking columns (stay 0), DST/IDP, return_yd/return_td (stay 0), college data, snap counts, injuries, schedules, storing nflverse's precomputed fantasy_points columns (we always compute from rules), any UI.
 - **Pitfalls (verified against the legacy adapter, read-only ref: old razzle repo `legacy/adapters/nflverse_adapter.py`):** GitHub releases API requires a User-Agent header · players.csv uses BOM, decode `utf-8-sig` · don't trust `players.csv` team for identity (teams go stale), gsis_id only · keep `ingest/` importing the engine's column names from one place: define `STAT_COLUMNS` once (the migration already has the list — mirror it, don't import the migration).
 
-### S-002 explore-screener [OPEN]
+### S-002 explore-screener [OPEN — execution-ready]
 - **Pillar/Layer:** Explore L0–L1 · **Trust:** T1, T6
-- **Goal:** `/explore` screener — TanStack Table over `/api/players` stats, position filter, sortable columns, nuqs URL state, position colors, "pulling film..." loading state.
-- **Scope:** `apps/web/src/app/explore/`, `apps/web/src/features/explore/`, API screener endpoint + service, tests.
-- **Gates:** G1–G4; G5: ≥20 rows render, sort/filter updates URL, refresh preserves state, no 500s, tokens-only styling, screenshot attached.
+- **Goal:** `/explore` — season-total screener over real synced data: position filter, sortable columns, nuqs URL state, position colors, "pulling film..." loading state.
+- **File plan:**
+  - NEW `apps/api/src/razzle_api/services/screener_service.py` — `list_season_totals(...)` (the aggregation query).
+  - NEW `apps/api/src/razzle_api/api/routers/screener.py` + `api/schemas/screener.py`.
+  - EDIT `apps/api/src/razzle_api/main.py` — one import + one `include_router` line.
+  - NEW `apps/api/tests/integration/test_screener_api.py`.
+  - EDIT `apps/web/package.json` — add deps `@tanstack/react-query@^5`, `@tanstack/react-table@^8`, `nuqs@^2`; run `pnpm install` and COMMIT `pnpm-lock.yaml` (CI uses `--frozen-lockfile`).
+  - NEW `apps/web/src/app/providers.tsx` — client component: `QueryClientProvider` + `NuqsAdapter` (from `nuqs/adapters/next/app`).
+  - EDIT `apps/web/src/app/layout.tsx` — wrap `{children}` in `<Providers>`.
+  - NEW `apps/web/src/app/explore/page.tsx` — route shell, renders the feature.
+  - NEW `apps/web/src/features/explore/api.ts` — typed `fetchScreener` (same `API_URL` pattern as `scoring-preview/api.ts`).
+  - NEW `apps/web/src/features/explore/ScreenerPanel.tsx` — client component: nuqs state, TanStack Query fetch, position filter pills, table.
+  - NEW `apps/web/src/features/explore/ScreenerTable.tsx` — TanStack Table v8: sortable headers, position-color badges, zebra rows.
+- **Interfaces:**
+  - `GET /api/screener?season=2025&position=RB&sort=rush_yd&dir=desc&limit=100&offset=0` → `{"season": 2025, "total": <int>, "rows": [ScreenerRow]}`. `ScreenerRow` = `{gsis_id, name, position, team, games, pass_att, pass_cmp, pass_yd, pass_td, pass_int, rush_att, rush_yd, rush_td, target, rec, rec_yd, rec_td, fumble_lost}` — identity strings, everything else float (games int).
+  - Param rules: `season` int default 2025 · `position` optional, must be QB/RB/WR/TE (else 422) · `sort` must be `name`, `games`, or one of the 13 stat keys above, default `name` (else 422) · `dir` `asc`/`desc`, default `asc` for name, `desc` otherwise · `limit` 1–500 default 100 · `offset` ≥ 0 default 0. Validate with FastAPI `Query`/`Literal`; the service trusts its inputs.
+  - `list_season_totals(session, *, season, position, sort, descending, limit, offset) -> tuple[list[dict], int]` — SQLAlchemy Core over `players_table`/`player_week_stats_table` (import from `ingest/nflverse.py`, same as `players_service`): JOIN on gsis_id, `WHERE season = :season` (+ position), `GROUP BY` player, `COUNT(week) AS games`, `SUM(col) AS col` for the 13 stats, ORDER BY sort col + `gsis_id` tiebreak, LIMIT/OFFSET; second return value = ungated player count for the same filters.
+  - `total` requires a second COUNT query (or subquery) — same WHERE, no limit.
+- **Web contract:**
+  - URL is source of truth: nuqs `useQueryStates` for `season` (int, default 2025), `position` (string or null), `sort` (default `name`), `dir`. Changing any control updates the URL; loading `/explore?position=RB&sort=rush_yd&dir=desc` cold reproduces the exact view.
+  - TanStack Query key `["screener", season, position, sort, dir]`; manual server-side sorting (table `manualSorting: true`, header click writes nuqs state, NOT client sort).
+  - Design (`spec/DESIGN.md`, tokens only): page on `--bg`, table card `--bg-card` with 3px solid `var(--ink)` border + `var(--shadow-chunky)`; header row `--bg-warm`; data cells `--font-mono` 13px; player names `--font-display`; position badge per row tinted `var(--pos-qb|rb|wr|te)`; zebra `var(--zebra-stripe)`; sorted column header highlighted with `--orange`. Loading state: "pulling film..." in `--font-hand` 24px. Explicit error ("film room's dark. try again.") and empty ("no players match that cut.") states.
+  - Hallway: header links back to `/` and to `/scoring` (`crossRoomLinkPresent`); player-row → Player Sheet link is S-003's first move (rows are plain text here — logged, not a dead-end violation since the route doesn't exist yet).
+- **Test plan (`test_screener_api.py`, reuse the `session_factory` + dependency-override pattern from `test_players_api.py`):** seed 2 RBs + 1 QB with 2 weeks each of 2024 stats → `season totals are summed and games counted` (known player: rush_yd = wk1+wk2, games = 2) · `sort=rush_yd&dir=desc orders correctly` · `position=RB returns only RBs` and `total` matches · `sort=evil_column returns 422` · `position=K returns 422` · `season with no rows returns empty rows, total 0, not 500`.
+- **Gates:** G1–G4; G5 (paste outputs in commit body):
+  - `curl -s 'localhost:8000/api/screener?season=2025&position=RB&sort=rush_yd&dir=desc&limit=50' | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d['rows']), d['rows'][0]['name'])"` → `50 <a real RB1>` against the synced db
+  - rush_yd of row[0] ≥ row[1] ≥ row[2] (paste first three)
+  - `/explore` renders ≥20 rows; clicking a header or position pill updates the URL; hard refresh on that URL preserves the exact view; no 500s in API log
+  - voice check: `grep -rEn '\bAI\b|powered by|chatbot|LLM' apps/web/src --include='*.tsx'` → no user-facing hits
+  - screenshot of `/explore?position=RB&sort=rush_yd&dir=desc` attached to the session (sand bg, chunky border, RB teal badges) — would r/DynastyFF screenshot it?
+- **Out of scope:** fantasy-points column and scoring presets (S-004) · player-row links to Player Sheet (S-003) · virtualization, 100+ columns, college toggle (Explore L1+) · saved views, export, watermark · pagination UI beyond limit/offset params · any new table or migration.
+- **Pitfalls:** nuqs v2 throws without `NuqsAdapter` mounted above any `useQueryState` call · keep `page.tsx` a server component and the panel `"use client"` (nuqs + TanStack hooks are client-only) · TanStack Table v8 column defs must be memoized (`useMemo`) or the table re-mounts every render · SQLite `SUM` returns NULL for no rows — wrap aggregates in `COALESCE(..., 0)` or coerce in the service · sort param goes through a whitelist dict to a column object, never string-interpolated into SQL · CI runs `pnpm install --frozen-lockfile`: forgetting to commit the updated `pnpm-lock.yaml` fails the web job.
 
 ### S-003 player-sheet-v0 [OPEN]
 - **Pillar/Layer:** Player Sheet · **Trust:** T3
