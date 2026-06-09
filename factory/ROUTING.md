@@ -2,23 +2,26 @@
 
 The factory's economics: **frontier models decide, cheap models build.** This contract is harness-agnostic — Claude Code sessions, CI-triggered runs, or any future loop runner must honor it. No runner code ships in this repo.
 
-## Frontier model (Opus-class) — judgment
+## The staffing ladder
 
-Required for:
+Run the factory like a services firm: the expensive seat signs the work, the cheap seats produce it, and profitability is the leverage ratio between them. Class names, not pinned versions — always use the current best model in each class.
 
-- Writing or changing anything in `spec/` or `factory/` (including gate definitions and this file).
-- Slice planning: creating cards, reordering BACKLOG, splitting oversized cards, KILL calls.
-- Taste review: T6 screenshot-gravity judgments, design-language calls, persona voice.
-- Architecture: anything that would touch `spec/STACK.md`, add a dependency, or change the schema's shape beyond the active slice's stated scope.
-- Reviewing a cheap-model slice before merge when the slice shipped a user-facing surface.
+| Seat | Model class | Billable work |
+|---|---|---|
+| **Partner on the file** | Most capable available (top tier above Opus) | Signs opinions: `spec/` changes, NORTH_STAR-level direction, KILL calls, pricing/identity questions, T6 taste verdicts, architecture that is expensive to reverse. Short, rare engagements. |
+| **Senior manager** | Opus-class | Runs the file: frontier planning passes (sketch → execution-ready build sheet), answering BLOCKED cards, reviewing shipped user-facing surfaces, BACKLOG ordering, splitting oversized cards. |
+| **Senior associate** | Sonnet-class | **The workhorse.** Executes an ACTIVE slice whose card has a complete scope fence and concrete G5 assertions — code, tests, gates, commit. Mechanical ports, adapters against `spec/DATA.md`, test writing against a stated contract. |
+| **Analyst** | Haiku-class | Fully-specified mechanical work: gate-failure fix loops where the failure is local (failing test, lint, type error), running gate suites, data spot-checks, fan-out searches. Best used as subagents inside a larger session. |
 
-## Cheap model (Haiku/Sonnet-class) — throughput
+Partner/senior-manager seats may always work *down* the ladder when no cheaper session is available — but a card detailed to the execution-ready standard exists precisely so they don't have to.
 
-Appropriate for:
+## Engagement economics
 
-- Executing an ACTIVE slice whose card has a complete scope fence and concrete G5 assertions.
-- Mechanical ports, test writing against a stated contract, adapter implementations against `spec/DATA.md`.
-- Gate-failure fix loops where the failure is local (failing test, lint, type error).
+- **The execution-ready card is the leverage instrument.** It is the partner-reviewed workpaper that lets a Sonnet-class session finish a slice with zero judgment calls. Money spent detailing a card at the top of the ladder is recovered many times over at the bottom. A defective card (associate had to guess) is a routing failure — fix the card standard, not just the slice.
+- **Pyramid target:** the bulk of tokens land at Sonnet-class or below; partner-seat share stays small. A partner doing associate work is the firm losing money even when the output is good.
+- **Review is sampling, never redoing.** Higher seats audit gate evidence in commit bodies and spot-check the surface; they do not re-implement. The gates exist so a 10-minute review is sufficient.
+- **Rework is the write-off.** A reopened slice costs triple (build + diagnose + rebuild, usually at a higher seat). Never weaken a gate to make a session "profitable" — that converts margin into write-offs later.
+- **One model per session.** Switching models mid-session discards the prompt cache. To use a cheaper seat mid-session, spawn a subagent pinned to that model instead.
 
 ## Taste latitude
 
@@ -26,7 +29,7 @@ Frontier sessions have **explicit creative license** inside the rulebook: within
 
 ## The escalation rule
 
-A cheap-model session that hits a decision **not answerable from `spec/`** does not guess. It writes the question on the slice card, marks it BLOCKED, finishes what is safely in scope, and ends clean. A frontier session (or the Founder) answers on the card, flips it back to OPEN, and the next cheap session proceeds.
+A cheap-model session that hits a decision **not answerable from `spec/`** does not guess. It writes the question on the slice card, marks it BLOCKED, finishes what is safely in scope, and ends clean — a review note up the ladder. A higher seat (or the Founder) answers on the card, flips it back to OPEN, and the next cheap session proceeds.
 
 Signals you must escalate: the fix wants a new dependency · two specs appear to conflict · the slice needs a product call the card didn't make · the gate itself seems wrong.
 
@@ -34,7 +37,8 @@ Signals you must escalate: the fix wants a new dependency · two specs appear to
 
 - **Primary engine: the Founder's Claude subscription.** All routine factory work runs inside subscription-covered Claude Code sessions. Plan heavy slices for when the usage window is fresh (limits reset on ~5-hour windows); do frontier planning/review early in a window, then let cheap throughput burn the remainder.
 - **API credits: $150 total, overflow only.** Spend them solely to *finish* something a session ran out of limits mid-way through — never to start work a future session could do. Log any API spend as a line in the STATE.md ledger row for that slice.
-- A session that hits usage limits mid-slice commits what is green, marks the card with exactly what remains, and ends clean — the next session resumes from the card. Never leave the resume state in your head.
+- A session that hits usage limits mid-slice commits what is green, marks the card with exactly what remains, and ends clean — the next session resumes from the card. Never leave the resume state in your head. **Also log it:** append `limit-cut` to that slice's LEDGER row note.
+- **Plan-upgrade trigger (Pro → Max):** the upgrade decision is evidence-based, not vibes. Stay on the current plan while it isn't the binding constraint. Upgrade when the LEDGER shows **2+ `limit-cut` sessions in a week** while launch-path slices remain — at that point window capacity, not judgment or card quality, is what's throttling the July 28 date. Until then, the proof of the system is throughput: slices shipped fully gated, zero reopened.
 
 ## Founder-only
 
