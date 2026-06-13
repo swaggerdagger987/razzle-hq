@@ -2,11 +2,11 @@
 
 ## NOW
 
-- **Active slice:** S-004 explore-custom-scoring (execution-ready, claimed by Partner, delegating to Sonnet)
+- **Active slice:** none — S-005 is next (sketch)
 - **Launch deadline:** **2026-07-28** (live + Reddit-shareable before draft season; scope bends, date doesn't)
-- **Launch-critical path:** S-001 ingest → S-002 screener → S-003 player sheet → S-004 custom scoring → S-005 valuation workbench → S-006 Sleeper connect → S-007 watermarked export → deploy
+- **Launch-critical path:** S-001 ✅ → S-002 ✅ → S-003 ✅ → S-004 ✅ → S-005 → S-006 → S-007 → S-008
 - **Blockers:** none
-- **Last commit:** S-003 player-sheet — Player Sheet hub live, Explore rows link to `/player/[gsis_id]`, season picker, stat table, prev/next nav, position-color badge
+- **Last commit:** S-004 explore-custom-scoring — Scoring presets (Standard/PPR/Half/TEP) + custom rules picker; fantasy-points column computed server-side; URL state via nuqs; Player Sheet inherits scoring
 - **Date:** 2026-06-13
 
 ## BACKLOG
@@ -113,7 +113,7 @@
   - hard refresh on `/player/{saquon_gsis_id}` preserves the view (no loading jank)
   - screenshot of the page: would r/DynastyFF screenshot this? (clean, focused on data, warm design colors)
 
-### S-004 explore-custom-scoring [OPEN — execution-ready]
+### S-004 explore-custom-scoring [DONE]
 - **Pillar/Layer:** Explore L3 · **Trust:** T1, T3
 - **Goal:** Scoring preset picker (PPR/half/standard/TEP from `domain/scoring/presets.py`) + editable core rules; fantasy-points column computed server-side by `score_week` over real week stats.
 - **File plan:**
@@ -191,3 +191,4 @@
 | S-001 | 2026-06-09 | (this) | G1–G5 | nflverse adapter + sync CLI; 8364 players, 11891 week rows (2024–2025), idempotent, db 1.6MB; GET /api/players live |
 | S-002 | 2026-06-13 | 78996ad | G1–G5 | screener API + web UI; position filter, sortable columns (whitelist-guarded), nuqs URL state, position-color badges, "pulling film..." loading, design warm + chunky; 24 tests pass |
 | S-003 | 2026-06-13 | (just pushed) | G1–G5 | player sheet hub; `/player/[gsis_id]` with season picker, stat table, prev/next nav via adjacent endpoint; Explore rows now link here; position-color badge, clean stat display; 29 tests pass |
+| S-004 | 2026-06-13 | (just pushed) | G1–G5 | scoring presets (Standard/PPR/Half/TEP) + custom rules picker; fantasy-points column computed server-side via score_week; nuqs URL state; Player Sheet inherits scoring_preset (T3 hallway); McCaffrey PPR=416.6 pts vs Standard=314.6 (102 rec delta correct); 36 tests pass |
