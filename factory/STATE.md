@@ -2,11 +2,11 @@
 
 ## NOW
 
-- **Active slice:** S-003 player-sheet (execution-ready, claimed by Partner, delegating to Sonnet)
+- **Active slice:** none — S-004 is next (sketch)
 - **Launch deadline:** **2026-07-28** (live + Reddit-shareable before draft season; scope bends, date doesn't)
 - **Launch-critical path:** S-001 ingest → S-002 screener → S-003 player sheet → S-004 custom scoring → S-005 valuation workbench → S-006 Sleeper connect → S-007 watermarked export → deploy
 - **Blockers:** none
-- **Last commit:** S-002 explore-screener — Explore `/explore` live, 50 RBs ordered by rush_yd, URL state persistent, design warm + chunky
+- **Last commit:** S-003 player-sheet — Player Sheet hub live, Explore rows link to `/player/[gsis_id]`, season picker, stat table, prev/next nav, position-color badge
 - **Date:** 2026-06-13
 
 ## BACKLOG
@@ -76,7 +76,7 @@
 - **Out of scope:** fantasy-points column and scoring presets (S-004) · player-row links to Player Sheet (S-003) · virtualization, 100+ columns, college toggle (Explore L1+) · saved views, export, watermark · pagination UI beyond limit/offset params · any new table or migration.
 - **Pitfalls:** nuqs v2 throws without `NuqsAdapter` mounted above any `useQueryState` call · keep `page.tsx` a server component and the panel `"use client"` (nuqs + TanStack hooks are client-only) · TanStack Table v8 column defs must be memoized (`useMemo`) or the table re-mounts every render · SQLite `SUM` returns NULL for no rows — wrap aggregates in `COALESCE(..., 0)` or coerce in the service · sort param goes through a whitelist dict to a column object, never string-interpolated into SQL · CI runs `pnpm install --frozen-lockfile`: forgetting to commit the updated `pnpm-lock.yaml` fails the web job.
 
-### S-003 player-sheet-v0 [OPEN — execution-ready]
+### S-003 player-sheet-v0 [DONE]
 - **Pillar/Layer:** Player Sheet · **Trust:** T3
 - **Goal:** `/player/[gsis_id]` — header (name/team/position color), season + weekly stat table, prev/next player switch; every Explore row links here.
 - **File plan:**
@@ -152,3 +152,4 @@
 | seed | 2026-06-09 | — | G1–G4 | Repo seeded: specs, factory, domain spine (scoring+VORP), tokens, personas, web skeleton |
 | S-001 | 2026-06-09 | (this) | G1–G5 | nflverse adapter + sync CLI; 8364 players, 11891 week rows (2024–2025), idempotent, db 1.6MB; GET /api/players live |
 | S-002 | 2026-06-13 | 78996ad | G1–G5 | screener API + web UI; position filter, sortable columns (whitelist-guarded), nuqs URL state, position-color badges, "pulling film..." loading, design warm + chunky; 24 tests pass |
+| S-003 | 2026-06-13 | (just pushed) | G1–G5 | player sheet hub; `/player/[gsis_id]` with season picker, stat table, prev/next nav via adjacent endpoint; Explore rows now link here; position-color badge, clean stat display; 29 tests pass |
