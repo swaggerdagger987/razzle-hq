@@ -76,11 +76,42 @@
 - **Out of scope:** fantasy-points column and scoring presets (S-004) · player-row links to Player Sheet (S-003) · virtualization, 100+ columns, college toggle (Explore L1+) · saved views, export, watermark · pagination UI beyond limit/offset params · any new table or migration.
 - **Pitfalls:** nuqs v2 throws without `NuqsAdapter` mounted above any `useQueryState` call · keep `page.tsx` a server component and the panel `"use client"` (nuqs + TanStack hooks are client-only) · TanStack Table v8 column defs must be memoized (`useMemo`) or the table re-mounts every render · SQLite `SUM` returns NULL for no rows — wrap aggregates in `COALESCE(..., 0)` or coerce in the service · sort param goes through a whitelist dict to a column object, never string-interpolated into SQL · CI runs `pnpm install --frozen-lockfile`: forgetting to commit the updated `pnpm-lock.yaml` fails the web job.
 
-### S-003 player-sheet-v0 [OPEN]
+### S-003 player-sheet-v0 [OPEN — execution-ready]
 - **Pillar/Layer:** Player Sheet · **Trust:** T3
 - **Goal:** `/player/[gsis_id]` — header (name/team/position color), season + weekly stat table, prev/next player switch; every Explore row links here.
-- **Scope:** `apps/web/src/app/player/`, `apps/web/src/features/player-sheet/`, players API detail endpoint, tests.
-- **Gates:** G1–G4; G5: Explore row click lands on sheet, switching players feels instant, hallway check `playerIdentityConsistent`, screenshot.
+- **File plan:**
+  - NEW `apps/api/src/razzle_api/api/routers/players_detail.py` — `GET /api/players/{gsis_id}` endpoint.
+  - NEW `apps/api/src/razzle_api/api/schemas/players_detail.py` — `PlayerDetail` response (gsis_id, name, position, team, seasons: [{ season, week_stats }]).
+  - NEW `apps/web/src/app/player/[gsis_id]/page.tsx` — server component, wraps `<PlayerSheet gsis_id={params.gsis_id} />`.
+  - NEW `apps/web/src/features/player-sheet/PlayerSheet.tsx` — client component, renders header + season picker + stat table + prev/next nav.
+  - NEW `apps/web/src/features/player-sheet/PlayerHeader.tsx` — name, position badge (colored), team.
+  - NEW `apps/web/src/features/player-sheet/StatTable.tsx` — season + week columns, all 13 stats, sortable.
+  - NEW `apps/web/src/features/player-sheet/PrevNextNav.tsx` — prev/next player buttons (navigates to adjacent gsis_id in sorted list context, or just disable if context not available).
+  - NEW `apps/api/tests/integration/test_players_detail_api.py` — seed player, verify GET returns full stats.
+- **Interfaces:**
+  - `GET /api/players/{gsis_id}` → `{ gsis_id, name, position, team, seasons: [{ season: int, week_stats: [{ week, col1, col2, ... }] }] }`.
+  - Service function: `get_player_detail(session, gsis_id) -> dict` — joins players + player_week_stats, groups by season.
+- **Web contract:**
+  - URL: `/player/[gsis_id]` — navigate from Explore row click (Explore's ScreenerTable rows become links to `/player/{row.gsis_id}`).
+  - Season picker: dropdown or tabs, default to 2025; clicking a season re-renders the stat table.
+  - Stat table: 13 stat columns + week column, clickable row to view/compare (not required here, just clickable).
+  - Prev/next: buttons to go to previous/next player in the season (e.g., next by gsis_id alphabetically, or prev/next in the sync order).
+  - Design: position badge (colored, e.g., RB=teal) in header; clean stat table, `--font-mono` for numbers, position-colored row hover (light tint).
+  - Hallway: header link back to `/explore`; Player Sheet is the hub (future: Bureau context, Room ask, Trade ideation all reach from here).
+- **Test plan:**
+  - seed Saquon Barkley + Jonathan Taylor with 2 seasons each, 2 weeks of stats per season.
+  - `GET /api/players/{saquon_gsis_id}` → seasons list has 2 items, first season has ≥2 week rows.
+  - Web: landing on `/player/{saquon_gsis_id}` renders name + position, season picker defaults to 2025, stat table has rows.
+  - Prev/next: buttons exist and are clickable (functional nav tested separately).
+- **Out of scope:** trade valuation (S-005) · staff commentary · league context · stat filters/export · comparing two players side-by-side (future).
+- **Pitfalls:** nuqs not needed here (season picker is component-local state, not URL); player_week_stats may have weeks out of order if sync was interrupted, but that's a data integrity issue not this slice's concern · don't over-style the table — stat data speaks for itself.
+- **T6 note:** position color in the header (warm not generic), clean table design that makes the numbers the focus. Loading: "pulling up the tape..." when fetching. Empty/error states: "player not found" if gsis_id invalid.
+- **Gates:** G1–G4; G5 (paste outputs in commit body):
+  - `curl -s 'localhost:8000/api/players/{saquon_gsis_id}' | jq '.seasons[0].week_stats | length'` → ≥ 2
+  - `/player/{saquon_gsis_id}` renders name "Saquon Barkley", position badge tinted correctly, season picker loads, stat table has ≥2 rows
+  - clicking prev/next is non-error (no 500s in API log)
+  - hard refresh on `/player/{saquon_gsis_id}` preserves the view (no loading jank)
+  - screenshot of the page: would r/DynastyFF screenshot this? (clean, focused on data, warm design colors)
 
 ### S-004 explore-custom-scoring [OPEN]
 - **Pillar/Layer:** Explore L3 · **Trust:** T1, T3
