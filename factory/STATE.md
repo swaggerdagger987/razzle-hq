@@ -2,7 +2,7 @@
 
 ## NOW
 
-- **Active slice:** none — S-003 is next (sketch)
+- **Active slice:** S-003 player-sheet (execution-ready, claimed by Partner, delegating to Sonnet)
 - **Launch deadline:** **2026-07-28** (live + Reddit-shareable before draft season; scope bends, date doesn't)
 - **Launch-critical path:** S-001 ingest → S-002 screener → S-003 player sheet → S-004 custom scoring → S-005 valuation workbench → S-006 Sleeper connect → S-007 watermarked export → deploy
 - **Blockers:** none
