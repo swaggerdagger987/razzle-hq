@@ -9,7 +9,7 @@ import {
 } from "@tanstack/react-table";
 import Link from "next/link";
 import { useMemo } from "react";
-import type { ScreenerRow } from "./api";
+import type { ScreenerRow, ScoringPreset } from "./api";
 
 const POS_TOKEN: Record<string, string> = {
   QB: "var(--pos-qb)",
@@ -34,80 +34,94 @@ function numCol(key: keyof ScreenerRow, header: string, decimals = 0) {
   });
 }
 
-const ALL_COLUMNS = [
-  helper.accessor("name", {
-    id: "name",
-    header: "Player",
-    enableSorting: true,
-    cell: (info) => (
-      <Link
-        href={`/player/${encodeURIComponent(info.row.original.gsis_id)}`}
-        style={{
-          fontFamily: "var(--font-display)",
-          fontSize: "14px",
-          color: "var(--ink)",
-          textDecoration: "none",
-        }}
-      >
-        {info.getValue()}
-      </Link>
-    ),
-  }),
-  helper.accessor("position", {
-    id: "position",
-    header: "Pos",
-    enableSorting: false,
-    cell: (info) => {
-      const pos = info.getValue();
-      return (
-        <span
+function buildColumns(scoringPreset: ScoringPreset) {
+  return [
+    helper.accessor("name", {
+      id: "name",
+      header: "Player",
+      enableSorting: true,
+      cell: (info) => (
+        <Link
+          href={`/player/${encodeURIComponent(info.row.original.gsis_id)}?scoring_preset=${scoringPreset}`}
           style={{
-            background: POS_TOKEN[pos] ?? "var(--ink-light)",
-            color: "var(--text-on-accent)",
-            fontFamily: "var(--font-mono)",
-            fontSize: "11px",
-            fontWeight: 700,
-            borderRadius: "var(--radius-sm)",
-            padding: "2px 7px",
-            display: "inline-block",
-            border: "2px solid var(--ink)",
+            fontFamily: "var(--font-display)",
+            fontSize: "14px",
+            color: "var(--ink)",
+            textDecoration: "none",
           }}
         >
-          {pos}
-        </span>
-      );
-    },
-  }),
-  helper.accessor("team", {
-    id: "team",
-    header: "Team",
-    enableSorting: false,
-    cell: (info) => info.getValue() ?? "—",
-  }),
-  numCol("games", "G"),
-  numCol("pass_att", "Att"),
-  numCol("pass_yd", "PaYd"),
-  numCol("pass_td", "PaTD"),
-  numCol("pass_int", "INT"),
-  numCol("rush_att", "Car"),
-  numCol("rush_yd", "RuYd"),
-  numCol("rush_td", "RuTD"),
-  numCol("target", "Tgt"),
-  numCol("rec", "Rec"),
-  numCol("rec_yd", "ReYd"),
-  numCol("rec_td", "ReTD"),
-  numCol("fumble_lost", "FL"),
-];
+          {info.getValue()}
+        </Link>
+      ),
+    }),
+    helper.accessor("position", {
+      id: "position",
+      header: "Pos",
+      enableSorting: false,
+      cell: (info) => {
+        const pos = info.getValue();
+        return (
+          <span
+            style={{
+              background: POS_TOKEN[pos] ?? "var(--ink-light)",
+              color: "var(--text-on-accent)",
+              fontFamily: "var(--font-mono)",
+              fontSize: "11px",
+              fontWeight: 700,
+              borderRadius: "var(--radius-sm)",
+              padding: "2px 7px",
+              display: "inline-block",
+              border: "2px solid var(--ink)",
+            }}
+          >
+            {pos}
+          </span>
+        );
+      },
+    }),
+    helper.accessor("team", {
+      id: "team",
+      header: "Team",
+      enableSorting: false,
+      cell: (info) => info.getValue() ?? "—",
+    }),
+    numCol("games", "G"),
+    numCol("pass_att", "Att"),
+    numCol("pass_yd", "PaYd"),
+    numCol("pass_td", "PaTD"),
+    numCol("pass_int", "INT"),
+    numCol("rush_att", "Car"),
+    numCol("rush_yd", "RuYd"),
+    numCol("rush_td", "RuTD"),
+    numCol("target", "Tgt"),
+    numCol("rec", "Rec"),
+    numCol("rec_yd", "ReYd"),
+    numCol("rec_td", "ReTD"),
+    numCol("fumble_lost", "FL"),
+    // Fantasy points — right-aligned, 1 decimal, the money column
+    helper.accessor("fantasy_points", {
+      id: "fantasy_points",
+      header: "Pts",
+      enableSorting: true,
+      cell: (info) => {
+        const v = info.getValue();
+        if (v == null) return "—";
+        return Number(v).toFixed(1);
+      },
+    }),
+  ];
+}
 
 type Props = {
   rows: ScreenerRow[];
   sortKey: string;
   sortDir: "asc" | "desc";
+  scoringPreset?: ScoringPreset;
   onSortChange: (key: string, dir: "asc" | "desc") => void;
 };
 
-export function ScreenerTable({ rows, sortKey, sortDir, onSortChange }: Props) {
-  const columns = useMemo(() => ALL_COLUMNS, []);
+export function ScreenerTable({ rows, sortKey, sortDir, scoringPreset = "standard", onSortChange }: Props) {
+  const columns = useMemo(() => buildColumns(scoringPreset), [scoringPreset]);
 
   const sorting: SortingState = useMemo(
     () => [{ id: sortKey, desc: sortDir === "desc" }],
@@ -146,6 +160,7 @@ export function ScreenerTable({ rows, sortKey, sortDir, onSortChange }: Props) {
             {table.getHeaderGroups()[0]?.headers.map((header) => {
               const isSorted = header.column.getIsSorted();
               const canSort = header.column.getCanSort();
+              const isFpCol = header.id === "fantasy_points";
               return (
                 <th
                   key={header.id}
@@ -158,8 +173,10 @@ export function ScreenerTable({ rows, sortKey, sortDir, onSortChange }: Props) {
                     textAlign: header.id === "name" ? "left" : "right",
                     cursor: canSort ? "pointer" : "default",
                     userSelect: "none",
-                    color: isSorted ? "var(--orange)" : "var(--ink)",
+                    // FP column: always slightly orange-tinted to indicate it's the key column
+                    color: isSorted ? "var(--orange)" : isFpCol ? "var(--orange)" : "var(--ink)",
                     borderBottom: "3px solid var(--ink)",
+                    borderLeft: isFpCol ? "2px solid var(--ink-faint)" : undefined,
                     whiteSpace: "nowrap",
                     background: isSorted
                       ? "rgba(var(--sort-highlight), 0.12)"
@@ -181,21 +198,26 @@ export function ScreenerTable({ rows, sortKey, sortDir, onSortChange }: Props) {
                 background: idx % 2 === 1 ? "var(--zebra-stripe)" : undefined,
               }}
             >
-              {row.getVisibleCells().map((cell) => (
-                <td
-                  key={cell.id}
-                  style={{
-                    padding: "8px 12px",
-                    fontFamily: "var(--font-mono)",
-                    fontSize: "13px",
-                    textAlign: cell.column.id === "name" ? "left" : "right",
-                    borderBottom: "1px solid var(--ink-faint)",
-                    color: "var(--ink-medium)",
-                  }}
-                >
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-              ))}
+              {row.getVisibleCells().map((cell) => {
+                const isFpCell = cell.column.id === "fantasy_points";
+                return (
+                  <td
+                    key={cell.id}
+                    style={{
+                      padding: "8px 12px",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: "13px",
+                      textAlign: cell.column.id === "name" ? "left" : "right",
+                      borderBottom: "1px solid var(--ink-faint)",
+                      borderLeft: isFpCell ? "2px solid var(--ink-faint)" : undefined,
+                      color: isFpCell ? "var(--ink)" : "var(--ink-medium)",
+                      fontWeight: isFpCell ? 600 : undefined,
+                    }}
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                );
+              })}
             </tr>
           ))}
         </tbody>

@@ -22,6 +22,7 @@ class ScreenerRow(BaseModel):
     rec_yd: float
     rec_td: float
     fumble_lost: float
+    fantasy_points: float = 0.0
 
 
 class ScreenerResponse(BaseModel):

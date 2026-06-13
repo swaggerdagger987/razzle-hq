@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { parseAsString, useQueryState } from "nuqs";
 import { fetchPlayerDetail } from "./api";
 import { PlayerHeader } from "./PlayerHeader";
 import { StatTable } from "./StatTable";
@@ -12,6 +13,9 @@ type Props = {
 };
 
 export function PlayerSheet({ gsis_id }: Props) {
+  // Inherit scoring_preset from URL if navigated from Explore (hallway T3).
+  const [scoringPreset] = useQueryState("scoring_preset", parseAsString.withDefault("standard"));
+
   const { data, isPending, isError, error } = useQuery({
     queryKey: ["player", gsis_id],
     queryFn: () => fetchPlayerDetail(gsis_id),
@@ -168,6 +172,8 @@ export function PlayerSheet({ gsis_id }: Props) {
           }}
         >
           {seasonData.week_stats.length} week{seasonData.week_stats.length !== 1 ? "s" : ""} of film
+          {" · "}
+          <span style={{ color: "var(--orange)", fontWeight: 600 }}>{scoringPreset}</span>
         </p>
       )}
 

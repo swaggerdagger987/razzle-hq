@@ -2,6 +2,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 export type Position = "QB" | "RB" | "WR" | "TE";
 
+export type ScoringPreset = "standard" | "PPR" | "half" | "TEP";
+
 export type ScreenerRow = {
   gsis_id: string;
   name: string;
@@ -21,6 +23,7 @@ export type ScreenerRow = {
   rec_yd: number;
   rec_td: number;
   fumble_lost: number;
+  fantasy_points: number;
 };
 
 export type ScreenerResponse = {
@@ -36,6 +39,8 @@ export type ScreenerParams = {
   dir: "asc" | "desc";
   limit: number;
   offset: number;
+  scoring_preset?: ScoringPreset;
+  scoring_rules?: string | null;
 };
 
 export async function fetchScreener(params: ScreenerParams): Promise<ScreenerResponse> {
@@ -46,6 +51,8 @@ export async function fetchScreener(params: ScreenerParams): Promise<ScreenerRes
   url.searchParams.set("dir", params.dir);
   url.searchParams.set("limit", String(params.limit));
   url.searchParams.set("offset", String(params.offset));
+  if (params.scoring_preset) url.searchParams.set("scoring_preset", params.scoring_preset);
+  if (params.scoring_rules) url.searchParams.set("scoring_rules", params.scoring_rules);
 
   const response = await fetch(url.toString());
   if (!response.ok) {
