@@ -27,6 +27,13 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/razzle_api"]
 
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+# PLR0913: FastAPI routers and keyword-only service functions routinely exceed 5 params by design.
+ignore = ["PLR0913"]
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
