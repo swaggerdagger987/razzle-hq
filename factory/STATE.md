@@ -2,7 +2,7 @@
 
 ## NOW
 
-- **Active slice:** none — S-004 is next (sketch)
+- **Active slice:** S-004 explore-custom-scoring (execution-ready, claimed by Partner, delegating to Sonnet)
 - **Launch deadline:** **2026-07-28** (live + Reddit-shareable before draft season; scope bends, date doesn't)
 - **Launch-critical path:** S-001 ingest → S-002 screener → S-003 player sheet → S-004 custom scoring → S-005 valuation workbench → S-006 Sleeper connect → S-007 watermarked export → deploy
 - **Blockers:** none
@@ -113,11 +113,49 @@
   - hard refresh on `/player/{saquon_gsis_id}` preserves the view (no loading jank)
   - screenshot of the page: would r/DynastyFF screenshot this? (clean, focused on data, warm design colors)
 
-### S-004 explore-custom-scoring [OPEN]
+### S-004 explore-custom-scoring [OPEN — execution-ready]
 - **Pillar/Layer:** Explore L3 · **Trust:** T1, T3
 - **Goal:** Scoring preset picker (PPR/half/standard/TEP from `domain/scoring/presets.py`) + editable core rules; fantasy-points column computed server-side by `score_week` over real week stats.
-- **Scope:** screener API (accept scoring config), `apps/web/src/features/explore/` controls, `apps/web/src/features/scoring-preview/` integration, tests.
-- **Gates:** G1–G4; G5: points column changes when rules change, values match engine unit-test fixtures, URL carries the preset.
+- **File plan:**
+  - EDIT `apps/api/src/razzle_api/api/routers/screener.py` — add `scoring_preset` and `scoring_rules` (JSON string) query params.
+  - EDIT `apps/api/src/razzle_api/services/screener_service.py` — `list_season_totals` now accepts `scoring_config: ScoringConfig` and calls `score_week` on each row, appends `fantasy_points` to output.
+  - EDIT `apps/api/src/razzle_api/api/schemas/screener.py` — `ScreenerRow` adds `fantasy_points: float` field.
+  - EDIT `apps/web/src/features/explore/ScreenerPanel.tsx` — add preset picker (tabs: Standard/PPR/Half/TEP), rules editor (simplified: toggle-able scoring multipliers), nuqs state for `scoring_preset` + `scoring_rules`.
+  - EDIT `apps/web/src/features/explore/ScreenerTable.tsx` — add fantasy-points column, sortable.
+  - EDIT `apps/web/src/features/explore/api.ts` — `fetchScreener` now passes `scoring_preset` and `scoring_rules` to the API.
+  - EDIT `apps/web/src/features/player-sheet/PlayerSheet.tsx` — Player Sheet inherits `scoring_preset` from URL query param (T3 hallway integration).
+  - NEW `apps/api/tests/integration/test_screener_scoring_api.py` — seed stats, verify fantasy_points computed correctly per preset; verify preset change updates points.
+- **Interfaces:**
+  - `GET /api/screener?season=2025&position=RB&sort=rush_yd&dir=desc&scoring_preset=PPR&scoring_rules={"pass_td":6}` → same ScreenerResponse, `ScreenerRow` now has `fantasy_points` field.
+  - Query params: `scoring_preset` (Literal["standard", "PPR", "half", "TEP"], default "standard") · `scoring_rules` (optional JSON string, if set overrides the preset).
+  - Service: `list_season_totals(..., scoring_config: ScoringConfig = None)` — if None, use default (standard); otherwise use preset or rules. For each row, compute `fantasy_points = sum(score_week(stat_col, scoring_config) for stat_col in stats)`.
+- **Data contract:**
+  - Presets: import `ScoringConfig` and presets from `apps/api/src/razzle_api/domain/scoring/presets.py` (already exists, no changes needed).
+  - `score_week` function (from domain/scoring/engine.py): takes a player's week stats dict + ScoringConfig, returns total fantasy points for that week.
+  - Season totals fantasy_points = sum of all weeks' fantasy_points for that season.
+- **Web contract:**
+  - URL state: nuqs `scoring_preset` (string, default "standard") + `scoring_rules` (string or null). Changing preset updates URL; hard refresh reproduces exact view.
+  - Preset tabs: visually distinct, active tab tinted `--orange`.
+  - Rules editor: simplified — show 3–4 key rules (pass_td, rush_td, rec_td, rec_yd_per_pt) with +/- buttons to adjust multipliers (e.g., 6pt vs 4pt TD). Don't expose all 30 columns.
+  - Fantasy-points column: right-aligned, `--font-mono`, sorted descending by default. No highlight, just data.
+  - Design: same as S-002 (sand bg, chunky border, position colors).
+- **Test plan:**
+  - Seed 1 RB with 1 week of stats (e.g., 100 rush_yd, 1 rush_td, 0 targets).
+  - Standard scoring: fantasy_points = 100/10 + 6 = 16.
+  - PPR preset: fantasy_points = 100/10 + 6 + (if 0 targets, no PPR bonus) = 16.
+  - Custom rules (pass_td=4): verify points recomputed if a QB has pass_tds.
+  - API returns `fantasy_points` field, matches domain/scoring/engine unit test values.
+  - Web: preset picker changes URL; hard refresh shows same points; changing a rule updates the column live (TanStack Query refetch).
+- **Out of scope:** save custom rules as templates (future, League L2) · "best ball" scoring · DFS scoring · stat projections · backfill scoring on historical weeks.
+- **Pitfalls:** `score_week` is unit-tested in `test_scoring_engine.py`; don't re-implement, just call it · `scoring_rules` as a JSON string is fragile for large edits, but OK for this MVP (L3, not L4+) · SQLAlchemy doesn't compute, so season totals fantasy_points must be sum-of-weeks in Python, not a SQL aggregate (cost is bearable for 50 rows).
+- **T6 note:** loading: "calculating your league's points...", preset tabs feel "live" (no page reload on click), fantasy-points column renders cleanly (no extra flair, let data speak).
+- **Gates:** G1–G4; G5 (paste outputs in commit body):
+  - `curl -s 'localhost:8000/api/screener?season=2025&position=RB&sort=fantasy_points&dir=desc&scoring_preset=PPR' | jq '.rows[0] | {name, fantasy_points}'` → `{ "name": "...", "fantasy_points": <float> }`
+  - Verify first 3 fantasy_points values match a manual calc: seed 1 RB with 100 rush_yd + 1 rush_td, standard = 16 (100/10 + 6).
+  - `/explore?scoring_preset=PPR` loads; clicking Standard tab updates URL to `?scoring_preset=standard`; hard refresh shows same view.
+  - Editing a rule (e.g., pass_td from 6 to 4) visibly updates the fantasy_points column (TanStack Query refetch completes, column re-renders).
+  - voice check: no AI/LLM hits.
+  - screenshot: preset tabs visible, fantasy-points column visible, numbers are clean (not excessive decimals).
 
 ### S-005 valuation-workbench-v0 [OPEN]
 - **Pillar/Layer:** Lab L1–L3 (flagship; absorbs Launch-10 `vorp`) · **Trust:** T1, T5, T6
