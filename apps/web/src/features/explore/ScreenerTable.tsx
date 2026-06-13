@@ -7,6 +7,7 @@ import {
   useReactTable,
   type SortingState,
 } from "@tanstack/react-table";
+import Link from "next/link";
 import { useMemo } from "react";
 import type { ScreenerRow } from "./api";
 
@@ -39,9 +40,17 @@ const ALL_COLUMNS = [
     header: "Player",
     enableSorting: true,
     cell: (info) => (
-      <span style={{ fontFamily: "var(--font-display)", fontSize: "14px" }}>
+      <Link
+        href={`/player/${encodeURIComponent(info.row.original.gsis_id)}`}
+        style={{
+          fontFamily: "var(--font-display)",
+          fontSize: "14px",
+          color: "var(--ink)",
+          textDecoration: "none",
+        }}
+      >
         {info.getValue()}
-      </span>
+      </Link>
     ),
   }),
   helper.accessor("position", {

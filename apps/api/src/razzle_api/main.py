@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from razzle_api.api.routers.health import router as health_router
 from razzle_api.api.routers.players import router as players_router
+from razzle_api.api.routers.players_detail import router as players_detail_router
 from razzle_api.api.routers.scoring import router as scoring_router
 from razzle_api.api.routers.screener import router as screener_router
 from razzle_api.api.routers.valuation import router as valuation_router
@@ -23,6 +24,7 @@ def create_app() -> FastAPI:
     )
     app.include_router(health_router)
     app.include_router(players_router)
+    app.include_router(players_detail_router)
     app.include_router(screener_router)
     app.include_router(scoring_router)
     app.include_router(valuation_router)
