@@ -2,12 +2,12 @@
 
 ## NOW
 
-- **Active slice:** S-002 explore-screener (execution-ready, claimed by Partner, delegating to Sonnet)
+- **Active slice:** none — S-003 is next (sketch)
 - **Launch deadline:** **2026-07-28** (live + Reddit-shareable before draft season; scope bends, date doesn't)
 - **Launch-critical path:** S-001 ingest → S-002 screener → S-003 player sheet → S-004 custom scoring → S-005 valuation workbench → S-006 Sleeper connect → S-007 watermarked export → deploy
 - **Blockers:** none
-- **Last commit:** S-001 nflverse ingest — players + week stats synced, /api/players live
-- **Date:** 2026-06-09
+- **Last commit:** S-002 explore-screener — Explore `/explore` live, 50 RBs ordered by rush_yd, URL state persistent, design warm + chunky
+- **Date:** 2026-06-13
 
 ## BACKLOG
 
@@ -41,7 +41,7 @@
 - **Out of scope:** kicking columns (stay 0), DST/IDP, return_yd/return_td (stay 0), college data, snap counts, injuries, schedules, storing nflverse's precomputed fantasy_points columns (we always compute from rules), any UI.
 - **Pitfalls (verified against the legacy adapter, read-only ref: old razzle repo `legacy/adapters/nflverse_adapter.py`):** GitHub releases API requires a User-Agent header · players.csv uses BOM, decode `utf-8-sig` · don't trust `players.csv` team for identity (teams go stale), gsis_id only · keep `ingest/` importing the engine's column names from one place: define `STAT_COLUMNS` once (the migration already has the list — mirror it, don't import the migration).
 
-### S-002 explore-screener [OPEN — execution-ready]
+### S-002 explore-screener [DONE]
 - **Pillar/Layer:** Explore L0–L1 · **Trust:** T1, T6
 - **Goal:** `/explore` — season-total screener over real synced data: position filter, sortable columns, nuqs URL state, position colors, "pulling film..." loading state.
 - **File plan:**
@@ -120,3 +120,4 @@
 |-------|------|--------|-------|------|
 | seed | 2026-06-09 | — | G1–G4 | Repo seeded: specs, factory, domain spine (scoring+VORP), tokens, personas, web skeleton |
 | S-001 | 2026-06-09 | (this) | G1–G5 | nflverse adapter + sync CLI; 8364 players, 11891 week rows (2024–2025), idempotent, db 1.6MB; GET /api/players live |
+| S-002 | 2026-06-13 | 78996ad | G1–G5 | screener API + web UI; position filter, sortable columns (whitelist-guarded), nuqs URL state, position-color badges, "pulling film..." loading, design warm + chunky; 24 tests pass |
