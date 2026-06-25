@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Buy Low / Sell High — Razzle</title>
+<meta property="og:title" content="Buy Low / Sell High — Razzle">
+<meta property="og:description" content="Players whose efficiency doesn't match their dynasty price tag. Buy the undervalued, sell the overvalued. Data-backed trade timing.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Buy Low / Sell High — Razzle">
+<meta name="twitter:description" content="Players whose efficiency doesn't match their dynasty price tag. Buy the undervalued, sell the overvalued.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Buy low / sell high dynasty candidates on razzle.lol. Find players whose efficiency doesn't match their ranking — data-backed value mismatches for smarter trades.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=buysell">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=buysell">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="standalone-common.css">
+<style>
+
+  /* Two-column layout */
+  .buysell-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    overflow-x: auto;
+  }
+
+  .buysell-column {
+    min-width: 0;
+  }
+
+  .buysell-column-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    border: 3px solid var(--ink);
+    border-radius: var(--radius-sm);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .buysell-column-header.buy {
+    background: var(--green-light);
+  }
+  .buysell-column-header.sell {
+    background: var(--red-light);
+  }
+  .buysell-column-arrow {
+    font-size: 24px;
+    line-height: 1;
+  }
+  .buysell-column-arrow.buy { color: var(--green); }
+  .buysell-column-arrow.sell { color: var(--red); }
+  .buysell-column-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .buysell-column-note {
+    font-family: var(--font-hand);
+    font-size: 16px;
+    color: var(--ink-light);
+    margin-left: auto;
+  }
+
+  /* Cards */
+  .buysell-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .buysell-card {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 var(--ink);
+    overflow: hidden;
+    transition: transform 0.15s, box-shadow 0.15s;
+    cursor: pointer;
+  }
+  .buysell-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+
+  .buysell-card-top {
+    height: 6px;
+  }
+  .buysell-card-top.qb { background: var(--pos-qb); }
+  .buysell-card-top.rb { background: var(--pos-rb); }
+  .buysell-card-top.wr { background: var(--pos-wr); }
+  .buysell-card-top.te { background: var(--pos-te); }
+
+  .buysell-card-body {
+    padding: 12px 14px;
+  }
+
+  .buysell-card-row1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .buysell-rank {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink-light);
+    min-width: 24px;
+    text-align: center;
+  }
+
+  .buysell-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .buysell-name {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .buysell-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+  }
+
+  .buysell-age-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: var(--radius-sm);
+    border: 2px solid;
+  }
+  .buysell-age-badge.young { background: var(--green-light); color: var(--green); border-color: var(--green); }
+  .buysell-age-badge.prime { background: var(--yellow-light); color: var(--ink-medium); border-color: var(--yellow); }
+  .buysell-age-badge.aging { background: var(--red-light); color: var(--red); border-color: var(--red); }
+  .buysell-age-badge.veteran { background: var(--red-light); color: var(--red); border-color: var(--red); }
+
+  /* Grade + mismatch badges */
+  .buysell-badges {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .buysell-grade {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 700;
+    min-width: 36px;
+    text-align: center;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--ink);
+  }
+  .buysell-grade.grade-a { background: var(--green-light); color: var(--green); }
+  .buysell-grade.grade-b { background: var(--blue-light); color: var(--blue); }
+  .buysell-grade.grade-c { background: var(--yellow-light); color: var(--ink-medium); }
+  .buysell-grade.grade-d { background: var(--orange-light); color: var(--orange); }
+  .buysell-grade.grade-f { background: var(--red-light); color: var(--red); }
+  .buysell-grade-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Mismatch bar */
+  .buysell-mismatch {
+    margin-bottom: 6px;
+  }
+  .buysell-mismatch-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2px;
+  }
+  .buysell-mismatch-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-medium);
+    text-transform: uppercase;
+  }
+  .buysell-mismatch-val {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .buysell-mismatch-val.buy { color: var(--green); }
+  .buysell-mismatch-val.sell { color: var(--red); }
+  .buysell-mismatch-track {
+    height: 8px;
+    background: var(--bg-warm);
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--ink-faint);
+    overflow: hidden;
+  }
+  .buysell-mismatch-fill {
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.3s ease;
+  }
+  .buysell-mismatch-fill.buy { background: var(--green); opacity: 0.7; }
+  .buysell-mismatch-fill.sell { background: var(--red); opacity: 0.7; }
+
+  /* Efficiency stats */
+  .buysell-stats {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .buysell-stat {
+    flex: 1;
+    min-width: 50px;
+    text-align: center;
+  }
+  .buysell-stat-val {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .buysell-stat-key {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-light);
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 768px) {
+    .buysell-columns {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    
+  }
+  @media (max-width: 480px) {
+
+    .buysell-card-body { padding: 10px; }
+    .buysell-stats { gap: 4px; }
+    .buysell-column-note { display: none; }
+  }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div id="site-header" data-page="buysell"></div>
+
+<main class="buysell-page" id="main-content">
+  <div class="buysell-header">
+    <h1>Buy Low / Sell High</h1>
+    <div class="buysell-subtitle">efficiency vs dynasty ranking — who's mispriced?</div>
+  </div>
+
+  <div class="buysell-controls">
+    <div class="buysell-pos-tabs" id="pos-tabs" role="tablist" aria-label="Position filter">
+      <button class="buysell-pos-tab active" data-pos="" role="tab" aria-selected="true">All</button>
+      <button class="buysell-pos-tab" data-pos="QB" role="tab" aria-selected="false">QB</button>
+      <button class="buysell-pos-tab" data-pos="RB" role="tab" aria-selected="false">RB</button>
+      <button class="buysell-pos-tab" data-pos="WR" role="tab" aria-selected="false">WR</button>
+      <button class="buysell-pos-tab" data-pos="TE" role="tab" aria-selected="false">TE</button>
+    </div>
+    <select class="buysell-season-select" id="season-select" title="Season" aria-label="Season"></select>
+    <div class="buysell-scoring-tabs" id="scoring-tabs">
+      <button class="buysell-scoring-tab active" data-scoring="ppr">PPR</button>
+      <button class="buysell-scoring-tab" data-scoring="half_ppr">Half</button>
+      <button class="buysell-scoring-tab" data-scoring="std">Std</button>
+    </div>
+  </div>
+
+  <div class="buysell-actions">
+    <button class="btn-chunky" id="export-btn" title="Export as PNG">Export PNG</button>
+  </div>
+
+  <div id="buysell-body" role="status" aria-live="polite">
+    <div class="buysell-loading" id="buysell-loading">studying the market...
+      <div class="loading-skeleton">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card" style="height:150px"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Watermark -->
+<div style="position:fixed; bottom:10px; right:14px; font-family:var(--font-hand); font-size:14px; color:var(--ink-light); opacity:0.7; pointer-events:none; z-index:999;">razzle.lol</div>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  'use strict';
+
+  var _cs = getComputedStyle(document.documentElement);
+  var POS_COLORS = {
+    QB: _cs.getPropertyValue('--pos-qb').trim() || '#5b7fff',
+    RB: _cs.getPropertyValue('--pos-rb').trim() || '#2ec4b6',
+    WR: _cs.getPropertyValue('--pos-wr').trim() || '#d97757',
+    TE: _cs.getPropertyValue('--pos-te').trim() || '#8b5cf6'
+  };
+
+
+  var currentPosition = '';
+  var currentScoring = 'ppr';
+
+  function ageClass(age) {
+    if (!age) return 'prime';
+    if (age <= 24) return 'young';
+    if (age <= 27) return 'prime';
+    if (age <= 30) return 'aging';
+    return 'veteran';
+  }
+
+  function ageLabel(age) {
+    if (!age) return '';
+    var cls = ageClass(age);
+    if (cls === 'young') return 'young';
+    if (cls === 'prime') return 'prime';
+    if (cls === 'aging') return 'aging';
+    return 'veteran';
+  }
+
+  function gradeClass(grade) {
+    if (!grade) return 'grade-c';
+    var first = grade.charAt(0).toUpperCase();
+    if (first === 'A') return 'grade-a';
+    if (first === 'B') return 'grade-b';
+    if (first === 'C') return 'grade-c';
+    if (first === 'D') return 'grade-d';
+    return 'grade-f';
+  }
+
+  function renderEffStats(p) {
+    var stats = p.eff_stats || {};
+    var html = '';
+    if (p.position === 'QB') {
+      html += '<div class="buysell-stat"><div class="buysell-stat-val">' + escapeHtml(String(stats.yards_per_att || 0)) + '</div><div class="buysell-stat-key">Y/ATT</div></div>';
+      html += '<div class="buysell-stat"><div class="buysell-stat-val">' + escapeHtml(String(stats.td_rate || 0)) + '%</div><div class="buysell-stat-key">TD%</div></div>';
+      html += '<div class="buysell-stat"><div class="buysell-stat-val">' + escapeHtml(String(stats.int_rate || 0)) + '%</div><div class="buysell-stat-key">INT%</div></div>';
+    } else if (p.position === 'RB') {
+      html += '<div class="buysell-stat"><div class="buysell-stat-val">' + escapeHtml(String(stats.yards_per_carry || 0)) + '</div><div class="buysell-stat-key">YPC</div></div>';
+      html += '<div class="buysell-stat"><div class="buysell-stat-val">' + escapeHtml(String(stats.yards_per_target || 0)) + '</div><div class="buysell-stat-key">Y/TGT</div></div>';
+      html += '<div class="buysell-stat"><div class="buysell-stat-val">' + escapeHtml(String(stats.td_rate || 0)) + '%</div><div class="buysell-stat-key">TD%</div></div>';
+    } else {
+      html += '<div class="buysell-stat"><div class="buysell-stat-val">' + escapeHtml(String(stats.yards_per_target || 0)) + '</div><div class="buysell-stat-key">Y/TGT</div></div>';
+      html += '<div class="buysell-stat"><div class="buysell-stat-val">' + escapeHtml(String(stats.catch_rate || 0)) + '%</div><div class="buysell-stat-key">CATCH%</div></div>';
+      html += '<div class="buysell-stat"><div class="buysell-stat-val">' + escapeHtml(String(stats.yac_per_rec || 0)) + '</div><div class="buysell-stat-key">YAC/R</div></div>';
+      html += '<div class="buysell-stat"><div class="buysell-stat-val">' + escapeHtml(String(stats.td_rate || 0)) + '%</div><div class="buysell-stat-key">TD%</div></div>';
+    }
+    html += '<div class="buysell-stat"><div class="buysell-stat-val">' + escapeHtml(String(p.ppg)) + '</div><div class="buysell-stat-key">PPG</div></div>';
+    return html;
+  }
+
+  function renderCard(p, isBuy, idx) {
+    var pos = (p.position || 'WR').toLowerCase();
+    var ac = ageClass(p.age);
+    var al = ageLabel(p.age);
+    var gc = gradeClass(p.efficiency_grade);
+    var type = isBuy ? 'buy' : 'sell';
+    var maxMismatch = 60;
+    var barWidth = Math.min(100, Math.round(((p.mismatch_score || 0) / (maxMismatch || 1)) * 100));
+    var rankClass = idx === 0 ? ' card-hero' : idx <= 2 ? ' card-spotlight' : '';
+
+    var html = '<div class="buysell-card' + rankClass + '" data-pid="' + escapeHtml(p.player_id) + '">';
+    html += '<div class="buysell-card-top ' + pos + '"></div>';
+    html += '<div class="buysell-card-body">';
+
+    // Row 1: rank, headshot, info, grade
+    html += '<div class="buysell-card-row1">';
+    html += '<div class="buysell-rank">' + escapeHtml(String(p.rank)) + '</div>';
+    if (p.headshot_url) {
+      html += '<img class="buysell-headshot" src="' + escapeHtml(p.headshot_url) + '" alt="Player headshot" loading="lazy" onerror="this.onerror=null;this.src=\'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><circle cx=%2220%22 cy=%2220%22 r=%2220%22 fill=%22%23d97757%22/><text x=%2220%22 y=%2225%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2216%22>?</text></svg>\'">';
+    }
+    html += '<div class="buysell-info">';
+    html += '<div class="buysell-name">' + escapeHtml(p.name) + '</div>';
+    html += '<div class="buysell-meta">';
+    html += '<span class="buysell-pos-badge ' + pos + '">' + escapeHtml(p.position) + '</span>';
+    html += '<span class="buysell-team">' + escapeHtml(p.team) + '</span>';
+    if (p.age) {
+      html += '<span class="buysell-age-badge ' + ac + '">' + al + ' ' + p.age + '</span>';
+    }
+    html += '</div></div>';
+    html += '<div class="buysell-badges">';
+    html += '<div class="buysell-grade ' + gc + '">' + escapeHtml(p.efficiency_grade) + '</div>';
+    html += '<div class="buysell-grade-label">efficiency</div>';
+    html += '</div>';
+    html += '</div>';
+
+    // Mismatch bar
+    html += '<div class="buysell-mismatch">';
+    html += '<div class="buysell-mismatch-row">';
+    html += '<span class="buysell-mismatch-label">Value Mismatch</span>';
+    html += '<span class="buysell-mismatch-val ' + type + '">' + escapeHtml(String(p.mismatch_score)) + '</span>';
+    html += '</div>';
+    html += '<div class="buysell-mismatch-track"><div class="buysell-mismatch-fill ' + type + '" style="width:' + parseFloat(barWidth) + '%"></div></div>';
+    html += '</div>';
+
+    // Annotation
+    html += '<div class="buysell-annotation">' + escapeHtml(p.annotation) + '</div>';
+
+    // Efficiency stats
+    html += '<div class="buysell-stats">';
+    html += renderEffStats(p);
+    html += '</div>';
+
+    html += '</div></div>';
+    return html;
+  }
+
+  function renderColumn(players, isBuy) {
+    if (!players || !players.length) {
+      return '<div class="panel-empty">' + (typeof razzleEmpty === 'function' ? razzleEmpty() : 'no data found') + '<span class="hint">try a different position or season</span></div>';
+    }
+    var html = '<div class="buysell-list">';
+    players.forEach(function(p, idx) {
+      html += renderCard(p, isBuy, idx);
+    });
+    html += '</div>';
+    return html;
+  }
+
+  async function loadData(season, position) {
+    var bodyEl = document.getElementById('buysell-body');
+    bodyEl.innerHTML = '<div class="buysell-loading">studying the market...</div>';
+
+    var url = '/api/buy-sell-candidates?limit=15';
+    if (season) url += '&season=' + season;
+    if (position) url += '&position=' + position;
+    if (currentScoring !== 'ppr') url += '&scoring=' + currentScoring;
+
+    try {
+      var resp = await fetch(url);
+      if (!resp.ok) throw new Error('API error ' + resp.status);
+      var data = await resp.json();
+
+      // Populate season selector
+      var sel = document.getElementById('season-select');
+      if (sel && data.available_seasons) {
+        var curSeason = season || data.season;
+        sel.innerHTML = '';
+        data.available_seasons.forEach(function(s) {
+          var opt = document.createElement('option');
+          opt.value = s;
+          opt.textContent = s;
+          if (s == curSeason) opt.selected = true;
+          sel.appendChild(opt);
+        });
+      }
+
+      // Render two columns
+      var html = '<div class="buysell-columns">';
+
+      // Buy Low column
+      html += '<div class="buysell-column">';
+      html += '<div class="buysell-column-header buy">';
+      html += '<span class="buysell-column-arrow buy">&#9650;</span>';
+      html += '<span class="buysell-column-title">Buy Low</span>';
+      html += '<span class="buysell-column-note">efficient but undervalued</span>';
+      html += '</div>';
+      html += renderColumn(data.buy_low, true);
+      html += '</div>';
+
+      // Sell High column
+      html += '<div class="buysell-column">';
+      html += '<div class="buysell-column-header sell">';
+      html += '<span class="buysell-column-arrow sell">&#9660;</span>';
+      html += '<span class="buysell-column-title">Sell High</span>';
+      html += '<span class="buysell-column-note">ranked above their efficiency</span>';
+      html += '</div>';
+      html += renderColumn(data.sell_high, false);
+      html += '</div>';
+
+      html += '</div>';
+      bodyEl.innerHTML = html;
+
+      // Click handlers
+      bodyEl.querySelectorAll('.buysell-card[data-pid]').forEach(function(card) {
+        card.addEventListener('click', function() {
+          var pid = card.getAttribute('data-pid');
+          if (pid) window.location.href = '/player/' + encodeURIComponent(pid);
+        });
+      });
+    } catch(e) {
+      bodyEl.innerHTML = '<div class="panel-error">' + (typeof razzleError === 'function' ? razzleError() : 'something went wrong') + '<br><button onclick="location.reload()">retry</button></div>';
+    }
+  }
+
+  // Position tab handlers
+  document.querySelectorAll('.buysell-pos-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.buysell-pos-tab').forEach(function(t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      currentPosition = tab.getAttribute('data-pos') || '';
+      var season = document.getElementById('season-select').value;
+      savePageState({ season: season, position: currentPosition, scoring: currentScoring });
+      loadData(season, currentPosition);
+    });
+  });
+
+  // Season change handler
+  document.getElementById('season-select').addEventListener('change', function() {
+    savePageState({ season: this.value, position: currentPosition, scoring: currentScoring });
+    loadData(this.value, currentPosition);
+  });
+
+  // Scoring tab handler
+  document.getElementById('scoring-tabs').addEventListener('click', function(e) {
+    var tab = e.target.closest('.buysell-scoring-tab');
+    if (!tab) return;
+    document.querySelectorAll('.buysell-scoring-tab').forEach(function(t) { t.classList.remove('active'); });
+    tab.classList.add('active');
+    currentScoring = tab.getAttribute('data-scoring') || 'ppr';
+    var season = document.getElementById('season-select').value;
+    savePageState({ season: season, position: currentPosition, scoring: currentScoring });
+    loadData(season, currentPosition);
+  });
+
+  // Export PNG
+  document.getElementById('export-btn').addEventListener('click', function() {
+    var btn = this; btn.disabled = true; btn.textContent = 'Exporting...';
+    var target = document.getElementById('main-content');
+    if (!target) { btn.disabled = false; btn.textContent = 'Export PNG'; return; }
+    loadHtml2Canvas().then(function(h2c) { return h2c(target, { backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf', scale: 2 }); }).then(function(canvas) {
+      var ctx = canvas.getContext('2d');
+      ctx.font = '24px Caveat, cursive';
+      ctx.fillStyle = document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.25)' : 'rgba(45,31,20,0.25)';
+      ctx.textAlign = 'right';
+      ctx.fillText('razzle.lol', canvas.width - 20, canvas.height - 16);
+      var a = document.createElement('a');
+      a.download = 'razzle-buysell.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    }).finally(function() { btn.disabled = false; btn.textContent = 'Export PNG'; });
+  });
+
+  // Analytics
+  try {
+    fetch('/api/analytics/pageview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ page: '/buysell.html' }),
+    });
+  } catch(e) {}
+
+  // Quick search (Ctrl+K)
+  if (typeof window.initQuickSearch === 'function') window.initQuickSearch();
+
+  // Restore URL state + load
+  var restored = restorePageState({ season: '', position: '', scoring: 'ppr' });
+  if (restored.position) {
+    currentPosition = restored.position;
+    document.querySelectorAll('.buysell-pos-tab').forEach(function(t) {
+      t.classList.toggle('active', (t.getAttribute('data-pos') || '') === currentPosition);
+    });
+  }
+  if (restored.scoring && ['ppr','half_ppr','std'].indexOf(restored.scoring) !== -1) {
+    currentScoring = restored.scoring;
+    document.querySelectorAll('.buysell-scoring-tab').forEach(function(t) {
+      t.classList.toggle('active', (t.getAttribute('data-scoring') || '') === currentScoring);
+    });
+  }
+  loadData(restored.season || undefined, currentPosition || undefined);
+})();
+</script>
+</body>
+</html>

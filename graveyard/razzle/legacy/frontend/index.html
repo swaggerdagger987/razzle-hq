@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Razzle — Free Fantasy Football Research Lab</title>
+<meta property="og:title" content="Razzle — Free Fantasy Football Research Lab | NFL + College Data">
+<meta property="og:description" content="68 free analytical tools for fantasy football. NFL, college, and prospect data from nflverse. Custom formulas, AI agents with full league context. The tool your leaguemates don't know about yet.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://razzle.lol/">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Razzle — Free Fantasy Football Research Lab | NFL + College Data">
+<meta name="twitter:description" content="68 free analytical tools for fantasy football. NFL, college, and prospect data from nflverse. Custom formulas, AI agents with full league context. The tool your leaguemates don't know about yet.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Razzle is a free fantasy football research lab. 100+ stat columns across NFL, college, and prospects. Custom formulas, AI agents with full league context. The tool your leaguemates don't know about yet.">
+<link rel="canonical" href="https://razzle.lol/">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css?v=scene-20260416">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Razzle",
+  "url": "https://razzle.lol",
+  "description": "Free fantasy football research lab. NFL + college data screener, custom formulas, radar charts, dynasty value scores, AI agents with league context.",
+  "applicationCategory": "SportsApplication",
+  "operatingSystem": "Web",
+  "offers": [
+    {
+      "@type": "Offer",
+      "name": "Free",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    {
+      "@type": "Offer",
+      "name": "Pro",
+      "price": "79.99",
+      "priceCurrency": "USD",
+      "billingIncrement": "P1Y"
+    },
+    {
+      "@type": "Offer",
+      "name": "Elite",
+      "price": "149.99",
+      "priceCurrency": "USD",
+      "billingIncrement": "P1Y"
+    }
+  ],
+  "creator": {
+    "@type": "Organization",
+    "name": "Razzle",
+    "url": "https://razzle.lol"
+  }
+}
+</script>
+<style>
+  /* ===== HERO ===== */
+  .hero {
+    text-align: center;
+    padding: 72px 24px 48px;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .hero-mascot {
+    font-size: 80px;
+    filter: drop-shadow(4px 4px 0 var(--shadow-drop));
+    transform: rotate(-3deg);
+    display: inline-block;
+    margin-bottom: 20px;
+  }
+
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: 38px;
+    letter-spacing: -1px;
+    line-height: 1.15;
+    margin-bottom: 12px;
+  }
+
+  .hero h1 span { color: var(--orange); }
+
+  .hero-sub {
+    font-family: var(--font-mono);
+    font-size: 20px;
+    color: var(--ink-medium);
+    margin-bottom: 32px;
+    line-height: 1.3;
+  }
+
+  .hero-cta {
+    display: inline-flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .btn-hero {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    padding: 14px 32px;
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: box-shadow 0.15s, transform 0.15s;
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+
+  .btn-hero:hover {
+    box-shadow: 6px 6px 0 var(--ink);
+    transform: translate(-2px, -2px);
+  }
+
+  .btn-hero:focus-visible {
+    outline: 2px solid var(--orange);
+    outline-offset: 2px;
+  }
+
+  .btn-hero:active {
+    transform: translate(0, 0);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+
+  .btn-hero-primary {
+    background: var(--orange);
+    color: var(--text-on-accent);
+  }
+
+  .btn-hero-secondary {
+    background: var(--bg-card);
+    color: var(--ink);
+  }
+  .mobile-signup-cta { display: none; }
+  @media (max-width: 768px) {
+    .mobile-signup-cta { display: inline-block; }
+    .desktop-only-cta { display: none; }
+  }
+
+  /* ===== SCREENER VISUAL ===== */
+  .screener-visual {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0 24px 48px;
+    text-align: center;
+  }
+
+  .screener-visual-card {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: var(--radius);
+    box-shadow: 4px 4px 0 var(--ink);
+    overflow: hidden;
+  }
+
+  .screener-visual-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-bottom: 3px solid var(--ink);
+  }
+
+  .screener-visual-placeholder {
+    background: var(--bg-warm);
+    padding: 64px 24px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-light);
+    border-bottom: 3px solid var(--ink);
+    position: relative;
+    overflow: hidden;
+    min-height: 200px;
+  }
+
+  /* Fake screener table rows for visual interest */
+  .screener-visual-placeholder .fake-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 8px 16px;
+    border-bottom: 2px dashed var(--border-dashed);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .screener-visual-placeholder .fake-row:last-child { border-bottom: none; }
+
+  .fake-rank {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-light);
+    width: 24px;
+    text-align: right;
+  }
+
+  .fake-pos {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-on-accent);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--ink);
+  }
+
+  .fake-name {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    flex: 1;
+  }
+
+  .fake-stat {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-medium);
+  }
+
+  .screener-visual-footer {
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .screener-visual-footer p {
+    font-family: var(--font-hand);
+    font-size: 20px;
+    color: var(--ink-medium);
+    margin: 0;
+  }
+
+  /* ===== SINGLE-LINE SECTIONS ===== */
+  .lp-section {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 24px;
+    text-align: center;
+  }
+
+  .lp-section h2 {
+    font-family: var(--font-display);
+    font-size: 24px;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+
+  .lp-section h2 span { color: var(--orange); }
+
+  .lp-section p {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    color: var(--ink-medium);
+    margin-bottom: 20px;
+    line-height: 1.4;
+  }
+
+  .lp-divider {
+    width: 60px;
+    height: 3px;
+    background: var(--ink-faint);
+    margin: 0 auto 48px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* ===== BRIEFING CARDS ===== */
+  .briefing-example {
+    max-width: 600px;
+    margin: 20px auto 0;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .demo-card {
+    background: var(--bg-ink);
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 20px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: #c4b5a5;
+  }
+
+  .demo-card .agent-name {
+    font-family: var(--font-display);
+    font-size: 16px;
+    color: var(--yellow);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .demo-card .urgency {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    border: 2px solid;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .urgency-urgent { color: var(--red); border-color: var(--red); }
+  .urgency-monitor { color: var(--yellow); border-color: var(--yellow); }
+  .urgency-opportunity { color: var(--green); border-color: var(--green); }
+
+  .redacted {
+    background: var(--ink-medium);
+    color: var(--ink-medium);
+    border-radius: var(--radius-sm);
+    padding: 0 8px;
+    user-select: none;
+  }
+
+  /* ===== FEATURE CARDS ===== */
+  .feature-card {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 20px;
+    transition: box-shadow 0.15s, transform 0.15s;
+  }
+  .feature-card:hover {
+    box-shadow: 6px 6px 0 var(--ink);
+    transform: translate(-2px, -2px);
+  }
+
+  .feature-card-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+
+  .feature-card-title {
+    font-family: var(--font-display);
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+
+  .feature-card-desc {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-medium);
+    line-height: 1.5;
+  }
+
+  /* ===== SMART FILTER CHIPS ===== */
+  .smart-chip {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    background: var(--bg-card);
+    padding: 8px 18px;
+    border: 3px solid var(--ink);
+    border-radius: 20px;
+    box-shadow: 4px 4px 0 var(--ink);
+    text-decoration: none;
+    transition: background-color 0.15s, color 0.15s, transform 0.15s, box-shadow 0.15s;
+  }
+  .smart-chip:nth-child(odd) { transform: rotate(-1deg); }
+  .smart-chip:nth-child(even) { transform: rotate(1deg); }
+  .smart-chip:hover {
+    background: var(--orange);
+    color: var(--text-on-accent);
+    transform: translate(-2px, -2px) rotate(0deg);
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+
+  /* ===== MINI SCREENER ===== */
+  .mini-tab {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 16px;
+    border: none;
+    background: var(--bg-card);
+    color: var(--ink-light);
+    cursor: pointer;
+    flex: 1;
+    transition: background-color 0.15s, color 0.15s;
+  }
+  .mini-tab.active { background: var(--orange); color: var(--text-on-accent); }
+  .mini-tab:hover:not(.active) { background: var(--bg-warm); }
+
+  .mini-screener-body {
+    max-height: 360px;
+    overflow-y: auto;
+  }
+
+  .mini-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .mini-table th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--ink-light);
+    padding: 6px 8px;
+    border-bottom: 2px solid var(--ink-faint);
+    text-align: center;
+    cursor: default;
+  }
+  .mini-table th.mini-sortable { cursor: pointer; }
+  .mini-table th.mini-sortable:hover { color: var(--orange); }
+  .mini-table th.sort-active { color: var(--orange); font-weight: 700; }
+
+  .mini-table td {
+    padding: 5px 8px;
+    border-bottom: 2px dashed var(--border-dashed);
+    text-align: center;
+  }
+  .mini-table tr { cursor: pointer; transition: background 0.1s; }
+  .mini-table tbody tr:hover { background: var(--bg-warm); }
+
+  /* ===== SOCIAL PROOF CARDS ===== */
+  .social-card {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: var(--radius-sm);
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 16px;
+    transition: box-shadow 0.15s, transform 0.15s;
+  }
+  .social-card:hover {
+    box-shadow: 6px 6px 0 var(--ink);
+    transform: translate(-2px, -2px);
+  }
+  .social-card-context {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--orange);
+    margin-bottom: 8px;
+  }
+  .social-card-text {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink);
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+  .social-card-user {
+    font-family: var(--font-hand);
+    font-size: 13px;
+    color: var(--ink-light);
+  }
+
+  .mini-pos {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-on-accent);
+    padding: 1px 5px;
+    border-radius: var(--radius-sm);
+    display: inline-block;
+  }
+
+  /* ===== PRICING ===== */
+  .pricing-section {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 48px 24px;
+    text-align: center;
+  }
+
+  .pricing-section h2 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    margin-bottom: 8px;
+  }
+
+  .pricing-section h2 span { color: var(--orange); }
+
+  .pricing-cols {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 24px 0 16px;
+  }
+
+  .pricing-card {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 28px 24px 24px;
+    text-align: center;
+    min-width: 200px;
+    max-width: 280px;
+    flex: 1;
+  }
+
+  .pricing-card--free {
+    border-color: var(--pos-rb);
+    position: relative;
+  }
+  .pricing-badge--free {
+    background: var(--pos-rb);
+    color: var(--text-on-accent);
+  }
+  .pricing-card--highlight {
+    border-color: var(--orange);
+    position: relative;
+  }
+
+  .pricing-card--elite {
+    border-color: var(--purple);
+    box-shadow: 4px 4px 0 var(--purple);
+    position: relative;
+  }
+
+  .pricing-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-2deg);
+    background: var(--orange);
+    color: var(--bg);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 14px;
+    border-radius: 20px;
+    border: 2px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+    white-space: nowrap;
+  }
+
+  .pricing-badge--elite {
+    background: var(--purple);
+    color: var(--text-on-accent);
+  }
+
+  .pricing-name {
+    font-family: var(--font-display);
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+
+  .pricing-price {
+    font-family: var(--font-display);
+    font-size: 32px;
+    color: var(--orange);
+  }
+
+  .pricing-price span {
+    font-size: 14px;
+    color: var(--ink-light);
+  }
+
+  .pricing-note {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-light);
+    margin-top: 2px;
+  }
+
+  .pricing-list {
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    margin: 16px 0;
+    padding-left: 18px;
+    line-height: 1.9;
+    color: var(--ink-medium);
+  }
+
+  .pricing-list li.highlight {
+    color: var(--orange);
+    font-weight: 700;
+  }
+
+  /* ===== FOOTER ===== */
+  .site-footer {
+    text-align: center;
+    padding: 32px 24px;
+    border-top: 3px solid var(--ink);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-light);
+  }
+
+  .site-footer a { color: var(--orange); text-decoration: none; font-weight: 700; }
+
+  /* ===== MOBILE ===== */
+  @media (max-width: 768px) {
+    .hero { padding: 48px 16px 32px; }
+    .hero-mascot { font-size: 56px; }
+    .hero h1 { font-size: 32px; }
+    .hero-sub { font-size: 20px; }
+    .btn-hero { font-size: 14px; padding: 10px 22px; }
+
+    .screener-visual { padding: 0 16px 32px; }
+    .lp-section { padding: 32px 16px; }
+    .lp-section h2 { font-size: 20px; }
+
+    .pricing-section { padding: 32px 16px; }
+    .pricing-cols { flex-direction: column; align-items: center; }
+    .pricing-card { max-width: 100%; }
+  }
+
+  @media (max-width: 480px) {
+    html, body { overflow-x: hidden; }
+    .hero h1 { font-size: 24px; }
+    .hero-sub { font-size: 18px; }
+    .hero-cta { flex-direction: column; align-items: center; }
+    .btn-hero { width: 100%; max-width: 260px; text-align: center; }
+    .lp-section h2 { font-size: 20px; }
+  }
+  @media (max-width: 375px) {
+    .hero { padding: 40px 12px 24px; }
+    .hero h1 { font-size: 20px; }
+    .hero-sub { font-size: 16px; }
+    .pricing-name { font-size: 18px; }
+    .pricing-price { font-size: 20px; }
+    .pricing-card { padding: 20px 12px; }
+  }
+
+  /* Room cards — hover lift */
+  .room-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    border-color: var(--orange) !important;
+  }
+
+  /* Trophy shelf grid — stack on mobile */
+  @media (max-width: 768px) {
+    .trophy-shelf-grid {
+      grid-template-columns: 1fr !important;
+      gap: 16px !important;
+      padding: 24px 16px !important;
+    }
+  }
+
+  /* Dark mode overrides */
+  [data-theme="dark"] .pricing-badge {
+    color: #fff;
+  }
+  [data-theme="dark"] .pricing-badge--free {
+    color: #fff;
+  }
+  [data-theme="dark"] .pricing-badge--elite {
+    color: #fff;
+  }
+  [data-theme="dark"] .pricing-card {
+    background: var(--bg-card);
+  }
+  [data-theme="dark"] .pricing-list {
+    color: var(--ink-medium);
+  }
+</style>
+</head>
+<body class="has-bg-scene">
+
+
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- ===== SUNDAY MORNING SCENE — Full Background ===== -->
+<div class="bg-scene" aria-hidden="true">
+
+  <!-- 1. NEWSPAPER — white paper, black ink, comic strip style -->
+  <div class="bg-scene__obj bg-scene__obj--sway" style="top:6%;left:50%;margin-left:-230px;--r:5deg;">
+    <svg width="460" height="360" viewBox="0 0 460 360">
+      <rect x="10" y="10" width="444" height="344" rx="4" fill="#1a1a1a" stroke="none"/>
+      <rect x="4" y="4" width="444" height="344" rx="4" fill="#FFFEF8" stroke="#111" stroke-width="5" stroke-linejoin="round"/>
+      <rect x="16" y="14" width="420" height="8" rx="2" fill="#111" stroke="none"/>
+      <rect x="24" y="32" width="300" height="22" rx="3" fill="#0a0a0a" stroke="none"/>
+      <rect x="24" y="60" width="220" height="14" rx="2" fill="#333" stroke="none"/>
+      <rect x="16" y="82" width="420" height="5" rx="1" fill="#111" stroke="none"/>
+      <rect x="160" y="96" width="3" height="240" fill="#ccc" stroke="none"/>
+      <rect x="310" y="96" width="3" height="240" fill="#ccc" stroke="none"/>
+      <rect x="22" y="102" width="128" height="7" rx="2" fill="#333" stroke="none"/>
+      <rect x="22" y="116" width="120" height="7" rx="2" fill="#444" stroke="none"/>
+      <rect x="22" y="130" width="126" height="7" rx="2" fill="#333" stroke="none"/>
+      <rect x="22" y="144" width="110" height="7" rx="2" fill="#444" stroke="none"/>
+      <rect x="22" y="158" width="124" height="7" rx="2" fill="#333" stroke="none"/>
+      <rect x="22" y="172" width="118" height="7" rx="2" fill="#444" stroke="none"/>
+      <rect x="172" y="102" width="128" height="7" rx="2" fill="#333" stroke="none"/>
+      <rect x="172" y="116" width="118" height="7" rx="2" fill="#444" stroke="none"/>
+      <rect x="172" y="130" width="130" height="7" rx="2" fill="#333" stroke="none"/>
+      <rect x="172" y="144" width="112" height="7" rx="2" fill="#444" stroke="none"/>
+      <rect x="322" y="152" width="118" height="110" rx="4" fill="#f0ede5" stroke="#222" stroke-width="3"/>
+      <rect x="330" y="160" width="70" height="10" rx="2" fill="#111" stroke="none"/>
+      <rect x="330" y="178" width="100" height="3" fill="#888" stroke="none"/>
+      <rect x="330" y="190" width="100" height="3" fill="#888" stroke="none"/>
+      <rect x="330" y="202" width="100" height="3" fill="#888" stroke="none"/>
+      <ellipse cx="90" cy="165" rx="62" ry="38" fill="none" stroke="#E53935" stroke-width="4.5" stroke-linecap="round"/>
+      <rect x="4" y="176" width="444" height="2" fill="#ddd8cc" stroke="none"/>
+    </svg>
+  </div>
+
+  <!-- 2. COFFEE MUG — top-down with saucer and steam -->
+  <div class="bg-scene__obj bg-scene__obj--rock" style="top:4%;right:5%;--r:-8deg;">
+    <svg width="200" height="200" viewBox="0 0 200 200">
+      <ellipse cx="94" cy="108" rx="82" ry="78" fill="#1a1a1a" stroke="none" opacity="0.25"/>
+      <ellipse cx="90" cy="104" rx="82" ry="78" fill="#e8e0d4" stroke="#222" stroke-width="4.5"/>
+      <ellipse cx="90" cy="100" rx="58" ry="56" fill="#FFFDF5" stroke="#111" stroke-width="5"/>
+      <ellipse cx="90" cy="100" rx="50" ry="48" fill="#2B1400" stroke="#3a2010" stroke-width="2"/>
+      <path d="M55 90 Q65 74 90 82 Q118 92 100 108 Q86 118 68 108 Q52 100 58 92" fill="#E8854A" stroke="none" opacity="0.85"/>
+      <circle cx="68" cy="82" r="8" fill="#fff" stroke="none" opacity="0.5"/>
+      <path d="M148 72 Q182 72 182 100 Q182 128 148 128" fill="none" stroke="#111" stroke-width="5" stroke-linecap="round"/>
+      <path d="M148 80 Q172 80 172 100 Q172 120 148 120" fill="#FFFDF5" stroke="none"/>
+    </svg>
+    <div class="bg-scene__steam" style="left:60px;top:-14px;animation-delay:-0.3s;width:10px;height:10px;background:rgba(255,255,255,0.85);"></div>
+    <div class="bg-scene__steam" style="left:80px;top:-20px;animation-delay:-1.8s;width:12px;height:12px;background:rgba(255,255,255,0.75);"></div>
+    <div class="bg-scene__steam" style="left:100px;top:-10px;animation-delay:-3.2s;width:9px;height:9px;background:rgba(255,255,255,0.8);"></div>
+  </div>
+
+  <!-- 3. CLIPBOARD — brown board, position color labels -->
+  <div class="bg-scene__obj bg-scene__obj--sway bg-scene__obj--tablet-hide" style="top:28%;left:2%;--r:-7deg;">
+    <svg width="200" height="280" viewBox="0 0 200 280">
+      <rect x="10" y="22" width="184" height="252" rx="8" fill="#1a1a1a" stroke="none"/>
+      <rect x="4" y="16" width="184" height="252" rx="8" fill="#8B6914" stroke="#111" stroke-width="5" stroke-linejoin="round"/>
+      <rect x="16" y="42" width="160" height="216" rx="3" fill="#FFFEF8" stroke="#111" stroke-width="3"/>
+      <rect x="54" y="4" width="84" height="32" rx="6" fill="#C0C0C0" stroke="#111" stroke-width="4.5"/>
+      <rect x="26" y="82" width="32" height="14" rx="4" fill="#5B7FFF" stroke="#111" stroke-width="2"/>
+      <rect x="66" y="86" width="90" height="6" rx="2" fill="#555" stroke="none"/>
+      <rect x="26" y="104" width="32" height="14" rx="4" fill="#2EC4B6" stroke="#111" stroke-width="2"/>
+      <rect x="66" y="108" width="82" height="6" rx="2" fill="#555" stroke="none"/>
+      <rect x="26" y="148" width="32" height="14" rx="4" fill="#D97757" stroke="#111" stroke-width="2"/>
+      <rect x="66" y="152" width="88" height="6" rx="2" fill="#555" stroke="none"/>
+      <rect x="26" y="192" width="32" height="14" rx="4" fill="#8B5CF6" stroke="#111" stroke-width="2"/>
+      <rect x="66" y="196" width="72" height="6" rx="2" fill="#555" stroke="none"/>
+      <line x1="60" y1="221" x2="158" y2="221" stroke="#E53935" stroke-width="3.5" stroke-linecap="round"/>
+      <rect x="66" y="236" width="78" height="6" rx="2" fill="#2EC4B6" stroke="none"/>
+    </svg>
+  </div>
+
+  <!-- 4. YELLOW PENCIL -->
+  <div class="bg-scene__obj bg-scene__obj--drift" style="bottom:20%;left:12%;--r:28deg;">
+    <svg width="340" height="44" viewBox="0 0 340 44">
+      <rect x="32" y="11" width="260" height="26" rx="3" fill="#1a1a1a" stroke="none"/>
+      <rect x="28" y="6" width="260" height="26" rx="3" fill="#FFD600" stroke="#111" stroke-width="4.5" stroke-linejoin="round"/>
+      <polygon points="0,19 28,6 28,32" fill="#FFD600" stroke="#111" stroke-width="4.5" stroke-linejoin="round"/>
+      <polygon points="8,19 28,10 28,28" fill="#DEBB72" stroke="none"/>
+      <polygon points="0,19 10,15 10,23" fill="#333" stroke="none"/>
+      <rect x="288" y="6" width="22" height="26" rx="2" fill="#C0C0C0" stroke="#111" stroke-width="4"/>
+      <rect x="310" y="8" width="24" height="22" rx="6" fill="#E75480" stroke="#111" stroke-width="4"/>
+    </svg>
+  </div>
+
+  <!-- 5. TORN STAT SCRAP -->
+  <div class="bg-scene__obj bg-scene__obj--rock bg-scene__obj--tablet-hide" style="top:48%;right:3%;--r:-5deg;">
+    <svg width="200" height="150" viewBox="0 0 200 150">
+      <path d="M6 4 L190 4 L190 132 L174 126 L158 134 L142 127 L126 136 L110 128 L94 134 L78 126 L62 132 L46 124 L30 130 L14 124 L6 128 Z" fill="#FFFEF8" stroke="#111" stroke-width="4.5" stroke-linejoin="round"/>
+      <rect x="16" y="16" width="66" height="12" rx="3" fill="#111" stroke="none"/>
+      <line x1="16" y1="36" x2="178" y2="36" stroke="#111" stroke-width="2.5"/>
+      <rect x="16" y="44" width="160" height="5" rx="1" fill="#555" stroke="none"/>
+      <rect x="16" y="56" width="148" height="5" rx="1" fill="#666" stroke="none"/>
+      <rect x="16" y="68" width="156" height="5" rx="1" fill="#555" stroke="none"/>
+      <rect x="16" y="80" width="140" height="5" rx="1" fill="#666" stroke="none"/>
+      <rect x="84" y="52" width="70" height="14" rx="3" fill="#4AE54A" stroke="none" opacity="0.55"/>
+      <circle cx="148" cy="58" r="18" fill="none" stroke="#E53935" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <!-- 6. TIGER PAW PRINTS -->
+  <svg class="bg-scene__paw bg-scene__paw--pulse" style="bottom:10%;left:36%;" width="70" height="75" viewBox="0 0 70 75">
+    <ellipse cx="35" cy="50" rx="17" ry="19" fill="#E8854A" stroke="#111" stroke-width="3.5"/>
+    <ellipse cx="16" cy="26" rx="9" ry="11" fill="#E8854A" stroke="#111" stroke-width="3"/>
+    <ellipse cx="35" cy="16" rx="9" ry="11" fill="#E8854A" stroke="#111" stroke-width="3"/>
+    <ellipse cx="54" cy="26" rx="9" ry="11" fill="#E8854A" stroke="#111" stroke-width="3"/>
+  </svg>
+  <svg class="bg-scene__paw" style="bottom:19%;left:28%;opacity:0.5;" width="55" height="60" viewBox="0 0 70 75">
+    <ellipse cx="35" cy="50" rx="17" ry="19" fill="#E8854A" stroke="#111" stroke-width="3.5"/>
+    <ellipse cx="16" cy="26" rx="9" ry="11" fill="#E8854A" stroke="#111" stroke-width="3"/>
+    <ellipse cx="35" cy="16" rx="9" ry="11" fill="#E8854A" stroke="#111" stroke-width="3"/>
+    <ellipse cx="54" cy="26" rx="9" ry="11" fill="#E8854A" stroke="#111" stroke-width="3"/>
+  </svg>
+  <svg class="bg-scene__paw" style="bottom:27%;left:21%;opacity:0.25;" width="40" height="44" viewBox="0 0 70 75">
+    <ellipse cx="35" cy="50" rx="17" ry="19" fill="#E8854A" stroke="#111" stroke-width="3.5"/>
+    <ellipse cx="16" cy="26" rx="9" ry="11" fill="#E8854A" stroke="#111" stroke-width="3"/>
+    <ellipse cx="35" cy="16" rx="9" ry="11" fill="#E8854A" stroke="#111" stroke-width="3"/>
+    <ellipse cx="54" cy="26" rx="9" ry="11" fill="#E8854A" stroke="#111" stroke-width="3"/>
+  </svg>
+
+</div>
+<!-- ===== END SUNDAY MORNING SCENE ===== -->
+
+<!-- NAV -->
+<div id="site-header" data-page="home"></div>
+
+<main id="main-content">
+
+<!-- HERO -->
+<section class="hero" style="padding:80px 24px 40px;">
+  <div class="hero-mascot" role="img" aria-label="Razzle tiger mascot">🐯</div>
+  <h1>Your leaguemates use rankings. <span>You're going to use the war machine.</span></h1>
+  <div class="hero-sub" style="margin-bottom:24px;">A full analytics operation for your league.</div>
+  <div class="hero-cta">
+    <a href="/lab.html" class="btn-hero btn-hero-primary">Open the Lab</a>
+  </div>
+</section>
+
+<!-- THE TROPHY SHELF — three rooms displayed like championship hardware -->
+<section style="max-width:1040px; margin:0 auto; padding:0 24px 32px; position:relative;">
+
+  <!-- Shelf label -->
+  <div style="text-align:center; margin-bottom:24px;">
+    <div style="font-family:var(--font-display); font-size:28px; color:var(--ink); letter-spacing:-0.5px;">The War Machine</div>
+    <div style="font-family:var(--font-hand); font-size:16px; color:var(--ink-light); margin-top:4px;">three rooms. one operation.</div>
+  </div>
+
+  <!-- The shelf — dark background, three trophies side by side -->
+  <div class="trophy-shelf-grid" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; position:relative;">
+
+
+    <!-- ROOM 1: THE LAB — trophy on a shelf -->
+    <a href="/lab.html" class="room-card" style="text-decoration:none; color:#ede0cf; display:flex; flex-direction:column; align-items:center; text-align:center; padding:20px 16px 20px; background:transparent; transition:transform 0.15s; position:relative;">
+      <!-- The trophy shape — beaker/flask silhouette -->
+      <svg width="100" height="140" viewBox="0 0 100 140" style="margin-bottom:12px;">
+        <!-- base -->
+        <rect x="20" y="120" width="60" height="14" rx="4" fill="#2EC4B6" stroke="#111" stroke-width="3.5"/>
+        <!-- pillar -->
+        <rect x="38" y="90" width="24" height="34" rx="2" fill="#2EC4B6" stroke="#111" stroke-width="3"/>
+        <!-- flask body -->
+        <path d="M18 30 Q18 90 50 90 Q82 90 82 30" fill="#2EC4B6" stroke="#111" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M26 34 Q26 82 50 82 Q74 82 74 34" fill="#3DD4C6" stroke="none" opacity="0.5"/>
+        <!-- flask rim -->
+        <ellipse cx="50" cy="30" rx="34" ry="10" fill="#2EC4B6" stroke="#111" stroke-width="4"/>
+        <ellipse cx="50" cy="30" rx="26" ry="7" fill="#4AE8DA" stroke="none"/>
+        <!-- bubbles inside -->
+        <circle cx="38" cy="60" r="5" fill="#fff" stroke="none" opacity="0.4"/>
+        <circle cx="55" cy="50" r="3" fill="#fff" stroke="none" opacity="0.3"/>
+        <circle cx="62" cy="68" r="4" fill="#fff" stroke="none" opacity="0.35"/>
+        <!-- star on base -->
+        <polygon points="50,124 53,128 57,128 54,131 55,135 50,132 45,135 46,131 43,128 47,128" fill="#fff" stroke="none" opacity="0.6"/>
+      </svg>
+      <div style="font-family:var(--font-display); font-size:24px; margin-bottom:6px; color:#ede0cf; letter-spacing:-0.5px;">Fourth Down Lab</div>
+      <div style="font-family:var(--font-mono); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--green); margin-bottom:8px;">The Screener is forever free</div>
+      <div style="font-family:var(--font-mono); font-size:12px; color:#8a7565; line-height:1.6; flex:1;">100+ stat columns. Custom formulas. 68 tools.</div>
+      <div style="font-family:var(--font-mono); font-size:12px; font-weight:700; color:var(--green); margin-top:14px;">Open the Lab &rarr;</div>
+    </a>
+
+    <!-- ROOM 2: BUREAU — magnifying glass trophy -->
+    <a href="/league-intel.html" class="room-card" style="text-decoration:none; color:#ede0cf; display:flex; flex-direction:column; align-items:center; text-align:center; padding:20px 16px 20px; background:transparent; transition:transform 0.15s; position:relative;">
+      <svg width="120" height="140" viewBox="0 0 120 140" style="margin-bottom:12px;">
+        <!-- base -->
+        <rect x="24" y="120" width="72" height="14" rx="4" fill="#5B7FFF" stroke="#111" stroke-width="3.5"/>
+        <!-- handle -->
+        <rect x="50" y="88" width="14" height="36" rx="4" fill="#5B7FFF" stroke="#111" stroke-width="3" transform="rotate(30,57,106)"/>
+        <!-- glass outer -->
+        <circle cx="52" cy="52" r="40" fill="#5B7FFF" stroke="#111" stroke-width="4"/>
+        <circle cx="52" cy="52" r="32" fill="#3356CC" stroke="none" opacity="0.4"/>
+        <!-- glass inner — the lens -->
+        <circle cx="52" cy="52" r="28" fill="#1a2040" stroke="#4A6FEF" stroke-width="2.5"/>
+        <!-- eye/crosshair inside -->
+        <circle cx="52" cy="52" r="8" fill="none" stroke="#5B7FFF" stroke-width="2" opacity="0.6"/>
+        <line x1="52" y1="38" x2="52" y2="66" stroke="#5B7FFF" stroke-width="1.5" opacity="0.3"/>
+        <line x1="38" y1="52" x2="66" y2="52" stroke="#5B7FFF" stroke-width="1.5" opacity="0.3"/>
+        <!-- glint -->
+        <circle cx="40" cy="40" r="6" fill="#fff" stroke="none" opacity="0.35"/>
+        <!-- nameplate -->
+        <rect x="34" y="124" width="52" height="6" rx="2" fill="#4A6FEF" stroke="none" opacity="0.5"/>
+      </svg>
+      <div style="font-family:var(--font-display); font-size:24px; margin-bottom:6px; color:#ede0cf; letter-spacing:-0.5px;">Bureau of Intelligence</div>
+      <div style="font-family:var(--font-mono); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--blue); margin-bottom:8px;">Connect your Sleeper league</div>
+      <div style="font-family:var(--font-mono); font-size:12px; color:#8a7565; line-height:1.6; flex:1;">Championship odds. Roster grades. Trade targets.</div>
+      <div style="font-family:var(--font-mono); font-size:12px; font-weight:700; color:var(--blue); margin-top:14px;">Scout your league &rarr;</div>
+    </a>
+
+    <!-- ROOM 3: SITUATION ROOM — championship trophy, the crown jewel -->
+    <a href="/agents.html" class="room-card" style="text-decoration:none; color:#ede0cf; display:flex; flex-direction:column; align-items:center; text-align:center; padding:20px 16px 20px; background:transparent; transition:transform 0.15s; position:relative;">
+      <!-- pro sticker -->
+      <div style="position:absolute;top:4px;right:4px;font-family:var(--font-mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#fff;background:var(--orange);padding:3px 10px;border-radius:20px;border:2px solid var(--ink);box-shadow:3px 3px 0 var(--ink);transform:rotate(5deg);">Pro</div>
+      <svg width="120" height="140" viewBox="0 0 120 140" style="margin-bottom:12px;">
+        <!-- base -->
+        <rect x="20" y="120" width="80" height="14" rx="4" fill="#D97757" stroke="#111" stroke-width="3.5"/>
+        <!-- nameplate -->
+        <rect x="32" y="124" width="56" height="6" rx="2" fill="#E8A060" stroke="none" opacity="0.5"/>
+        <!-- pillar -->
+        <rect x="46" y="92" width="28" height="32" rx="3" fill="#D97757" stroke="#111" stroke-width="3"/>
+        <!-- cup body -->
+        <path d="M14 30 Q14 92 60 92 Q106 92 106 30" fill="#D97757" stroke="#111" stroke-width="4.5" stroke-linejoin="round"/>
+        <path d="M22 34 Q22 84 60 84 Q98 84 98 34" fill="#E8854A" stroke="none" opacity="0.5"/>
+        <!-- cup rim -->
+        <ellipse cx="60" cy="30" rx="48" ry="14" fill="#D97757" stroke="#111" stroke-width="4.5"/>
+        <ellipse cx="60" cy="30" rx="38" ry="10" fill="#F0A060" stroke="none"/>
+        <!-- handles -->
+        <path d="M14 38 Q-6 38 -6 58 Q-6 78 14 78" fill="none" stroke="#111" stroke-width="4" stroke-linecap="round"/>
+        <path d="M14 44 Q2 44 2 58 Q2 72 14 72" fill="#D97757" stroke="none"/>
+        <path d="M106 38 Q126 38 126 58 Q126 78 106 78" fill="none" stroke="#111" stroke-width="4" stroke-linecap="round"/>
+        <path d="M106 44 Q118 44 118 58 Q118 72 106 72" fill="#D97757" stroke="none"/>
+        <!-- tiger face on cup -->
+        <circle cx="60" cy="58" r="14" fill="#E8854A" stroke="#111" stroke-width="2.5"/>
+        <circle cx="54" cy="54" r="3" fill="#111" stroke="none"/>
+        <circle cx="66" cy="54" r="3" fill="#111" stroke="none"/>
+        <path d="M55 62 Q60 66 65 62" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+        <!-- star on cup -->
+        <polygon points="60,18 63,24 70,24 65,28 67,35 60,31 53,35 55,28 50,24 57,24" fill="#FFD600" stroke="#111" stroke-width="1.5"/>
+      </svg>
+      <div style="font-family:var(--font-display); font-size:24px; margin-bottom:6px; color:#ede0cf; letter-spacing:-0.5px;">Situation Room</div>
+      <div style="font-family:var(--font-mono); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--orange); margin-bottom:8px;">6 AI agents for your league</div>
+      <div style="font-family:var(--font-mono); font-size:12px; color:#8a7565; line-height:1.6; flex:1;">Personalized briefings. Trade strategies. The intelligence layer.</div>
+      <div style="font-family:var(--font-mono); font-size:12px; font-weight:700; color:var(--orange); margin-top:14px;">Enter the Room &rarr;</div>
+    </a>
+
+  </div>
+
+
+</section>
+
+<!-- CLOSING CTA -->
+<section class="lp-section" style="padding:20px 24px 48px;">
+  <p style="font-family:var(--font-hand); font-size:20px; color:var(--ink-medium); margin-bottom:16px;">the tool your leaguemates don't know about yet</p>
+  <a href="/pricing.html" style="font-family:var(--font-mono); font-size:13px; color:var(--orange); font-weight:700;">See all plans &rarr;</a>
+</section>
+
+</main>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(typeof apiFetch!=='undefined'?apiFetch:fetch)("/api/analytics/pageview",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({page:location.pathname})}).catch(function(){});
+
+// Update pricing CTA based on user state (tier-aware)
+function _updateHomeCTAs() {
+  try {
+    var t = typeof getUserTierInfo === 'function' ? getUserTierInfo() : { plan: 'none', loggedIn: false, isTrial: false, isPaid: false, isElite: false, isExpiredTrial: false, daysLeft: 0, hoursLeft: 0 };
+    var pro = document.getElementById('homeProCta');
+    var elite = document.getElementById('homeEliteCta');
+    var trialNote = document.querySelector('[data-cta-trial-note]');
+
+    // Update button text
+    if (pro) pro.textContent = typeof getProCtaText === 'function' ? getProCtaText() : 'Get Pro';
+
+    // Paid users: redirect to Situation Room instead of checkout
+    if (t.isPaid && !t.isTrial) {
+      if (pro) { pro.textContent = 'Enter the Situation Room'; pro.onclick = function(){ window.location='/agents.html'; }; }
+      if (elite && t.isElite) { elite.textContent = 'Enter the Situation Room'; elite.onclick = function(){ window.location='/agents.html'; }; }
+      else if (elite && !t.isElite) { elite.textContent = 'Upgrade to Elite'; }
+    }
+
+    // Update trial note text
+    if (trialNote) {
+      if (t.isTrial) {
+        trialNote.textContent = "You're on Pro (" + (t.daysLeft >= 1 ? t.daysLeft + " day" + (t.daysLeft !== 1 ? "s" : "") : (t.hoursLeft > 0 ? t.hoursLeft + " hour" + (t.hoursLeft !== 1 ? "s" : "") : "less than 1 hour")) + " left). Subscribe to keep your access.";
+      } else if (t.isExpiredTrial) {
+        trialNote.textContent = "Your trial ended. Subscribe to keep Pro access.";
+      } else if (t.isPaid) {
+        trialNote.textContent = "";
+      }
+    }
+  } catch(e) {}
+}
+_updateHomeCTAs();
+// Re-run when auth state changes (async checkAuth or plan change)
+window.addEventListener('razzle-plan-changed', _updateHomeCTAs);
+
+// ─── Live Mini-Screener ──────────────────────────────────────────
+var _miniData = [];
+var _miniPos = '';
+var _miniSort = function(key) { /* defined below */ };
+var _miniSortKey = 'fantasy_points_ppr';
+var _miniSortDir = 'desc';
+
+var POS_COLORS = { QB: 'var(--pos-qb)', RB: 'var(--pos-rb)', WR: 'var(--pos-wr)', TE: 'var(--pos-te)' };
+
+function _escHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function _renderMiniRows() {
+  var tbody = document.getElementById('miniScreenerRows');
+  if (!tbody) return;
+  var filtered = _miniPos ? _miniData.filter(function(p) { return p.position === _miniPos; }) : _miniData;
+  // Sort
+  filtered.sort(function(a, b) {
+    var va = a[_miniSortKey] || 0, vb = b[_miniSortKey] || 0;
+    return _miniSortDir === 'desc' ? vb - va : va - vb;
+  });
+  var rows = filtered.slice(0, 15);
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:24px; font-family:var(--font-hand); color:var(--ink-light);">no players found</td></tr>';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < rows.length; i++) {
+    var p = rows[i];
+    var posCol = POS_COLORS[p.position] || 'var(--ink-light)';
+    html += '<tr onclick="window.location=\'/lab.html?search=' + encodeURIComponent(p.name) + '\'">';
+    html += '<td style="color:var(--ink-light);">' + (i + 1) + '</td>';
+    html += '<td><span class="mini-pos" style="background:' + posCol + ';">' + _escHtml(p.position || '') + '</span></td>';
+    html += '<td style="text-align:left; font-weight:600;">' + _escHtml(p.name || '') + '</td>';
+    html += '<td>' + (p.fantasy_points_ppr != null ? p.fantasy_points_ppr.toFixed(1) : '-') + '</td>';
+    html += '<td>' + (p.games != null ? p.games : '-') + '</td>';
+    html += '<td>' + (p.age != null ? p.age : '-') + '</td>';
+    html += '</tr>';
+  }
+  tbody.innerHTML = html;
+  // Update sort headers
+  document.querySelectorAll('.mini-sortable').forEach(function(th) {
+    var isActive = th.getAttribute('data-sort') === _miniSortKey;
+    th.classList.toggle('sort-active', isActive);
+    th.setAttribute('aria-sort', isActive ? (_miniSortDir === 'desc' ? 'descending' : 'ascending') : 'none');
+  });
+}
+
+_miniSort = function(key) {
+  if (_miniSortKey === key) {
+    _miniSortDir = _miniSortDir === 'desc' ? 'asc' : 'desc';
+  } else {
+    _miniSortKey = key;
+    _miniSortDir = 'desc';
+  }
+  _renderMiniRows();
+};
+
+window._miniFilter = function(pos) {
+  _miniPos = pos;
+  document.querySelectorAll('.mini-tab').forEach(function(t) {
+    var isActive = t.getAttribute('data-pos') === pos;
+    t.classList.toggle('active', isActive);
+    t.setAttribute('aria-selected', String(isActive));
+  });
+  _renderMiniRows();
+};
+
+// Fetch live data
+function _fetchMiniScreener() {
+  var tbody = document.getElementById('miniScreenerRows');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:32px; font-family:var(--font-hand); color:var(--ink-light);">pulling film...</td></tr>';
+  var ctrl = new AbortController();
+  var timeoutId = setTimeout(function() { ctrl.abort(); }, 10000);
+  apiFetch('/api/players?limit=60&sort=fantasy_points_ppr&order=desc&min_games=8', { signal: ctrl.signal })
+    .then(function(data) {
+      _miniData = (data.items || data.players || []).map(function(p) {
+        return {
+          name: p.full_name || p.display_name || p.name || '',
+          position: p.position || '',
+          ppg: parseFloat(p.ppg) || 0,
+          fantasy_points_ppr: parseFloat(p.fantasy_points_ppr) || 0,
+          games: parseInt(p.games_played || p.games, 10) || 0,
+          age: parseInt(p.age, 10) || null
+        };
+      });
+      _renderMiniRows();
+    })
+    .catch(function() {
+      var tb = document.getElementById('miniScreenerRows');
+      if (tb) tb.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:24px; font-family:var(--font-hand); color:var(--ink-light);">couldn\'t reach the film room. <button type="button" onclick="_fetchMiniScreener();" style="background:none;border:none;padding:0;cursor:pointer;color:var(--orange); text-decoration:underline;font:inherit;">try again</button> or <a href="/lab.html" style="color:var(--orange);">open the screener</a> directly.</td></tr>';
+    })
+    .finally(function() { clearTimeout(timeoutId); });
+}
+_fetchMiniScreener();
+</script>
+</body>
+</html>

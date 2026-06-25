@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Career Stats Timeline — Razzle</title>
+<meta property="og:title" content="Career Stats Timeline — Razzle">
+<meta property="og:description" content="Full career arc: season-by-season stats, PPG trajectory chart, career highs, and trend direction. See where a player has been and where they're headed.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Career Stats Timeline — Razzle">
+<meta name="twitter:description" content="Full career arc: season-by-season stats, PPG trajectory chart, and career highs. See where they've been and where they're headed.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Career stats timeline on razzle.lol. Season-by-season player trajectory with PPG chart, career highs, and trend direction.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=career">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=career">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .car-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  .car-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .car-header h1 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    color: var(--ink);
+    margin: 0 0 4px;
+  }
+  .car-header .car-subtitle {
+    font-family: var(--font-hand);
+    font-size: 20px;
+    color: var(--ink-light);
+  }
+
+  /* Search */
+  .car-search-wrap {
+    max-width: 500px;
+    margin: 0 auto 28px;
+    position: relative;
+  }
+  .car-search {
+    width: 100%;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    padding: 12px 16px;
+    border: 3px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    color: var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+    box-sizing: border-box;
+  }
+  .car-search::placeholder { color: var(--ink-medium); }
+
+  .car-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    border-top: none;
+    max-height: 240px;
+    overflow-y: auto;
+    z-index: 100;
+    display: none;
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .car-dropdown-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 2px dashed var(--border-dashed);
+  }
+  .car-dropdown-item:last-child { border-bottom: none; }
+  .car-dropdown-item:hover, .car-dropdown-item.highlighted {
+    background: var(--bg-warm);
+  }
+  .car-dd-pos {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    color: var(--text-on-accent);
+    min-width: 26px;
+    text-align: center;
+  }
+  .car-dd-pos.QB { background: var(--pos-qb); }
+  .car-dd-pos.RB { background: var(--pos-rb); }
+  .car-dd-pos.WR { background: var(--pos-wr); }
+  .car-dd-pos.TE { background: var(--pos-te); }
+
+  /* Player info card */
+  .car-player-card {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 var(--ink);
+    margin-bottom: 24px;
+  }
+  .car-player-info { flex: 1; }
+  .car-player-name {
+    font-family: var(--font-display);
+    font-size: 24px;
+    color: var(--ink);
+    margin: 0 0 4px;
+  }
+  .car-player-meta {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--ink-light);
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .car-pos-badge {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: var(--radius-sm);
+    color: var(--text-on-accent);
+  }
+  .car-pos-badge.QB { background: var(--pos-qb); }
+  .car-pos-badge.RB { background: var(--pos-rb); }
+  .car-pos-badge.WR { background: var(--pos-wr); }
+  .car-pos-badge.TE { background: var(--pos-te); }
+
+  .car-trajectory-badge {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: var(--radius-sm);
+    color: var(--text-on-accent);
+  }
+  .car-trajectory-badge.rising { background: var(--green); }
+  .car-trajectory-badge.falling { background: var(--red); }
+  .car-trajectory-badge.stable { background: var(--ink-light); }
+  .car-trajectory-badge.new { background: var(--blue); }
+
+  /* Career summary chips */
+  .car-summary-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .car-chip {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    box-shadow: 4px 4px 0 var(--ink);
+    text-align: center;
+    flex: 1;
+    min-width: 120px;
+  }
+  .car-chip-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--ink-light);
+    margin-bottom: 4px;
+  }
+  .car-chip-value {
+    font-family: var(--font-mono);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .car-chip-sub {
+    font-family: var(--font-hand);
+    font-size: 13px;
+    color: var(--ink-light);
+    margin-top: 2px;
+  }
+
+  /* Chart */
+  .car-chart-wrap {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+  .car-chart-title {
+    font-family: var(--font-display);
+    font-size: 16px;
+    color: var(--ink);
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .car-canvas {
+    width: 100%;
+    height: 220px;
+    display: block;
+  }
+
+  /* Career highs */
+  .car-highs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .car-high {
+    background: var(--bg-warm);
+    border: 3px solid var(--ink);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    box-shadow: 4px 4px 0 var(--ink);
+    text-align: center;
+    flex: 1;
+    min-width: 100px;
+  }
+  .car-high-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--ink-light);
+    margin-bottom: 2px;
+  }
+  .car-high-value {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--orange);
+  }
+  .car-high-season {
+    font-family: var(--font-hand);
+    font-size: 12px;
+    color: var(--ink-light);
+  }
+
+  /* Season table */
+  .car-section-header {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 12px;
+    padding: 10px 14px;
+    border: 3px solid var(--ink);
+    border-radius: var(--radius-sm);
+    box-shadow: 4px 4px 0 var(--ink);
+    background: var(--bg-warm);
+  }
+
+  .car-table-wrap {
+    overflow-x: auto;
+    margin-bottom: 24px;
+  }
+  .car-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .car-table th {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 8px;
+    background: var(--bg-warm);
+    color: var(--ink);
+    border-bottom: 3px solid var(--ink);
+    white-space: nowrap;
+    text-align: right;
+  }
+  .car-table th:first-child { text-align: center; }
+  .car-table td {
+    padding: 8px;
+    border-bottom: 2px dashed var(--border-dashed);
+    text-align: right;
+    vertical-align: middle;
+  }
+  .car-table td:first-child {
+    text-align: center;
+    font-weight: 700;
+  }
+  .car-table tbody tr:hover { background: var(--bg-warm); }
+  .car-table .career-row {
+    font-weight: 700;
+    background: var(--bg-warm);
+    border-top: 3px solid var(--ink);
+  }
+  .car-table .peak-cell {
+    color: var(--orange);
+    font-weight: 700;
+  }
+
+  /* Actions */
+  .car-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  /* Empty state */
+  .car-empty {
+    text-align: center;
+    padding: 80px 20px;
+    font-family: var(--font-hand);
+    font-size: 20px;
+    color: var(--ink-light);
+  }
+
+  /* Loading */
+  .car-loading {
+    text-align: center;
+    padding: 60px 20px;
+    font-family: var(--font-hand);
+    font-size: 20px;
+    color: var(--ink-light);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .car-player-card { flex-direction: column; text-align: center; gap: 12px; }
+    .car-player-meta { justify-content: center; }
+    .car-chip { min-width: 80px; }
+    .car-high { min-width: 70px; }
+    .car-header h1 { font-size: 24px; }
+  }
+  @media (max-width: 480px) {
+    .car-page { padding: 16px 12px 40px; }
+    .car-header h1 { font-size: 20px; }
+    .car-summary-row { gap: 8px; }
+    .car-chip { padding: 8px 10px; }
+    .car-chip-value { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div id="site-header" data-page="career"></div>
+
+<main class="car-page" id="main-content">
+  <div class="car-header">
+    <h1>Career Stats Timeline</h1>
+    <div class="car-subtitle">season-by-season trajectory with career highs</div>
+  </div>
+
+  <div class="car-search-wrap">
+    <input type="text" class="car-search" id="player-search" placeholder="search for a player..." autocomplete="off" aria-label="Search for a player" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="search-dropdown">
+    <div class="car-dropdown" id="search-dropdown" role="listbox"></div>
+  </div>
+
+  <div id="car-result" role="status" aria-live="polite"></div>
+
+  <div class="car-empty" id="car-empty">
+    search for a player to see their career timeline
+  </div>
+</main>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  'use strict';
+
+
+  var _cs = getComputedStyle(document.documentElement);
+  var POS_COLORS = {
+    QB: _cs.getPropertyValue('--pos-qb').trim() || '#5b7fff',
+    RB: _cs.getPropertyValue('--pos-rb').trim() || '#2ec4b6',
+    WR: _cs.getPropertyValue('--pos-wr').trim() || '#d97757',
+    TE: _cs.getPropertyValue('--pos-te').trim() || '#8b5cf6'
+  };
+
+  var searchInput = document.getElementById('player-search');
+  var dropdown = document.getElementById('search-dropdown');
+  var resultEl = document.getElementById('car-result');
+  var emptyEl = document.getElementById('car-empty');
+  var searchTimer = null;
+  var highlightIdx = -1;
+  var dropdownItems = [];
+
+  // URL state
+  var urlState = restorePageState({ player: '' });
+  var initialPlayer = urlState.player;
+
+  // Search autocomplete
+  searchInput.addEventListener('input', function() {
+    var q = searchInput.value.trim();
+    clearTimeout(searchTimer);
+    if (q.length < 2) { hideDropdown(); return; }
+    searchTimer = setTimeout(function() { doSearch(q); }, 250);
+  });
+
+  searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      highlightIdx = Math.min(highlightIdx + 1, dropdownItems.length - 1);
+      updateHighlight();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      highlightIdx = Math.max(highlightIdx - 1, 0);
+      updateHighlight();
+    } else if (e.key === 'Enter' && highlightIdx >= 0 && dropdownItems[highlightIdx]) {
+      e.preventDefault();
+      selectPlayer(dropdownItems[highlightIdx]);
+    } else if (e.key === 'Escape') {
+      hideDropdown();
+    }
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+      hideDropdown();
+    }
+  });
+
+  function doSearch(q) {
+    apiFetch('/api/players/quick-search?q=' + encodeURIComponent(q) + '&limit=8')
+      .then(function(data) {
+        var players = Array.isArray(data) ? data : (data.players || []);
+        if (players.length === 0) { hideDropdown(); return; }
+        dropdownItems = players;
+        highlightIdx = -1;
+        var html = '';
+        for (var i = 0; i < players.length; i++) {
+          var p = players[i];
+          html += '<div class="car-dropdown-item" role="option" data-idx="' + i + '">';
+          html += '<span class="car-dd-pos ' + escapeHtml(p.position) + '">' + escapeHtml(p.position) + '</span>';
+          html += '<span>' + escapeHtml(p.full_name) + '</span>';
+          html += '<span style="color:var(--ink-light); font-size:12px;">' + escapeHtml(p.team) + '</span>';
+          html += '</div>';
+        }
+        dropdown.innerHTML = html;
+        dropdown.style.display = 'block';
+        searchInput.setAttribute('aria-expanded', 'true');
+
+        var items = dropdown.querySelectorAll('.car-dropdown-item');
+        for (var j = 0; j < items.length; j++) {
+          (function(idx) {
+            items[idx].addEventListener('click', function() {
+              selectPlayer(dropdownItems[idx]);
+            });
+          })(j);
+        }
+      })
+      .catch(function() { hideDropdown(); });
+  }
+
+  function hideDropdown() {
+    dropdown.style.display = 'none';
+    searchInput.setAttribute('aria-expanded', 'false');
+    dropdownItems = [];
+    highlightIdx = -1;
+  }
+
+  function updateHighlight() {
+    var items = dropdown.querySelectorAll('.car-dropdown-item');
+    for (var i = 0; i < items.length; i++) {
+      items[i].classList.toggle('highlighted', i === highlightIdx);
+    }
+  }
+
+  function selectPlayer(p) {
+    hideDropdown();
+    searchInput.value = p.full_name;
+    savePageState({ player: p.player_id });
+    loadCareer(p.player_id);
+  }
+
+  function loadCareer(playerId) {
+    emptyEl.style.display = 'none';
+    resultEl.innerHTML = '<div class="car-loading">' + razzleLoading() + '</div>';
+
+    apiFetch('/api/career-stats?player_id=' + encodeURIComponent(playerId))
+      .then(function(data) {
+        if (data.error) {
+          resultEl.innerHTML = '<div class="car-empty">' + escapeHtml(data.error) + '</div>';
+          return;
+        }
+        renderCareer(data);
+      })
+      .catch(function() {
+        resultEl.innerHTML = '<div class="car-empty">' + razzleError() + '</div>';
+      });
+  }
+
+  function renderCareer(data) {
+    var p = data.player;
+    var seasons = data.seasons || [];
+    var career = data.career || {};
+    var highs = data.career_highs || {};
+    var pos = p.position || 'WR';
+
+    if (seasons.length === 0) {
+      resultEl.innerHTML = '<div class="car-empty">no season data found for ' + escapeHtml(p.full_name) + '</div>';
+      return;
+    }
+
+    var html = '';
+
+    // Player card
+    var trajLabel = career.trajectory === 'rising' ? 'Rising (' + career.trajectory_pct + '%)' :
+                    career.trajectory === 'falling' ? 'Falling (' + career.trajectory_pct + '%)' :
+                    career.trajectory === 'new' ? 'Rookie' : 'Stable';
+    html += '<div class="car-player-card">';
+    html += '<div class="car-player-info">';
+    html += '<h2 class="car-player-name">' + escapeHtml(p.full_name) + '</h2>';
+    html += '<div class="car-player-meta">';
+    html += '<span class="car-pos-badge ' + escapeHtml(pos) + '">' + escapeHtml(pos) + '</span>';
+    html += '<span>' + escapeHtml(p.team) + '</span>';
+    if (p.age) html += '<span>Age ' + escapeHtml(String(Math.round(p.age))) + '</span>';
+    html += '<span class="car-trajectory-badge ' + escapeHtml(career.trajectory) + '">' + escapeHtml(trajLabel) + '</span>';
+    html += '</div></div></div>';
+
+    // Summary chips
+    html += '<div class="car-summary-row">';
+    html += '<div class="car-chip"><div class="car-chip-label">Career PPG</div><div class="car-chip-value">' + escapeHtml(String(career.ppg)) + '</div></div>';
+    html += '<div class="car-chip"><div class="car-chip-label">Total PPR</div><div class="car-chip-value">' + escapeHtml(String(career.total_ppr)) + '</div></div>';
+    html += '<div class="car-chip"><div class="car-chip-label">Games</div><div class="car-chip-value">' + escapeHtml(String(career.games)) + '</div></div>';
+    html += '<div class="car-chip"><div class="car-chip-label">Seasons</div><div class="car-chip-value">' + escapeHtml(String(career.seasons_played)) + '</div></div>';
+    html += '<div class="car-chip"><div class="car-chip-label">Peak PPG</div><div class="car-chip-value">' + escapeHtml(String(career.peak_ppg)) + '</div><div class="car-chip-sub">' + escapeHtml(String(career.peak_season)) + '</div></div>';
+    html += '</div>';
+
+    // Actions
+    html += '<div class="car-actions">';
+    html += '<button class="btn btn-primary" onclick="exportCareerPng(this)" aria-label="Export as PNG">Export PNG</button>';
+    html += '</div>';
+
+    // PPG Chart
+    html += '<div class="car-chart-wrap">';
+    html += '<div class="car-chart-title">PPG Trajectory</div>';
+    html += '<canvas class="car-canvas" id="ppg-chart" role="img" aria-label="PPG career trend chart"></canvas>';
+    html += '</div>';
+
+    // Career highs
+    var highKeys = [
+      { key: 'ppg', label: 'Best PPG' },
+      { key: 'total_ppr', label: 'Best Season PPR' },
+      { key: 'total_td', label: 'Most TDs' },
+    ];
+    if (pos === 'WR' || pos === 'TE') highKeys.push({ key: 'rec_yd', label: 'Most Rec Yds' });
+    if (pos === 'RB') highKeys.push({ key: 'rush_yd', label: 'Most Rush Yds' });
+    if (pos === 'QB') highKeys.push({ key: 'pass_yd', label: 'Most Pass Yds' });
+
+    html += '<div class="car-highs">';
+    for (var h = 0; h < highKeys.length; h++) {
+      var hk = highKeys[h];
+      var hv = highs[hk.key];
+      if (hv) {
+        html += '<div class="car-high">';
+        html += '<div class="car-high-label">' + escapeHtml(hk.label) + '</div>';
+        html += '<div class="car-high-value">' + escapeHtml(String(hv.value)) + '</div>';
+        html += '<div class="car-high-season">' + escapeHtml(String(hv.season)) + '</div>';
+        html += '</div>';
+      }
+    }
+    html += '</div>';
+
+    // Season-by-season table
+    html += '<div class="car-section-header">Season-by-Season Stats</div>';
+    html += '<div class="car-table-wrap"><table class="car-table"><caption class="sr-only">Season-by-season career statistics</caption><thead><tr>';
+
+    // Columns depend on position
+    var cols;
+    if (pos === 'QB') {
+      cols = [
+        { key: 'season', label: 'Season' },
+        { key: 'games', label: 'G' },
+        { key: 'ppg', label: 'PPG' },
+        { key: 'total_ppr', label: 'PPR' },
+        { key: 'pass_yd', label: 'Pass Yd' },
+        { key: 'pass_td', label: 'Pass TD' },
+        { key: 'ints', label: 'INT' },
+        { key: 'comp_pct', label: 'Cmp%' },
+        { key: 'rush_yd', label: 'Rush Yd' },
+        { key: 'rush_td', label: 'Rush TD' },
+        { key: 'total_td', label: 'Tot TD' },
+      ];
+    } else if (pos === 'RB') {
+      cols = [
+        { key: 'season', label: 'Season' },
+        { key: 'games', label: 'G' },
+        { key: 'ppg', label: 'PPG' },
+        { key: 'total_ppr', label: 'PPR' },
+        { key: 'car', label: 'Car' },
+        { key: 'rush_yd', label: 'Rush Yd' },
+        { key: 'rush_td', label: 'Rush TD' },
+        { key: 'ypc', label: 'YPC' },
+        { key: 'rec', label: 'Rec' },
+        { key: 'tgt', label: 'Tgt' },
+        { key: 'rec_yd', label: 'Rec Yd' },
+        { key: 'catch_rate', label: 'Catch%' },
+        { key: 'total_td', label: 'Tot TD' },
+      ];
+    } else {
+      // WR / TE
+      cols = [
+        { key: 'season', label: 'Season' },
+        { key: 'games', label: 'G' },
+        { key: 'ppg', label: 'PPG' },
+        { key: 'total_ppr', label: 'PPR' },
+        { key: 'tgt', label: 'Tgt' },
+        { key: 'rec', label: 'Rec' },
+        { key: 'rec_yd', label: 'Rec Yd' },
+        { key: 'rec_td', label: 'Rec TD' },
+        { key: 'catch_rate', label: 'Catch%' },
+        { key: 'ypr', label: 'YPR' },
+        { key: 'yac', label: 'YAC' },
+        { key: 'total_td', label: 'Tot TD' },
+      ];
+    }
+
+    for (var c = 0; c < cols.length; c++) {
+      html += '<th scope="col">' + escapeHtml(cols[c].label) + '</th>';
+    }
+    html += '</tr></thead><tbody>';
+
+    // Find peak PPG season
+    var peakSeason = career.peak_season;
+
+    for (var s = 0; s < seasons.length; s++) {
+      var row = seasons[s];
+      var isPeak = row.season === peakSeason;
+      html += '<tr>';
+      for (var ci = 0; ci < cols.length; ci++) {
+        var val = row[cols[ci].key];
+        var cellClass = '';
+        if (isPeak && (cols[ci].key === 'ppg' || cols[ci].key === 'total_ppr')) cellClass = ' class="peak-cell"';
+        if (cols[ci].key === 'catch_rate' || cols[ci].key === 'comp_pct') {
+          html += '<td' + cellClass + '>' + escapeHtml(String(val)) + '%</td>';
+        } else {
+          html += '<td' + cellClass + '>' + escapeHtml(String(val)) + '</td>';
+        }
+      }
+      html += '</tr>';
+    }
+
+    // Career totals row
+    html += '<tr class="career-row">';
+    for (var ct = 0; ct < cols.length; ct++) {
+      var ck = cols[ct].key;
+      if (ck === 'season') {
+        html += '<td>Career</td>';
+      } else if (ck === 'games') {
+        html += '<td>' + escapeHtml(String(career.games)) + '</td>';
+      } else if (ck === 'ppg') {
+        html += '<td>' + escapeHtml(String(career.ppg)) + '</td>';
+      } else if (ck === 'total_ppr') {
+        html += '<td>' + escapeHtml(String(career.total_ppr)) + '</td>';
+      } else if (ck === 'catch_rate' || ck === 'comp_pct' || ck === 'ypc' || ck === 'ypr' || ck === 'td_rate') {
+        // Weighted career rates from counting stat totals
+        var num = 0, den = 0;
+        for (var si = 0; si < seasons.length; si++) {
+          var ss = seasons[si];
+          if (ck === 'catch_rate') { num += (ss.rec || 0); den += (ss.tgt || 0); }
+          else if (ck === 'comp_pct') { num += (ss.completions || 0); den += (ss.pass_att || 0); }
+          else if (ck === 'ypc') { num += (ss.rush_yd || 0); den += (ss.car || 0); }
+          else if (ck === 'ypr') { num += (ss.rec_yd || 0); den += (ss.rec || 0); }
+          else if (ck === 'td_rate') { num += (ss.total_td || 0); den += ((ss.car || 0) + (ss.tgt || 0)); }
+        }
+        var rateVal = den > 0 ? Math.round(num / den * (ck === 'catch_rate' || ck === 'comp_pct' || ck === 'td_rate' ? 1000 : 10)) / (ck === 'catch_rate' || ck === 'comp_pct' || ck === 'td_rate' ? 10 : 1) : 0;
+        html += '<td>' + escapeHtml(String(rateVal)) + (ck === 'catch_rate' || ck === 'comp_pct' ? '%' : '') + '</td>';
+      } else {
+        // Sum counting stats
+        var total = 0;
+        for (var si2 = 0; si2 < seasons.length; si2++) total += (seasons[si2][ck] || 0);
+        html += '<td>' + escapeHtml(String(Math.round(total))) + '</td>';
+      }
+    }
+    html += '</tr>';
+
+    html += '</tbody></table></div>';
+
+    // Watermark
+    html += '<div style="text-align:right; font-family:var(--font-hand); font-size:13px; color:var(--ink-light); margin-top:8px;">razzle.lol</div>';
+
+    resultEl.innerHTML = html;
+
+    // Draw chart after DOM update
+    setTimeout(function() { drawPpgChart(seasons, pos); }, 50);
+  }
+
+  function drawPpgChart(seasons, pos) {
+    var t = typeof getCanvasTheme === 'function' ? getCanvasTheme() : {bg:'#ede0cf',bgCard:'#f7efe5',ink:'#2d1f14',inkMedium:'#5c4a3d',inkLight:'#8a7565',inkFaint:'#c4b5a5',white:'#fff'};
+    var canvas = document.getElementById('ppg-chart');
+    if (!canvas) return;
+
+    var dpr = window.devicePixelRatio || 1;
+    var rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    var ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    var w = rect.width;
+    var h = rect.height;
+
+    // Clear
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg-card').trim() || '#f7efe5';
+    ctx.fillRect(0, 0, w, h);
+
+    if (seasons.length === 0) return;
+
+    var pad = { top: 20, right: 30, bottom: 40, left: 50 };
+    var plotW = w - pad.left - pad.right;
+    var plotH = h - pad.top - pad.bottom;
+
+    var ppgs = seasons.map(function(s) { return s.ppg; });
+    var maxPpg = Math.max.apply(null, ppgs);
+    var minPpg = Math.min.apply(null, ppgs);
+    var range = maxPpg - minPpg || 1;
+    // Add 10% padding
+    var yMin = Math.max(0, minPpg - range * 0.1);
+    var yMax = maxPpg + range * 0.1;
+
+    function xPos(i) { return pad.left + (seasons.length === 1 ? plotW / 2 : i / (seasons.length - 1) * plotW); }
+    function yPos(val) { return pad.top + plotH - ((val - yMin) / (yMax - yMin)) * plotH; }
+
+    // Grid lines
+    ctx.strokeStyle = t.inkFaint;
+    ctx.lineWidth = 1;
+    var gridLines = 5;
+    for (var g = 0; g <= gridLines; g++) {
+      var gv = yMin + (yMax - yMin) * (g / gridLines);
+      var gy = yPos(gv);
+      ctx.beginPath();
+      ctx.moveTo(pad.left, gy);
+      ctx.lineTo(w - pad.right, gy);
+      ctx.stroke();
+      // Y-axis labels
+      ctx.fillStyle = t.inkLight;
+      ctx.font = '11px "Space Mono", monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(gv.toFixed(1), pad.left - 6, gy + 4);
+    }
+
+    // X-axis labels
+    ctx.fillStyle = t.inkLight;
+    ctx.font = '12px "Space Mono", monospace';
+    ctx.textAlign = 'center';
+    for (var xi = 0; xi < seasons.length; xi++) {
+      ctx.fillText(String(seasons[xi].season), xPos(xi), h - pad.bottom + 20);
+    }
+
+    // Line
+    var color = POS_COLORS[pos] || '#d97757';
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 3;
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    for (var li = 0; li < seasons.length; li++) {
+      var lx = xPos(li);
+      var ly = yPos(seasons[li].ppg);
+      if (li === 0) ctx.moveTo(lx, ly);
+      else ctx.lineTo(lx, ly);
+    }
+    ctx.stroke();
+
+    // Area fill
+    ctx.fillStyle = color.replace(')', ', 0.1)').replace('rgb', 'rgba');
+    if (color.indexOf('#') === 0) {
+      // Hex to rgba
+      var r = parseInt(color.slice(1, 3), 16) || 0;
+      var gr = parseInt(color.slice(3, 5), 16) || 0;
+      var b = parseInt(color.slice(5, 7), 16) || 0;
+      ctx.fillStyle = 'rgba(' + r + ',' + gr + ',' + b + ',0.1)';
+    }
+    ctx.beginPath();
+    ctx.moveTo(xPos(0), yPos(seasons[0].ppg));
+    for (var ai = 1; ai < seasons.length; ai++) {
+      ctx.lineTo(xPos(ai), yPos(seasons[ai].ppg));
+    }
+    ctx.lineTo(xPos(seasons.length - 1), pad.top + plotH);
+    ctx.lineTo(xPos(0), pad.top + plotH);
+    ctx.closePath();
+    ctx.fill();
+
+    // Dots + value labels
+    for (var di = 0; di < seasons.length; di++) {
+      var dx = xPos(di);
+      var dy = yPos(seasons[di].ppg);
+
+      // Dot
+      ctx.beginPath();
+      ctx.arc(dx, dy, 6, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = t.white;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Value label
+      ctx.fillStyle = t.ink;
+      ctx.font = 'bold 12px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText((seasons[di].ppg || 0).toFixed(1), dx, dy - 12);
+    }
+
+    // Y-axis label
+    ctx.save();
+    ctx.translate(14, pad.top + plotH / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillStyle = t.inkLight;
+    ctx.font = '11px "Space Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('PPG (PPR)', 0, 0);
+    ctx.restore();
+  }
+
+  // PNG export
+  window.exportCareerPng = function(btn) {
+    if (btn) { btn.disabled = true; btn.textContent = 'Exporting...'; }
+    var el = document.getElementById('main-content');
+    if (!el) { if (btn) { btn.disabled = false; btn.textContent = 'Export PNG'; } return; }
+    loadHtml2Canvas().then(function(h2c) { return h2c(el, { backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf', scale: 2 }); }).then(function(canvas) {
+      // Add watermark
+      var ctx = canvas.getContext('2d');
+      ctx.font = "600 24px Caveat, cursive";
+      ctx.fillStyle = document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.18)' : 'rgba(45,31,20,0.15)';
+      ctx.textAlign = 'right';
+      ctx.fillText('razzle.lol', canvas.width - 20, canvas.height - 16);
+      var link = document.createElement('a');
+      link.download = 'razzle-career-timeline.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }).finally(function() { if (btn) { btn.disabled = false; btn.textContent = 'Export PNG'; } });
+  };
+
+  // Analytics
+  apiFetch('/api/analytics/pageview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: '/career.html', referrer: document.referrer || '' })
+  }).catch(function() {});
+
+  // Load from URL
+  if (initialPlayer) {
+    loadCareer(initialPlayer);
+    // Try to populate search field
+    apiFetch('/api/players/quick-search?q=' + encodeURIComponent(initialPlayer) + '&limit=1')
+      .then(function(d) {
+        var arr = Array.isArray(d) ? d : (d.players || []);
+        if (arr.length > 0) {
+          searchInput.value = arr[0].full_name;
+        }
+      })
+      .catch(function() {});
+  }
+})();
+</script>
+</body>
+</html>

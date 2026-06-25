@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Target Premium — Razzle</title>
+<meta property="og:title" content="Target Premium — Razzle">
+<meta property="og:description" content="Not all targets are equal. Target premium ranks pass catchers by target quality: aDOT, catch rate, YAC, and yards per target in one composite score.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Target Premium — Razzle">
+<meta name="twitter:description" content="Not all targets are equal. Target premium ranks pass catchers by aDOT, catch rate, YAC, and yards per target.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Target premium on razzle.lol. Composite target quality rankings for pass catchers based on aDOT, catch rate, YAC, and yards per target.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=targetpremium">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=targetpremium">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .tp-page { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+  .tp-header { text-align: center; margin-bottom: 24px; }
+  .tp-header h1 { font-family: var(--font-display); font-size: 32px; color: var(--ink); margin: 0 0 4px; }
+  .tp-header .tp-subtitle { font-family: var(--font-hand); font-size: 20px; color: var(--ink-light); }
+  .tp-controls { display: flex; justify-content: center; align-items: center; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .tp-controls select { font-family: var(--font-mono); font-size: 13px; padding: 6px 10px; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--bg-card); }
+  .tp-controls .pos-tabs { display: flex; gap: 4px; }
+  .tp-controls .pos-tab { font-family: var(--font-mono); font-size: 12px; padding: 5px 12px; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--bg-card); cursor: pointer; font-weight: 700; }
+  .tp-controls .pos-tab.active { background: var(--ink); color: var(--bg); }
+  .tp-export { font-family: var(--font-mono); font-size: 12px; padding: 5px 14px; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--bg-card); cursor: pointer; font-weight: 700; }
+  .tp-export:hover { background: var(--ink); color: var(--bg); }
+  .tp-loading { text-align: center; font-family: var(--font-hand); font-size: 18px; color: var(--ink-light); padding: 60px 0; }
+
+  .tp-card { background: var(--bg-card); border: 3px solid var(--ink); border-radius: var(--radius-sm); box-shadow: 4px 4px 0 var(--ink); overflow: hidden; }
+  .tp-card-header { font-family: var(--font-display); font-size: 18px; padding: 10px 16px; background: var(--ink); color: var(--bg); }
+  .tp-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 12px; }
+  .tp-table th { background: var(--bg); padding: 6px 8px; text-align: right; font-size: 11px; font-weight: 700; border-bottom: 2px solid var(--ink-faint); white-space: nowrap; }
+  .tp-table th:first-child, .tp-table th:nth-child(2), .tp-table th:nth-child(3) { text-align: left; }
+  .tp-table td { padding: 6px 8px; text-align: right; border-bottom: 2px dashed var(--border-dashed); }
+  .tp-table td:first-child, .tp-table td:nth-child(2), .tp-table td:nth-child(3) { text-align: left; }
+  .tp-table tbody tr:hover { background: var(--bg-warm); }
+  .tp-rank { font-weight: 700; color: var(--ink-light); font-size: 11px; }
+  .tp-pos-badge { font-size: 11px; font-weight: 700; padding: 1px 5px; border-radius: var(--radius-sm); color: var(--text-on-accent); }
+  .tp-premium-badge { font-family: var(--font-mono); font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: var(--radius-sm); border: 2px solid; }
+  .tp-premium-elite { background: var(--blue-light); color: var(--blue); border-color: var(--blue); }
+  .tp-premium-high { background: var(--semantic-green-light); color: var(--semantic-green); border-color: var(--semantic-green); }
+  .tp-premium-mid { background: var(--yellow-light); color: var(--ink-medium); border-color: var(--ink-medium); }
+  .tp-premium-low { background: var(--semantic-red-light); color: var(--semantic-red); border-color: var(--semantic-red); }
+  .tp-bar-cell { width: 80px; }
+  .tp-bar { height: 12px; border-radius: var(--radius-sm); background: var(--green); min-width: 2px; }
+  /* .tp-empty removed — uses .panel-empty from styles.css */
+
+  @media (max-width: 768px) {
+    .tp-page { padding: 16px 12px 40px; }
+    .tp-header h1 { font-size: 24px; }
+    .tp-bar-cell { width: 50px; }
+  }
+  @media (max-width: 480px) {
+    .tp-page { padding: 12px 8px 32px; }
+    .tp-header h1 { font-size: 20px; }
+    .tp-header .tp-subtitle { font-size: 16px; }
+    .tp-controls { gap: 8px; }
+    .tp-controls .pos-tab { padding: 4px 8px; font-size: 11px; }
+    .tp-table { font-size: 11px; }
+    .tp-table th, .tp-table td { padding: 4px 5px; }
+    .tp-bar-cell { width: 35px; }
+    .tp-card-header { font-size: 14px; padding: 8px 12px; }
+  }
+
+  /* Dark mode */
+  [data-theme="dark"] .tp-page { color: var(--ink); }
+  [data-theme="dark"] .tp-header h1 { color: var(--ink); }
+  [data-theme="dark"] .tp-subtitle { color: var(--ink-light); }
+  [data-theme="dark"] .tp-table th { color: var(--ink); border-color: var(--ink-faint); }
+  [data-theme="dark"] .tp-table td { color: var(--ink-medium); border-color: var(--ink-faint); }
+  [data-theme="dark"] .tp-card-header { color: var(--bg); }
+  [data-theme="dark"] .tp-controls .pos-tab { background: var(--bg-card); color: var(--ink); border-color: var(--ink-faint); }
+  [data-theme="dark"] .tp-controls .pos-tab.active { background: var(--ink); color: var(--bg-card); }
+  [data-theme="dark"] .tp-controls select { background: var(--bg-card); color: var(--ink); border-color: var(--ink-faint); }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<div id="site-header" data-page="targetpremium"></div>
+
+<main class="tp-page" id="main-content">  <div class="tp-header">
+    <h1>Target Premium</h1>
+    <div class="tp-subtitle">target quality composite — who gets the best looks?</div>
+  </div>
+
+  <div class="tp-controls">
+    <select id="tp-season" aria-label="Season selector"></select>
+    <div class="pos-tabs" role="tablist" aria-label="Position filter">
+      <button class="pos-tab active" data-pos="" role="tab" aria-selected="true">ALL</button>
+      <button class="pos-tab" data-pos="WR" role="tab" aria-selected="false">WR</button>
+      <button class="pos-tab" data-pos="TE" role="tab" aria-selected="false">TE</button>
+      <button class="pos-tab" data-pos="RB" role="tab" aria-selected="false">RB</button>
+    </div>
+    <button class="tp-export" onclick="exportPNG(this)">Export PNG</button>
+  </div>
+
+  <div id="tp-loading" class="tp-loading">evaluating target quality...
+    <div class="skeleton-cards"><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+  </div>
+  <div id="tp-content" style="display:none;">
+    <div class="tp-card">
+      <div class="tp-card-header">Target Quality Rankings</div>
+      <div id="tp-table-wrap" role="status" aria-live="polite" style="overflow-x:auto"></div>
+    </div>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+}
+
+const POS_COLORS = getPosColors();
+let state = { season: null, position: "", data: null };
+
+function initSeasons() {
+  const sel = document.getElementById("tp-season");
+  const _d = new Date(); const now = _d.getMonth() >= 8 ? _d.getFullYear() : _d.getFullYear() - 1;
+  for (let y = now; y >= 2020; y--) {
+    const opt = document.createElement("option");
+    opt.value = y; opt.textContent = y;
+    sel.appendChild(opt);
+  }
+  const restored = restorePageState({ season: '', position: '' });
+  if (restored.season) sel.value = restored.season;
+  if (restored.position) {
+    state.position = restored.position.toUpperCase();
+    document.querySelectorAll(".pos-tab").forEach(t => {
+      t.classList.toggle("active", t.dataset.pos === state.position);
+    });
+  }
+  state.season = parseInt(sel.value, 10) || 0;
+  sel.addEventListener("change", () => { state.season = parseInt(sel.value, 10) || 0; savePageState({ season: state.season, position: state.position }); loadData(); });
+}
+
+document.querySelectorAll(".pos-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".pos-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    state.position = tab.dataset.pos;
+    savePageState({ season: state.season, position: state.position });
+    loadData();
+  });
+});
+
+async function loadData() {
+  document.getElementById("tp-loading").style.display = "";
+  document.getElementById("tp-content").style.display = "none";
+  let url = "/api/target-premium?season=" + state.season;
+  if (state.position) url += "&position=" + state.position;
+  try {
+    state.data = await apiFetch(url);
+    render();
+  } catch (e) {
+    document.getElementById("tp-loading").style.display = "none";
+    document.getElementById("tp-content").style.display = "";
+    document.getElementById("tp-table-wrap").innerHTML = '<div class="panel-error">' + razzleError() + '<br><button class="btn-chunky" onclick="loadData()">retry</button></div>';
+  }
+}
+
+function premiumClass(p) {
+  if (p >= 75) return "tp-premium-elite";
+  if (p >= 55) return "tp-premium-high";
+  if (p >= 35) return "tp-premium-mid";
+  return "tp-premium-low";
+}
+
+function render() {
+  document.getElementById("tp-loading").style.display = "none";
+  document.getElementById("tp-content").style.display = "";
+  const players = state.data.players || [];
+  const wrap = document.getElementById("tp-table-wrap");
+
+  if (players.length === 0) {
+    wrap.innerHTML = '<div class="panel-empty">' + razzleEmpty() + '<span class="hint">try a different position or season</span></div>';
+    return;
+  }
+
+  let html = '<table class="tp-table"><caption class="sr-only">Target premium rankings by target quality composite</caption><thead><tr><th scope="col">#</th><th scope="col">Player</th><th scope="col">Pos</th><th scope="col">Premium</th><th scope="col">Tgt/G</th><th scope="col">aDOT</th><th scope="col">Catch%</th><th scope="col">YAC/R</th><th scope="col">Y/Tgt</th><th scope="col"></th></tr></thead><tbody>';
+
+  players.forEach((p, i) => {
+    const posColor = POS_COLORS[p.position] || "var(--ink-light)";
+    const cls = premiumClass(p.premium);
+    const barPct = p.premium;
+
+    html += '<tr>';
+    html += '<td class="tp-rank">' + (i + 1) + '</td>';
+    html += '<td>' + escapeHtml(p.name) + ' <span style="color:var(--ink-light);font-size:11px;">' + escapeHtml(p.team) + '</span></td>';
+    html += '<td><span class="tp-pos-badge" style="background:' + escapeHtml(posColor) + '">' + escapeHtml(p.position) + '</span></td>';
+    html += '<td><span class="tp-premium-badge ' + cls + '">' + escapeHtml(String(p.premium)) + '</span></td>';
+    html += '<td>' + escapeHtml(String(p.targets_pg)) + '</td>';
+    html += '<td>' + escapeHtml(String(p.adot)) + '</td>';
+    html += '<td>' + escapeHtml(String(p.catch_rate)) + '%</td>';
+    html += '<td>' + escapeHtml(String(p.yac_per_rec)) + '</td>';
+    html += '<td>' + escapeHtml(String(p.ypt)) + '</td>';
+    html += '<td class="tp-bar-cell"><div class="tp-bar" style="width:' + barPct + '%"></div></td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+function exportPNG(btn) {
+  if (btn) { btn.disabled = true; btn.textContent = 'Exporting...'; }
+  const el = document.getElementById("main-content");
+  loadHtml2Canvas().then(function(h2c) { return h2c(el, { backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf', scale: 2 }); }).then(canvas => {
+    const ctx = canvas.getContext("2d");
+    if (typeof drawRazzleWatermark === 'function') { drawRazzleWatermark(ctx, canvas); }
+    else { ctx.font = "600 24px Caveat, cursive"; ctx.fillStyle = (typeof getExportColors === 'function' ? getExportColors().watermark : (document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.18)' : 'rgba(45,31,20,0.13)')); ctx.fillText("razzle.lol", canvas.width - 220, canvas.height - 20); }
+    const link = document.createElement("a");
+    link.download = "razzle-target-premium.png";
+    link.href = canvas.toDataURL();
+    link.click();
+  }).finally(function() { if (btn) { btn.disabled = false; btn.textContent = 'Export PNG'; } });
+}
+
+// Analytics
+fetch("/api/analytics/pageview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ page: "/targetpremium.html", referrer: document.referrer }) }).catch(() => {});
+
+initSeasons();
+loadData();
+</script>
+</body>
+</html>

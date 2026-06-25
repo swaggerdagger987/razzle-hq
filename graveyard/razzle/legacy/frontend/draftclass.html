@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Draft Class Tracker — Razzle</title>
+<meta property="og:title" content="Draft Class Tracker — Razzle">
+<meta property="og:description" content="Which draft classes hit and which ones busted? Fantasy production by class year with round-by-round ROI. Learn from the past before your next rookie draft.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Draft Class Tracker — Razzle">
+<meta name="twitter:description" content="Which draft classes hit and which busted? Fantasy production by class year with round-by-round ROI.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Draft class tracker on razzle.lol. Fantasy football production by draft class with hit/bust rates and round-by-round ROI analysis.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=draftclass">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=draftclass">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="standalone-common.css">
+<style>
+
+  /* Summary chips */
+  .dc-summary {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .dc-chip {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    box-shadow: 4px 4px 0 var(--ink);
+    text-align: center;
+    flex: 1;
+    min-width: 110px;
+  }
+  .dc-chip-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--ink-light);
+    margin-bottom: 4px;
+  }
+  .dc-chip-value {
+    font-family: var(--font-mono);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .dc-chip-value.green { color: var(--green); }
+  .dc-chip-value.red { color: var(--red); }
+
+  /* Round ROI chart */
+  .dc-chart-wrap {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+  .dc-chart-title {
+    font-family: var(--font-display);
+    font-size: 16px;
+    color: var(--ink);
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .dc-canvas {
+    width: 100%;
+    height: 200px;
+    display: block;
+  }
+
+  /* Table */
+  .dc-table-wrap {
+    overflow-x: auto;
+    margin-bottom: 24px;
+  }
+
+  .dc-table td:nth-child(2) { text-align: left; }
+
+  /* Badges */
+  
+  .dc-pos-badge.QB { background: var(--pos-qb); }
+  .dc-pos-badge.RB { background: var(--pos-rb); }
+  .dc-pos-badge.WR { background: var(--pos-wr); }
+  .dc-pos-badge.TE { background: var(--pos-te); }
+
+  .dc-verdict {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    color: var(--text-on-accent);
+  }
+  .dc-verdict.hit { background: var(--green); }
+  .dc-verdict.solid { background: var(--blue); }
+  .dc-verdict.ok { background: var(--ink-light); }
+  .dc-verdict.bust { background: var(--red); }
+  .dc-verdict.no_data { background: var(--ink-faint); color: var(--ink-light); }
+
+  @media (max-width: 768px) {
+    
+    .dc-chip { min-width: 80px; }
+  }
+  @media (max-width: 480px) {
+
+    .dc-chip { padding: 8px 10px; }
+    .dc-chip-value { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div id="site-header" data-page="draftclass"></div>
+
+<main class="dc-page" id="main-content">
+  <div class="dc-header">
+    <h1>Draft Class Tracker</h1>
+    <div class="dc-subtitle">fantasy production by draft class</div>
+  </div>
+
+  <div class="dc-controls">
+    <select class="dc-select" id="year-select" title="Draft Year" aria-label="Draft Year"></select>
+    <div class="dc-pos-tabs" id="pos-tabs" role="tablist" aria-label="Position filter">
+      <button class="dc-pos-tab active" data-pos="" aria-label="All positions">All</button>
+      <button class="dc-pos-tab" data-pos="QB" aria-label="Quarterbacks">QB</button>
+      <button class="dc-pos-tab" data-pos="RB" aria-label="Running Backs">RB</button>
+      <button class="dc-pos-tab" data-pos="WR" aria-label="Wide Receivers">WR</button>
+      <button class="dc-pos-tab" data-pos="TE" aria-label="Tight Ends">TE</button>
+    </div>
+  </div>
+
+  <div id="dc-body">
+    <div class="dc-loading">grading the draft class...</div>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  'use strict';
+
+
+  var state = { year: 0, position: '' };
+  var bodyEl = document.getElementById('dc-body');
+  var yearSelect = document.getElementById('year-select');
+  var data = null;
+  var sortKey = 'total_ppr';
+  var sortAsc = false;
+
+  // URL state
+  var _urlState = restorePageState({ year: '', pos: '' });
+  if (_urlState.year) state.year = parseInt(_urlState.year, 10) || state.year;
+  if (_urlState.pos) state.position = _urlState.pos;
+
+  // Position tabs
+  var posTabs = document.querySelectorAll('.dc-pos-tab');
+  for (var i = 0; i < posTabs.length; i++) {
+    posTabs[i].addEventListener('click', function() {
+      for (var j = 0; j < posTabs.length; j++) posTabs[j].classList.remove('active');
+      this.classList.add('active');
+      state.position = this.getAttribute('data-pos');
+      updateUrl();
+      loadData();
+    });
+  }
+
+  // Set active pos tab from URL
+  if (state.position) {
+    for (var pt = 0; pt < posTabs.length; pt++) {
+      posTabs[pt].classList.toggle('active', posTabs[pt].getAttribute('data-pos') === state.position);
+    }
+  }
+
+  yearSelect.addEventListener('change', function() {
+    state.year = parseInt(yearSelect.value, 10);
+    updateUrl();
+    loadData();
+  });
+
+  function updateUrl() {
+    savePageState({ year: state.year ? String(state.year) : '', pos: state.position });
+  }
+
+  function loadData() {
+    bodyEl.innerHTML = '<div class="dc-loading">' + razzleLoading() + '</div>';
+    var url = '/api/draft-class';
+    var p = [];
+    if (state.year) p.push('year=' + state.year);
+    if (state.position) p.push('position=' + state.position);
+    if (p.length) url += '?' + p.join('&');
+
+    fetch(url)
+      .then(function(r) { if (!r.ok) throw new Error('fail'); return r.json(); })
+      .then(function(d) {
+        data = d;
+        // Populate year selector
+        if (d.available_classes && yearSelect.options.length <= 1) {
+          yearSelect.innerHTML = '';
+          for (var i = 0; i < d.available_classes.length; i++) {
+            var opt = document.createElement('option');
+            opt.value = d.available_classes[i];
+            opt.textContent = d.available_classes[i] + ' Class';
+            if (d.available_classes[i] === d.draft_year) opt.selected = true;
+            yearSelect.appendChild(opt);
+          }
+        }
+        state.year = d.draft_year;
+        renderData(d);
+      })
+      .catch(function() {
+        bodyEl.innerHTML = '<div class="dc-loading">' + razzleError() + '</div>';
+      });
+  }
+
+  function renderData(d) {
+    var s = d.summary || {};
+    var html = '';
+
+    // Summary chips
+    html += '<div class="dc-summary">';
+    html += '<div class="dc-chip"><div class="dc-chip-label">Draft Class</div><div class="dc-chip-value">' + escapeHtml(String(s.draft_year)) + '</div></div>';
+    html += '<div class="dc-chip"><div class="dc-chip-label">Players</div><div class="dc-chip-value">' + escapeHtml(String(s.total_players)) + '</div></div>';
+    html += '<div class="dc-chip"><div class="dc-chip-label">Avg PPG</div><div class="dc-chip-value">' + escapeHtml(String(s.avg_ppg)) + '</div></div>';
+    html += '<div class="dc-chip"><div class="dc-chip-label">Hits (15+ PPG)</div><div class="dc-chip-value green">' + escapeHtml(String(s.hits)) + '</div></div>';
+    html += '<div class="dc-chip"><div class="dc-chip-label">Busts (&lt;5 PPG)</div><div class="dc-chip-value red">' + escapeHtml(String(s.busts)) + '</div></div>';
+    html += '<div class="dc-chip"><div class="dc-chip-label">Hit Rate</div><div class="dc-chip-value">' + escapeHtml(String(s.hit_rate)) + '%</div></div>';
+    html += '</div>';
+
+    // Actions
+    html += '<div class="dc-actions">';
+    html += '<button class="btn btn-primary" onclick="exportDcPng(this)" aria-label="Export as PNG">Export PNG</button>';
+    html += '</div>';
+
+    // Round ROI chart
+    if (d.rounds && d.rounds.length > 0) {
+      html += '<div class="dc-chart-wrap">';
+      html += '<div class="dc-chart-title">Average PPG by Round</div>';
+      html += '<canvas class="dc-canvas" id="dc-chart" role="img" aria-label="Draft class average PPG by round chart"></canvas>';
+      html += '</div>';
+    }
+
+    // Player table
+    html += '<div class="dc-section-header">' + escapeHtml(String(s.draft_year)) + ' Draft Class — Fantasy Producers</div>';
+    html += '<div class="dc-table-wrap"><table class="dc-table"><caption class="sr-only">Draft class fantasy producers by pick and production</caption><thead><tr>';
+    var cols = [
+      { key: 'pick', label: 'Pick' },
+      { key: 'name', label: 'Player' },
+      { key: 'position', label: 'Pos' },
+      { key: 'draft_team', label: 'Drafted' },
+      { key: 'current_team', label: 'Team' },
+      { key: 'games', label: 'G' },
+      { key: 'ppg', label: 'PPG' },
+      { key: 'total_ppr', label: 'Total PPR' },
+      { key: 'verdict', label: 'Verdict' },
+    ];
+    for (var ci = 0; ci < cols.length; ci++) {
+      var sorted = cols[ci].key === sortKey;
+      var arrow = sorted ? (sortAsc ? ' \u25B2' : ' \u25BC') : '';
+      html += '<th data-sort="' + cols[ci].key + '"' + (sorted ? ' class="sorted"' : '') + '>' + escapeHtml(cols[ci].label) + '<span class="sort-arrow">' + arrow + '</span></th>';
+    }
+    html += '</tr></thead><tbody>';
+
+    var players = sortPlayers(d.players || []);
+    for (var pi = 0; pi < players.length; pi++) {
+      var p = players[pi];
+      html += '<tr' + (p.player_id ? ' data-pid="' + escapeHtml(p.player_id) + '"' : '') + '>';
+      html += '<td>' + escapeHtml(String(p.round)) + '.' + escapeHtml(String(p.pick).padStart(2, '0')) + '</td>';
+      html += '<td style="text-align:left; font-weight:700;">' + escapeHtml(p.name) + '</td>';
+      html += '<td><span class="dc-pos-badge ' + escapeHtml(p.position) + '">' + escapeHtml(p.position) + '</span></td>';
+      html += '<td>' + escapeHtml(p.draft_team) + '</td>';
+      html += '<td>' + escapeHtml(p.current_team) + '</td>';
+      html += '<td>' + escapeHtml(String(p.games)) + '</td>';
+      html += '<td>' + escapeHtml(String(p.ppg)) + '</td>';
+      html += '<td>' + escapeHtml(String(p.total_ppr)) + '</td>';
+      html += '<td><span class="dc-verdict ' + escapeHtml(p.verdict) + '">' + verdictLabel(p.verdict) + '</span></td>';
+      html += '</tr>';
+    }
+
+    html += '</tbody></table></div>';
+    html += '<div style="text-align:right; font-family:var(--font-hand); font-size:13px; color:var(--ink-light); margin-top:8px;">razzle.lol</div>';
+
+    bodyEl.innerHTML = html;
+
+    // Bind sort
+    var ths = bodyEl.querySelectorAll('.dc-table th[data-sort]');
+    for (var ti = 0; ti < ths.length; ti++) {
+      ths[ti].addEventListener('click', function() {
+        var key = this.getAttribute('data-sort');
+        if (sortKey === key) sortAsc = !sortAsc;
+        else { sortKey = key; sortAsc = false; }
+        renderData(data);
+      });
+    }
+
+    // Bind row clicks
+    var rows = bodyEl.querySelectorAll('.dc-table tbody tr[data-pid]');
+    for (var ri = 0; ri < rows.length; ri++) {
+      rows[ri].addEventListener('click', function() {
+        var pid = this.getAttribute('data-pid');
+        if (pid) window.location.href = '/player/' + encodeURIComponent(pid);
+      });
+    }
+
+    // Draw chart
+    setTimeout(function() { drawRoundChart(d.rounds); }, 50);
+  }
+
+  function verdictLabel(v) {
+    if (v === 'hit') return 'HIT';
+    if (v === 'solid') return 'SOLID';
+    if (v === 'ok') return 'OK';
+    if (v === 'bust') return 'BUST';
+    return 'N/A';
+  }
+
+  function sortPlayers(arr) {
+    var sorted = arr.slice();
+    sorted.sort(function(a, b) {
+      var va = a[sortKey];
+      var vb = b[sortKey];
+      if (typeof va === 'string') va = va.toLowerCase();
+      if (typeof vb === 'string') vb = vb.toLowerCase();
+      if (va < vb) return sortAsc ? -1 : 1;
+      if (va > vb) return sortAsc ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  }
+
+  function drawRoundChart(rounds) {
+    var t = typeof getCanvasTheme === 'function' ? getCanvasTheme() : {bg:'#ede0cf',bgCard:'#f7efe5',ink:'#2d1f14',inkMedium:'#5c4a3d',inkLight:'#8a7565',inkFaint:'#c4b5a5',white:'#fff'};
+    var canvas = document.getElementById('dc-chart');
+    if (!canvas || rounds.length === 0) return;
+
+    var dpr = window.devicePixelRatio || 1;
+    var rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    var ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    var w = rect.width;
+    var h = rect.height;
+
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg-card').trim() || '#f7efe5';
+    ctx.fillRect(0, 0, w, h);
+
+    var pad = { top: 20, right: 20, bottom: 35, left: 50 };
+    var plotW = w - pad.left - pad.right;
+    var plotH = h - pad.top - pad.bottom;
+
+    var maxPpg = 0;
+    for (var i = 0; i < rounds.length; i++) {
+      if (rounds[i].avg_ppg > maxPpg) maxPpg = rounds[i].avg_ppg;
+    }
+    maxPpg = maxPpg * 1.15 || 1;
+
+    var barW = Math.min(60, plotW / rounds.length * 0.7);
+    var gap = (plotW - barW * rounds.length) / (rounds.length + 1);
+
+    // Grid
+    ctx.strokeStyle = t.inkFaint;
+    ctx.lineWidth = 1;
+    for (var g = 0; g <= 4; g++) {
+      var gv = maxPpg * g / 4;
+      var gy = pad.top + plotH - (gv / maxPpg) * plotH;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, gy);
+      ctx.lineTo(w - pad.right, gy);
+      ctx.stroke();
+      ctx.fillStyle = t.inkLight;
+      ctx.font = '11px "Space Mono", monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(gv.toFixed(1), pad.left - 6, gy + 4);
+    }
+
+    // Bars
+    var colors = ['#d97757', '#5b7fff', '#2ec4b6', '#8b5cf6', '#e87422', '#d44040', '#8a7565'];
+    for (var bi = 0; bi < rounds.length; bi++) {
+      var r = rounds[bi];
+      var barH = (r.avg_ppg / maxPpg) * plotH;
+      var bx = pad.left + gap + bi * (barW + gap);
+      var by = pad.top + plotH - barH;
+
+      ctx.fillStyle = colors[bi % colors.length];
+      ctx.beginPath();
+      ctx.roundRect(bx, by, barW, barH, [4, 4, 0, 0]);
+      ctx.fill();
+
+      // Value label
+      ctx.fillStyle = t.ink;
+      ctx.font = 'bold 12px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText((r.avg_ppg || 0).toFixed(1), bx + barW / 2, by - 6);
+
+      // X label
+      ctx.fillStyle = t.inkMedium;
+      ctx.font = '12px "Space Mono", monospace';
+      ctx.fillText('R' + r.round, bx + barW / 2, h - pad.bottom + 16);
+    }
+  }
+
+  // PNG export
+  window.exportDcPng = function(btn) {
+    if (btn) { btn.disabled = true; btn.textContent = 'Exporting...'; }
+    var el = document.getElementById('main-content');
+    if (!el) { if (btn) { btn.disabled = false; btn.textContent = 'Export PNG'; } return; }
+    loadHtml2Canvas().then(function(h2c) { return h2c(el, { backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf', scale: 2 }); }).then(function(canvas) {
+      var ctx = canvas.getContext('2d');
+      ctx.font = "600 24px Caveat, cursive";
+      ctx.fillStyle = document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.18)' : 'rgba(45,31,20,0.15)';
+      ctx.textAlign = 'right';
+      ctx.fillText('razzle.lol', canvas.width - 20, canvas.height - 16);
+      var link = document.createElement('a');
+      link.download = 'razzle-draft-class.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }).finally(function() { if (btn) { btn.disabled = false; btn.textContent = 'Export PNG'; } });
+  };
+
+  // Analytics
+  fetch('/api/analytics/pageview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: '/draftclass.html', referrer: document.referrer || '' })
+  }).catch(function() {});
+
+  loadData();
+})();
+</script>
+</body>
+</html>

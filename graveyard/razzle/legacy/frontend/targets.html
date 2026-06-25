@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Target Distribution — Razzle</title>
+<meta property="og:title" content="Target Distribution — Razzle">
+<meta property="og:description" content="Who gets the ball on every team? Stacked bars showing target and carry distribution across all 32 offenses. Volume is king.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Target Distribution — Razzle">
+<meta name="twitter:description" content="Who gets the ball on every team? Stacked bars showing target and carry distribution across all 32 offenses.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Target and carry distribution on razzle.lol. Stacked bar charts showing who commands the touches on every NFL team.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=targets">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=targets">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="standalone-common.css">
+<style>
+
+  /* Controls */
+
+  .targets-season-select, .targets-team-select {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 6px 12px;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  .targets-mode-tabs {
+    display: flex;
+    gap: 6px;
+  }
+  .targets-mode-tab {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--ink);
+    cursor: pointer;
+    transition: background-color 0.15s, transform 0.15s, box-shadow 0.15s;
+  }
+  .targets-mode-tab:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .targets-mode-tab.active {
+    background: var(--ink);
+    color: var(--bg-card);
+  }
+
+  /* Team card */
+  .team-card {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 var(--ink);
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+
+  .team-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--bg-warm);
+    border-bottom: 2px dashed var(--border-dashed);
+  }
+  .team-card-name {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .team-card-abbr {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-light);
+    margin-left: 8px;
+  }
+  .team-card-totals {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-medium);
+  }
+
+  /* Distribution bar */
+  .dist-bar-container {
+    padding: 12px 16px;
+  }
+  .dist-bar-label {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .dist-bar {
+    display: flex;
+    height: 32px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+  .dist-segment {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink);
+    cursor: pointer;
+    transition: opacity 0.15s;
+    overflow: hidden;
+    white-space: nowrap;
+    min-width: 0;
+    position: relative;
+  }
+  .dist-segment:hover {
+    opacity: 0.8;
+  }
+  .dist-segment .seg-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 3px;
+  }
+
+  /* Player detail rows */
+  .team-players {
+    padding: 8px 16px 12px;
+  }
+  .team-player-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    border-bottom: 2px dashed var(--border-dashed);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .team-player-row:hover {
+    background: var(--bg-warm);
+  }
+  .team-player-row:last-child {
+    border-bottom: none;
+  }
+  .player-row-pos {
+    width: 28px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 4px;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--ink);
+    color: var(--text-on-accent);
+    flex-shrink: 0;
+  }
+  .player-row-name {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .player-row-stat {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-medium);
+    text-align: right;
+    min-width: 50px;
+  }
+  .player-row-share {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink);
+    text-align: right;
+    min-width: 44px;
+  }
+
+  /* Annotation */
+  .team-annotation {
+    font-family: var(--font-hand);
+    font-size: 14px;
+    color: var(--ink-light);
+    padding: 0 16px 10px;
+  }
+
+  /* Legend */
+  .targets-legend {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-medium);
+  }
+  .legend-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--ink);
+  }
+
+  @media (max-width: 768px) {
+    
+    .team-card-header { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .player-row-stat { min-width: 40px; font-size: 11px; }
+  }
+  @media (max-width: 480px) {
+    
+    .dist-bar { height: 26px; }
+    .dist-segment { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<div id="site-header" data-page="targets"></div>
+
+<main class="targets-page" id="main-content">
+  <div class="targets-header">
+    <h1>Target Distribution</h1>
+    <div class="targets-subtitle">who gets the ball? follow the volume.</div>
+  </div>
+
+  <div class="targets-controls">
+    <div class="targets-mode-tabs">
+      <button class="targets-mode-tab active" data-mode="targets" aria-label="View by targets">Targets</button>
+      <button class="targets-mode-tab" data-mode="carries" aria-label="View by carries">Carries</button>
+    </div>
+    <select class="targets-team-select" id="team-select" aria-label="Team">
+      <option value="">All Teams</option>
+    </select>
+    <select class="targets-season-select" id="season-select" title="Season" aria-label="Season"></select>
+  </div>
+
+  <div class="targets-legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--pos-qb)"></div>QB</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--pos-rb)"></div>RB</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--pos-wr)"></div>WR</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:var(--pos-te)"></div>TE</div>
+  </div>
+
+  <div class="targets-actions">
+    <button class="btn-chunky" id="export-btn" title="Export as PNG">Export PNG</button>
+  </div>
+
+  <div id="targets-body" role="status" aria-live="polite">
+    <div class="targets-loading" id="targets-loading">studying the film...
+      <div class="loading-skeleton">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card" style="height:150px"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Watermark -->
+<div style="position:fixed; bottom:10px; right:14px; font-family:var(--font-hand); font-size:14px; color:var(--ink-light); opacity:0.7; pointer-events:none; z-index:999;">razzle.lol</div>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  'use strict';
+
+  var _cs = getComputedStyle(document.documentElement);
+  var POS_COLORS = {
+    QB: _cs.getPropertyValue('--pos-qb').trim() || '#5b7fff',
+    RB: _cs.getPropertyValue('--pos-rb').trim() || '#2ec4b6',
+    WR: _cs.getPropertyValue('--pos-wr').trim() || '#d97757',
+    TE: _cs.getPropertyValue('--pos-te').trim() || '#8b5cf6'
+  };
+  var POS_LIGHT = { QB: 'var(--blue-light)', RB: 'var(--green-light)', WR: 'var(--orange-light)', TE: 'var(--purple-light)' };
+
+
+  var currentData = null;
+  var activeMode = 'targets';
+
+  function loadData() {
+    var season = document.getElementById('season-select').value || '';
+    var team = document.getElementById('team-select').value || '';
+    var url = '/api/target-distribution?';
+    if (season) url += 'season=' + season + '&';
+    if (team) url += 'team=' + team;
+
+    document.getElementById('targets-loading').style.display = '';
+    document.getElementById('targets-loading').textContent = 'studying the film...';
+    document.getElementById('targets-body').innerHTML = '<div class="targets-loading" id="targets-loading">studying the film...</div>';
+
+    fetch(url)
+      .then(function(r) {
+        if (!r.ok) throw new Error('API error');
+        return r.json();
+      })
+      .then(function(data) {
+        currentData = data;
+        populateSeasons(data.available_seasons, data.season);
+        populateTeams(data.teams);
+        renderDistribution(data);
+      })
+      .catch(function() {
+        document.getElementById('targets-body').innerHTML = razzleErrorHTML('location.reload()');
+      });
+  }
+
+  function populateSeasons(seasons, current) {
+    var sel = document.getElementById('season-select');
+    if (!seasons || sel.options.length > 0) return;
+    seasons.forEach(function(s) {
+      var opt = document.createElement('option');
+      opt.value = s;
+      opt.textContent = s;
+      if (s === current) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+
+  function populateTeams(teams) {
+    var sel = document.getElementById('team-select');
+    if (!teams || sel.options.length > 1) return;
+    teams.forEach(function(t) {
+      var opt = document.createElement('option');
+      opt.value = t.team;
+      opt.textContent = t.team;
+      sel.appendChild(opt);
+    });
+  }
+
+  function getAnnotation(team, mode) {
+    // Find the dominant player
+    if (!team.players || team.players.length === 0) return '';
+    var top = team.players[0];
+    var share = mode === 'targets' ? top.target_share : top.carry_share;
+    if (share > 30) return escapeHtml((top.name || '').split(' ').pop()) + ' owns this ' + mode.slice(0, -1) + ' tree';
+    if (share > 22) return escapeHtml((top.name || '').split(' ').pop()) + ' leads the way';
+    return 'spread it around';
+  }
+
+  function renderDistribution(data) {
+    var container = document.getElementById('targets-body');
+    if (!data.teams || data.teams.length === 0) {
+      container.innerHTML = '<div class="targets-loading">' + razzleEmpty() + '</div>';
+      return;
+    }
+
+    var html = '';
+    data.teams.forEach(function(team) {
+      // Re-sort players by active mode metric
+      var sortKey = activeMode === 'targets' ? 'targets' : 'carries';
+      var teamPlayers = team.players || [];
+      teamPlayers.sort(function(a, b) { return b[sortKey] - a[sortKey]; });
+      var total = activeMode === 'targets' ? team.total_targets : team.total_carries;
+      var label = activeMode === 'targets' ? 'Targets' : 'Carries';
+
+      html += '<div class="team-card">';
+      html += '<div class="team-card-header">';
+      html += '<div><span class="team-card-name">' + escapeHtml(team.team_name) + '</span>';
+      html += '<span class="team-card-abbr">' + escapeHtml(team.team) + '</span></div>';
+      html += '<div class="team-card-totals">' + total + ' total ' + label.toLowerCase() + '</div>';
+      html += '</div>';
+
+      // Distribution bar
+      html += '<div class="dist-bar-container">';
+      html += '<div class="dist-bar-label">' + label + ' Distribution</div>';
+      html += '<div class="dist-bar">';
+
+      var otherPct = 100;
+      teamPlayers.forEach(function(p) {
+        var share = activeMode === 'targets' ? p.target_share : p.carry_share;
+        if (share < 2) return;
+        otherPct -= share;
+        var posColor = POS_COLORS[p.position] || 'var(--orange)';
+        var lightColor = POS_LIGHT[p.position] || 'var(--orange-light)';
+        var lastName = (p.name || '').split(' ').pop();
+        html += '<div class="dist-segment" style="width:' + share + '%; background:' + lightColor + '; border-right:2px solid ' + posColor + ';" ';
+        html += 'title="' + escapeHtml(p.name) + ': ' + share + '% (' + (activeMode === 'targets' ? p.targets : p.carries) + ')" ';
+        html += 'data-pid="' + escapeHtml(p.player_id) + '">';
+        if (share > 8) {
+          html += '<span class="seg-label">' + escapeHtml(lastName) + '</span>';
+        }
+        html += '</div>';
+      });
+      if (otherPct > 2) {
+        html += '<div class="dist-segment" style="width:' + Math.max(otherPct, 0).toFixed(1) + '%; background:var(--bg-warm);">';
+        if (otherPct > 8) html += '<span class="seg-label" style="color:var(--ink-light)">other</span>';
+        html += '</div>';
+      }
+      html += '</div></div>';
+
+      // Annotation
+      var ann = getAnnotation(team, activeMode);
+      if (ann) {
+        html += '<div class="team-annotation">' + ann + '</div>';
+      }
+
+      // Player detail rows
+      html += '<div class="team-players">';
+      teamPlayers.forEach(function(p) {
+        var share = activeMode === 'targets' ? p.target_share : p.carry_share;
+        var count = activeMode === 'targets' ? p.targets : p.carries;
+        if (count === 0) return;
+        var posColor = POS_COLORS[p.position] || 'var(--orange)';
+        html += '<div class="team-player-row" data-pid="' + escapeHtml(p.player_id) + '">';
+        html += '<div class="player-row-pos" style="background:' + posColor + '">' + escapeHtml(p.position) + '</div>';
+        html += '<div class="player-row-name">' + escapeHtml(p.name) + '</div>';
+        html += '<div class="player-row-stat">' + count + ' ' + (activeMode === 'targets' ? 'tgt' : 'car') + '</div>';
+        html += '<div class="player-row-share">' + share + '%</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+
+      html += '</div>';
+    });
+
+    container.innerHTML = html;
+
+    // Click handlers
+    container.querySelectorAll('[data-pid]').forEach(function(el) {
+      el.addEventListener('click', function() {
+        var pid = el.getAttribute('data-pid');
+        if (pid) window.location.href = '/player/' + encodeURIComponent(pid);
+      });
+    });
+  }
+
+  function saveTargetsState() {
+    savePageState({
+      mode: activeMode === 'targets' ? '' : activeMode,
+      team: document.getElementById('team-select').value,
+      season: document.getElementById('season-select').value
+    });
+  }
+
+  // Mode tabs
+  document.querySelectorAll('.targets-mode-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.targets-mode-tab').forEach(function(t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      activeMode = tab.getAttribute('data-mode');
+      saveTargetsState();
+      if (currentData) renderDistribution(currentData);
+    });
+  });
+
+  // Season selector
+  document.getElementById('season-select').addEventListener('change', function() {
+    saveTargetsState();
+    loadData();
+  });
+
+  // Team selector
+  document.getElementById('team-select').addEventListener('change', function() {
+    saveTargetsState();
+    loadData();
+  });
+
+  // Export PNG
+  document.getElementById('export-btn').addEventListener('click', function() {
+    var btn = this; btn.disabled = true; btn.textContent = 'Exporting...';
+    var el = document.getElementById('main-content');
+    loadHtml2Canvas().then(function(h2c) { return h2c(el, { backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf', scale: 2 }); }).then(function(canvas) {
+      var ctx = canvas.getContext('2d');
+      ctx.font = '24px Caveat, cursive';
+      ctx.fillStyle = document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.25)' : 'rgba(45,31,20,0.25)';
+      ctx.textAlign = 'right';
+      ctx.fillText('razzle.lol', canvas.width - 30, canvas.height - 20);
+
+      var link = document.createElement('a');
+      link.download = 'razzle-target-distribution.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }).finally(function() { btn.disabled = false; btn.textContent = 'Export PNG'; });
+  });
+
+  // Analytics
+  fetch('/api/analytics/pageview', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ page: '/targets.html' }) }).catch(function() {});
+
+  // Restore URL state
+  var urlState = restorePageState({ mode: '', team: '', season: '' });
+  if (urlState.mode) {
+    activeMode = urlState.mode;
+    document.querySelectorAll('.targets-mode-tab').forEach(function(t) {
+      t.classList.toggle('active', (t.getAttribute('data-mode') || '') === urlState.mode);
+    });
+  }
+  if (urlState.team) {
+    var teamSel = document.getElementById('team-select');
+    var opt = document.createElement('option');
+    opt.value = urlState.team;
+    opt.textContent = urlState.team;
+    opt.selected = true;
+    teamSel.appendChild(opt);
+  }
+  if (urlState.season) {
+    var seasonSel = document.getElementById('season-select');
+    var sopt = document.createElement('option');
+    sopt.value = urlState.season;
+    sopt.textContent = urlState.season;
+    sopt.selected = true;
+    seasonSel.appendChild(sopt);
+  }
+
+  // Load on init
+  loadData();
+})();
+</script>
+</body>
+</html>

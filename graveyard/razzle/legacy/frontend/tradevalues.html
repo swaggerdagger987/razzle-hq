@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Dynasty Trade Value Chart — Razzle</title>
+<meta property="og:title" content="Dynasty Trade Value Chart — Razzle">
+<meta property="og:description" content="Every dynasty player ranked by composite trade value. Production, age curve, and positional scarcity in one number. Know what your roster is worth.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Dynasty Trade Value Chart — Razzle">
+<meta name="twitter:description" content="Every dynasty player ranked by composite trade value. Production, age curve, and positional scarcity in one number.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Dynasty trade value chart on razzle.lol. Every player ranked by a composite of production (50%), age curve (30%), and positional scarcity (20%). Know what your roster is actually worth.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=tradevalues">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=tradevalues">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="standalone-common.css">
+<style>
+
+  /* Controls */
+
+  .tv-search {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 7px 12px;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--ink);
+    width: 200px;
+  }
+  .tv-search::placeholder { color: var(--ink-medium); }
+
+  /* Methodology chips */
+  .tv-methodology {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .tv-method-chip {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 4px 10px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    color: var(--ink-medium);
+  }
+  .tv-method-chip .method-label {
+    font-family: var(--font-display);
+    font-weight: 700;
+    margin-right: 4px;
+  }
+
+  /* Chart container */
+  .tv-chart-wrap {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: var(--radius-sm);
+    box-shadow: 4px 4px 0 var(--ink);
+    overflow: hidden;
+    margin-bottom: 32px;
+  }
+
+  /* Tier section header */
+  .tv-tier-header {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    padding: 10px 14px;
+    background: var(--bg-warm);
+    border-bottom: 3px solid var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tv-tier-header:not(:first-child) {
+    border-top: 3px solid var(--ink);
+  }
+  .tv-tier-num {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    width: 26px;
+    height: 26px;
+    line-height: 26px;
+    text-align: center;
+    border-radius: 50%;
+    border: 2px solid var(--ink);
+    flex-shrink: 0;
+  }
+  .tv-tier-num.t1 { background: var(--yellow); color: var(--ink); }
+  .tv-tier-num.t2 { background: var(--blue-light); color: var(--blue); }
+  .tv-tier-num.t3 { background: var(--green-light); color: var(--green); }
+  .tv-tier-num.t4 { background: var(--orange-light); color: var(--orange); }
+  .tv-tier-num.t5 { background: var(--purple-light); color: var(--purple); }
+  .tv-tier-num.t6 { background: var(--bg); color: var(--ink-medium); }
+  .tv-tier-num.t7 { background: var(--red-light); color: var(--red); }
+  .tv-tier-num.t8 { background: var(--ink-faint); color: var(--ink-medium); }
+  .tv-tier-label {
+    font-family: var(--font-hand);
+    font-size: 14px;
+    color: var(--ink-light);
+    margin-left: 4px;
+  }
+  .tv-tier-count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-light);
+    margin-left: auto;
+  }
+
+  /* Player row */
+  .tv-row {
+    display: flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-bottom: 2px dashed var(--border-dashed);
+    cursor: pointer;
+    transition: background 0.1s;
+    gap: 10px;
+    min-height: 44px;
+  }
+  .tv-row:hover { background: var(--bg-warm); }
+  .tv-row:last-child { border-bottom: none; }
+
+  .tv-rank {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink-light);
+    width: 32px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .tv-rank.top1 { color: var(--yellow); font-size: 16px; }
+  .tv-rank.top2 { color: var(--ink-light); font-size: 14px; }
+  .tv-rank.top3 { color: var(--orange); font-size: 14px; }
+
+  .tv-age {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-light);
+  }
+
+  /* Value bar area */
+  .tv-bar-area {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tv-bar-track {
+    flex: 1;
+    height: 22px;
+    background: var(--bg);
+    border: 2px solid var(--ink-faint);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    position: relative;
+  }
+  .tv-bar-fill {
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.4s ease;
+  }
+  .tv-bar-fill.qb { background: var(--pos-qb); }
+  .tv-bar-fill.rb { background: var(--pos-rb); }
+  .tv-bar-fill.wr { background: var(--pos-wr); }
+  .tv-bar-fill.te { background: var(--pos-te); }
+
+  .tv-value {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    width: 36px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* Stats area */
+  .tv-stats {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .tv-stat {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-medium);
+    text-align: center;
+    width: 48px;
+  }
+  .tv-stat-label {
+    font-size: 11px;
+    color: var(--ink-light);
+    text-transform: uppercase;
+  }
+
+  /* Tier badge (small) */
+  .tv-tier-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    border: 2px solid;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .tv-tier-badge.t1 { background: var(--yellow-light); color: var(--ink-medium); border-color: var(--yellow); }
+  .tv-tier-badge.t2 { background: var(--blue-light); color: var(--blue); border-color: var(--blue); }
+  .tv-tier-badge.t3 { background: var(--green-light); color: var(--green); border-color: var(--green); }
+  .tv-tier-badge.t4 { background: var(--orange-light); color: var(--orange); border-color: var(--orange); }
+  .tv-tier-badge.t5 { background: var(--purple-light); color: var(--purple); border-color: var(--purple); }
+  .tv-tier-badge.t6 { background: var(--bg); color: var(--ink-medium); border-color: var(--ink-faint); }
+  .tv-tier-badge.t7 { background: var(--red-light); color: var(--red); border-color: var(--red); }
+  .tv-tier-badge.t8 { background: var(--ink-faint); color: var(--ink); border-color: var(--ink-light); }
+
+  /* Component tooltip */
+  .tv-row[title] { position: relative; }
+
+  /* Weight sliders */
+  .tv-weight-sliders {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+  .tv-slider-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 140px;
+  }
+  .tv-slider-label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .tv-slider-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+  .tv-slider-row input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+    background: var(--ink-faint);
+    outline: none;
+    cursor: pointer;
+  }
+  .tv-slider-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--orange);
+    border: 3px solid var(--ink);
+    cursor: grab;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .tv-slider-row input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--orange);
+    border: 3px solid var(--ink);
+    cursor: grab;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .tv-slider-row input[type="range"]::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 4px;
+  }
+  .tv-slider-row input[type="range"]::-moz-range-track {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--ink-faint);
+  }
+  .tv-slider-val {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    min-width: 36px;
+    text-align: right;
+  }
+  .tv-weight-total {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-light);
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .tv-weight-total .total-num {
+    font-weight: 700;
+    color: var(--green);
+  }
+  .tv-weight-reset {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 3px 10px;
+    border: 2px solid var(--ink-faint);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    color: var(--ink-light);
+    cursor: pointer;
+    margin-top: 8px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .tv-weight-reset:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+
+  /* Loading / Empty / Error */
+  .tv-loading,
+
+  @media (max-width: 768px) {
+
+    .tv-stats { display: none; }
+    .tv-rank { width: 24px; font-size: 12px; }
+    .tv-search { width: 140px; }
+  }
+  @media (max-width: 480px) {
+
+    .tv-methodology { display: none; }
+    .tv-tier-badge { display: none; }
+  }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div id="site-header" data-page="tradevalues"></div>
+
+<main class="tv-page" id="main-content">
+  <div class="tv-header">
+    <h1>Dynasty Trade Value Chart</h1>
+    <div class="tv-subtitle">every player's dynasty worth at a glance</div>
+    <div style="font-family:var(--font-hand); font-size:14px; color:var(--ink-light); margin-top:8px;">adjust the weights below to match your league's priorities</div>
+    <div style="font-family:var(--font-hand); font-size:14px; color:var(--ink-light); margin-top:4px;">the number your leaguemates wish they had</div>
+  </div>
+
+  <div class="tv-controls">
+    <div class="tv-pos-tabs" id="pos-tabs" role="tablist" aria-label="Position filter">
+      <button class="tv-pos-tab active" data-pos="" aria-label="All positions">All</button>
+      <button class="tv-pos-tab" data-pos="QB" aria-label="Quarterbacks">QB</button>
+      <button class="tv-pos-tab" data-pos="RB" aria-label="Running Backs">RB</button>
+      <button class="tv-pos-tab" data-pos="WR" aria-label="Wide Receivers">WR</button>
+      <button class="tv-pos-tab" data-pos="TE" aria-label="Tight Ends">TE</button>
+    </div>
+    <select class="tv-select" id="season-select" title="Season" aria-label="Season"></select>
+    <input class="tv-search" type="text" id="player-search" placeholder="search player..." aria-label="Search players">
+  </div>
+
+  <div class="tv-weight-sliders" id="weight-sliders">
+    <div class="tv-slider-group">
+      <div class="tv-slider-label">Production</div>
+      <div class="tv-slider-row">
+        <input type="range" id="w-prod" min="0" max="100" value="50" aria-label="Production weight">
+        <span class="tv-slider-val" id="w-prod-val">50%</span>
+      </div>
+    </div>
+    <div class="tv-slider-group">
+      <div class="tv-slider-label">Age Curve</div>
+      <div class="tv-slider-row">
+        <input type="range" id="w-age" min="0" max="100" value="30" aria-label="Age weight">
+        <span class="tv-slider-val" id="w-age-val">30%</span>
+      </div>
+    </div>
+    <div class="tv-slider-group">
+      <div class="tv-slider-label">Pos Scarcity</div>
+      <div class="tv-slider-row">
+        <input type="range" id="w-scar" min="0" max="100" value="20" aria-label="Scarcity weight">
+        <span class="tv-slider-val" id="w-scar-val">20%</span>
+      </div>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+      <div class="tv-weight-total">Total: <span class="total-num" id="w-total">100%</span></div>
+      <button class="tv-weight-reset" id="w-reset" title="Reset to default 50/30/20">Reset</button>
+    </div>
+  </div>
+
+  <div class="tv-actions">
+    <button class="btn-chunky" id="export-btn" title="Export as PNG">Export PNG</button>
+  </div>
+
+  <div id="tv-body" role="status" aria-live="polite">
+    <div class="tv-loading" id="tv-loading">calculating trade values...</div>
+  </div>
+</main>
+
+<!-- Watermark -->
+<div style="position:fixed; bottom:10px; right:14px; font-family:var(--font-hand); font-size:14px; color:var(--ink-light); opacity:0.7; pointer-events:none; z-index:999;">razzle.lol</div>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  'use strict';
+
+
+  function fmt(v, dec) {
+    if (v === null || v === undefined) return '-';
+    return Number(v).toFixed(dec === undefined ? 1 : dec);
+  }
+
+  var currentPosition = '';
+  var rawApiData = null;
+  var currentData = null;
+  var searchQuery = '';
+
+  var TIER_LABELS = {
+    1: 'Elite', 2: 'Blue Chip', 3: 'Premium', 4: 'Solid',
+    5: 'Promising', 6: 'Depth', 7: 'Roster Clogger', 8: 'Cut Bait'
+  };
+
+  function filterBySearch(players) {
+    if (!searchQuery) return players;
+    var q = searchQuery.toLowerCase();
+    return players.filter(function(p) {
+      return (p.full_name || '').toLowerCase().indexOf(q) !== -1 ||
+             (p.team || '').toLowerCase().indexOf(q) !== -1;
+    });
+  }
+
+  function buildPlayerRow(p) {
+    var pos = (p.position || 'RB').toLowerCase();
+    var pct = Math.max(0, Math.min(100, p.trade_value));
+    var rankClass = '';
+    if (p.rank === 1) rankClass = ' top1';
+    else if (p.rank === 2) rankClass = ' top2';
+    else if (p.rank === 3) rankClass = ' top3';
+
+    var tooltip = 'Production: ' + fmt(p.production_score) + '/100 | Age: ' + fmt(p.age_score) + '/100 | Scarcity: ' + fmt(p.scarcity_score) + '/100';
+
+    var html = '<div class="tv-row" data-pid="' + escapeHtml(p.player_id) + '" title="' + escapeHtml(tooltip) + '">';
+
+    // Rank
+    html += '<div class="tv-rank' + rankClass + '">' + escapeHtml(String(p.rank)) + '</div>';
+
+    // Headshot
+    if (p.headshot_url) {
+      html += '<img class="tv-headshot" src="' + escapeHtml(p.headshot_url) + '" alt="Player headshot" loading="lazy" onerror="this.onerror=null;this.src=\'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><circle cx=%2220%22 cy=%2220%22 r=%2220%22 fill=%22%23d97757%22/><text x=%2220%22 y=%2225%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2216%22>?</text></svg>\'">';
+    } else {
+      html += '<div class="tv-headshot"></div>';
+    }
+
+    // Player info
+    html += '<div class="tv-player-info">';
+    html += '<div class="tv-player-name">' + escapeHtml(p.full_name) + '</div>';
+    html += '<div class="tv-player-meta">';
+    html += '<span class="tv-pos-badge ' + pos + '">' + escapeHtml(p.position) + '</span>';
+    html += '<span class="tv-team-label">' + escapeHtml(p.team) + '</span>';
+    if (p.age) html += '<span class="tv-age">age ' + escapeHtml(String(p.age)) + '</span>';
+    html += '</div></div>';
+
+    // Value bar
+    html += '<div class="tv-bar-area">';
+    html += '<div class="tv-bar-track"><div class="tv-bar-fill ' + pos + '" style="width:' + pct + '%"></div></div>';
+    html += '<div class="tv-value">' + fmt(p.trade_value) + '</div>';
+    html += '</div>';
+
+    // Stats
+    html += '<div class="tv-stats">';
+    html += '<div class="tv-stat"><div>' + fmt(p.ppg) + '</div><div class="tv-stat-label">PPG</div></div>';
+    html += '<div class="tv-stat"><div>' + (p.games != null ? escapeHtml(String(p.games)) : '-') + '</div><div class="tv-stat-label">GP</div></div>';
+    html += '</div>';
+
+    // Tier badge
+    html += '<span class="tv-tier-badge t' + p.tier + '">' + escapeHtml(p.tier_label) + '</span>';
+
+    html += '</div>';
+    return html;
+  }
+
+  function render(data) {
+    currentData = data;
+    var body = document.getElementById('tv-body');
+
+    var players = filterBySearch(data.players || []);
+
+    if (!players.length) {
+      body.innerHTML = '<div class="tv-empty">' + razzleEmpty() + '</div>';
+      return;
+    }
+
+    // Group by tier
+    var tierGroups = {};
+    players.forEach(function(p) {
+      var t = p.tier;
+      if (!tierGroups[t]) tierGroups[t] = [];
+      tierGroups[t].push(p);
+    });
+
+    var html = '<div class="tv-chart-wrap">';
+    var tierKeys = Object.keys(tierGroups).map(Number).sort(function(a, b) { return a - b; });
+
+    tierKeys.forEach(function(t) {
+      var group = tierGroups[t];
+      var label = TIER_LABELS[t] || 'Tier ' + t;
+      html += '<div class="tv-tier-header">';
+      html += '<span class="tv-tier-num t' + t + '">' + t + '</span>';
+      html += escapeHtml(label);
+      html += '<span class="tv-tier-label">tier ' + t + ' of 8</span>';
+      html += '<span class="tv-tier-count">' + group.length + ' player' + (group.length !== 1 ? 's' : '') + '</span>';
+      html += '</div>';
+
+      group.forEach(function(p) {
+        html += buildPlayerRow(p);
+      });
+    });
+
+    html += '</div>';
+    body.innerHTML = html;
+
+    // Click handlers
+    body.querySelectorAll('.tv-row[data-pid]').forEach(function(row) {
+      row.addEventListener('click', function() {
+        var pid = row.getAttribute('data-pid');
+        if (pid) window.location.href = '/player/' + encodeURIComponent(pid);
+      });
+    });
+  }
+
+  function loadData() {
+    var body = document.getElementById('tv-body');
+    body.innerHTML = '<div class="tv-loading">calculating trade values...</div>';
+
+    var seasonSel = document.getElementById('season-select');
+    var season = seasonSel.value || '';
+    var url = '/api/trade-value-chart?limit=150';
+    if (season) url += '&season=' + season;
+    if (currentPosition) url += '&position=' + currentPosition;
+
+    fetch(url).then(function(resp) {
+      if (!resp.ok) throw new Error('API error ' + resp.status);
+      return resp.json();
+    }).then(function(data) {
+      var seasonSel = document.getElementById('season-select');
+      if (seasonSel.options.length === 0 && data.available_seasons) {
+        data.available_seasons.forEach(function(s) {
+          var opt = document.createElement('option');
+          opt.value = s;
+          opt.textContent = s;
+          seasonSel.appendChild(opt);
+        });
+        seasonSel.value = data.season;
+      }
+      rawApiData = data;
+      render(recomputeValues(data));
+    }).catch(function() {
+      body.innerHTML = '<div class="tv-error">' + razzleError() + '<br><button class="btn-chunky" onclick="location.reload()">retry</button></div>';
+    });
+  }
+
+  // Position tab clicks
+  document.getElementById('pos-tabs').addEventListener('click', function(e) {
+    var tab = e.target.closest('.tv-pos-tab');
+    if (!tab) return;
+    document.querySelectorAll('.tv-pos-tab').forEach(function(t) { t.classList.remove('active'); });
+    tab.classList.add('active');
+    currentPosition = tab.getAttribute('data-pos') || '';
+    savePageState({ pos: currentPosition, season: document.getElementById('season-select').value });
+    loadData();
+  });
+
+  // Season change
+  document.getElementById('season-select').addEventListener('change', function() {
+    savePageState({ pos: currentPosition, season: this.value });
+    loadData();
+  });
+
+  // Search
+  var searchTimer;
+  document.getElementById('player-search').addEventListener('input', function() {
+    clearTimeout(searchTimer);
+    var self = this;
+    searchTimer = setTimeout(function() {
+      searchQuery = self.value.trim();
+      if (currentData) render(currentData);
+    }, 200);
+  });
+
+  // Export PNG
+  document.getElementById('export-btn').addEventListener('click', function() {
+    var btn = this; btn.disabled = true; btn.textContent = 'Exporting...';
+    var el = document.getElementById('main-content');
+    loadHtml2Canvas().then(function(h2c) { return h2c(el, { backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf', scale: 2 }); }).then(function(canvas) {
+      var ctx = canvas.getContext('2d');
+      ctx.font = '24px Caveat, cursive';
+      ctx.fillStyle = document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.3)' : 'rgba(45,31,20,0.3)';
+      ctx.textAlign = 'right';
+      ctx.fillText('razzle.lol', canvas.width - 20, canvas.height - 16);
+
+      var link = document.createElement('a');
+      link.download = 'razzle-trade-values.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }).finally(function() { btn.disabled = false; btn.textContent = 'Export PNG'; });
+  });
+
+  // Analytics pageview
+  fetch('/api/analytics/pageview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: '/tradevalues.html', referrer: document.referrer || '' })
+  }).catch(function() {});
+
+  // Restore URL state
+  var urlState = restorePageState({ pos: '', season: '' });
+  if (urlState.pos) {
+    currentPosition = urlState.pos;
+    document.querySelectorAll('.tv-pos-tab').forEach(function(t) {
+      t.classList.toggle('active', (t.getAttribute('data-pos') || '') === urlState.pos);
+    });
+  }
+  if (urlState.season) {
+    var sel = document.getElementById('season-select');
+    var opt = document.createElement('option');
+    opt.value = urlState.season;
+    opt.textContent = urlState.season;
+    opt.selected = true;
+    sel.appendChild(opt);
+  }
+
+  // Weight sliders
+  var wProd = document.getElementById('w-prod');
+  var wAge = document.getElementById('w-age');
+  var wScar = document.getElementById('w-scar');
+  var wProdVal = document.getElementById('w-prod-val');
+  var wAgeVal = document.getElementById('w-age-val');
+  var wScarVal = document.getElementById('w-scar-val');
+  var wTotal = document.getElementById('w-total');
+  var wReset = document.getElementById('w-reset');
+
+  function getWeights() {
+    var p = parseInt(wProd.value) || 0;
+    var a = parseInt(wAge.value) || 0;
+    var s = parseInt(wScar.value) || 0;
+    return { prod: p, age: a, scar: s, total: p + a + s };
+  }
+
+  function updateWeightDisplay() {
+    var w = getWeights();
+    wProdVal.textContent = w.prod + '%';
+    wAgeVal.textContent = w.age + '%';
+    wScarVal.textContent = w.scar + '%';
+    wTotal.textContent = w.total + '%';
+    wTotal.style.color = w.total === 100 ? 'var(--green)' : 'var(--red)';
+  }
+
+  function recomputeValues(data) {
+    if (!data || !data.players) return data;
+    var w = getWeights();
+    var sum = w.total || 1;
+    var wp = w.prod / sum;
+    var wa = w.age / sum;
+    var ws = w.scar / sum;
+    var players = data.players.map(function(p) {
+      var raw = (p.production_score || 0) * wp + (p.age_score || 0) * wa + (p.scarcity_score || 0) * ws;
+      // Soft ceiling matching backend
+      var tv;
+      if (raw <= 90) {
+        tv = Math.max(0, raw);
+      } else {
+        var excess = raw - 90;
+        tv = 90 + 10 * (1 - Math.exp(-excess / 50));
+      }
+      var copy = {};
+      for (var k in p) { if (p.hasOwnProperty(k)) copy[k] = p[k]; }
+      copy.trade_value = Math.round(tv * 10) / 10;
+      return copy;
+    });
+    // Re-sort and re-tier
+    players.sort(function(a, b) { return b.trade_value - a.trade_value; });
+    players.forEach(function(p, i) {
+      p.rank = i + 1;
+      var v = p.trade_value;
+      p.tier = v >= 80 ? 1 : v >= 65 ? 2 : v >= 50 ? 3 : v >= 35 ? 4 : v >= 25 ? 5 : v >= 15 ? 6 : v >= 5 ? 7 : 8;
+      p.tier_label = TIER_LABELS[p.tier] || 'Tier ' + p.tier;
+    });
+    return { season: data.season, available_seasons: data.available_seasons, players: players, total: players.length };
+  }
+
+  function onWeightChange() {
+    updateWeightDisplay();
+    if (rawApiData) render(recomputeValues(rawApiData));
+  }
+
+  wProd.addEventListener('input', onWeightChange);
+  wAge.addEventListener('input', onWeightChange);
+  wScar.addEventListener('input', onWeightChange);
+  wReset.addEventListener('click', function() {
+    wProd.value = 50; wAge.value = 30; wScar.value = 20;
+    onWeightChange();
+  });
+
+  updateWeightDisplay();
+
+  // Initial load
+  loadData();
+})();
+</script>
+</body>
+</html>

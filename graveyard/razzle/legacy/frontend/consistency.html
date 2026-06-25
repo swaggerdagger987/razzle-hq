@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Consistency Rankings — Razzle</title>
+<meta property="og:title" content="Consistency Rankings — Razzle">
+<meta property="og:description" content="Rock-solid floors vs wild-card ceilings. Consistency grades, coefficient of variation, and 10th/90th percentile ranges. Know your floor before you start them.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Consistency Rankings — Razzle">
+<meta name="twitter:description" content="Rock-solid floors vs wild-card ceilings. Consistency grades, coefficient of variation, and floor/ceiling ranges.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Fantasy consistency rankings on razzle.lol. The safest and riskiest weekly starters by coefficient of variation, with floor/ceiling percentile ranges.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=consistency">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=consistency">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="standalone-common.css">
+<style>
+
+  /* Section headers */
+
+  .con-section-header.solid { background: var(--green-light); }
+  .con-section-header.wild { background: var(--red-light); }
+  
+  .section-icon.solid { color: var(--green); }
+  .section-icon.wild { color: var(--red); }
+
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div id="site-header" data-page="consistency"></div>
+
+<main class="con-page" id="main-content">
+  <div class="con-header">
+    <h1>Consistency Rankings</h1>
+    <div class="con-subtitle">the safest floors and the wildest swings, week to week</div>
+  </div>
+
+  <div class="con-controls">
+    <div class="con-pos-tabs" id="pos-tabs" role="tablist" aria-label="Position filter">
+      <button class="con-pos-tab active" data-pos="" aria-label="All positions" role="tab" aria-selected="true">All</button>
+      <button class="con-pos-tab" data-pos="QB" aria-label="Quarterbacks" role="tab" aria-selected="false">QB</button>
+      <button class="con-pos-tab" data-pos="RB" aria-label="Running Backs" role="tab" aria-selected="false">RB</button>
+      <button class="con-pos-tab" data-pos="WR" aria-label="Wide Receivers" role="tab" aria-selected="false">WR</button>
+      <button class="con-pos-tab" data-pos="TE" aria-label="Tight Ends" role="tab" aria-selected="false">TE</button>
+    </div>
+    <div class="con-scoring-tabs" id="scoring-tabs">
+      <button class="con-scoring-tab active" data-scoring="ppr">PPR</button>
+      <button class="con-scoring-tab" data-scoring="half_ppr">Half</button>
+      <button class="con-scoring-tab" data-scoring="std">Std</button>
+    </div>
+    <select class="con-select" id="season-select" title="Season" aria-label="Season"></select>
+  </div>
+
+  <div class="con-actions">
+    <button class="btn-chunky" id="export-btn" title="Export as PNG">Export PNG</button>
+  </div>
+
+  <div id="con-body" role="status" aria-live="polite" style="overflow-x:auto">
+    <div class="con-loading" id="con-loading">checking the tape...
+      <div class="loading-skeleton">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card" style="height:150px"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Watermark -->
+<div style="position:fixed; bottom:10px; right:14px; font-family:var(--font-hand); font-size:14px; color:var(--ink-light); opacity:0.7; pointer-events:none; z-index:999;">razzle.lol</div>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  'use strict';
+
+
+  function fmt(v, dec) {
+    if (v === null || v === undefined) return '-';
+    return Number(v).toFixed(dec === undefined ? 1 : dec);
+  }
+
+  var currentPosition = '';
+  var currentScoring = 'ppr';
+  var currentData = null;
+
+  // Restore URL state
+  var urlState = restorePageState({pos: '', season: '', scoring: 'ppr'});
+  if (urlState.pos) currentPosition = urlState.pos;
+  if (urlState.scoring && ['ppr','half_ppr','std'].indexOf(urlState.scoring) !== -1) currentScoring = urlState.scoring;
+
+  // Sync UI from URL state
+  if (currentPosition) {
+    document.querySelectorAll('.con-pos-tab').forEach(function(t) {
+      t.classList.toggle('active', (t.getAttribute('data-pos') || '') === currentPosition);
+    });
+  }
+  document.querySelectorAll('.con-scoring-tab').forEach(function(t) {
+    t.classList.toggle('active', t.getAttribute('data-scoring') === currentScoring);
+  });
+
+  function _saveState() {
+    savePageState({ pos: currentPosition, season: document.getElementById('season-select').value, scoring: currentScoring });
+  }
+
+  // Sort state per section
+  var sortState = {
+    rock_solid: { col: 'cov', dir: 1 },
+    wild_cards: { col: 'cov', dir: -1 }
+  };
+
+  function gradeClass(grade) {
+    if (!grade) return 'grade-f';
+    var g = grade.charAt(0);
+    if (g === 'A') return grade === 'A+' ? 'grade-aplus' : 'grade-a';
+    if (g === 'B') return 'grade-b';
+    if (g === 'C') return 'grade-c';
+    if (g === 'D') return 'grade-d';
+    return 'grade-f';
+  }
+
+  // Rock Solid columns
+  var SOLID_COLUMNS = [
+    { key: 'name', label: 'Player', tip: '' },
+    { key: 'ppg', label: 'PPG', tip: 'Fantasy points per game (PPR)' },
+    { key: 'grade', label: 'Grade', tip: 'Consistency grade based on CoV percentile (A+ = most consistent top 5%, F = most volatile bottom 25%)' },
+    { key: 'stddev', label: 'StdDev', tip: 'Standard deviation of weekly fantasy scores — lower = more consistent' },
+    { key: 'cov', label: 'CoV%', tip: 'Coefficient of variation as % (StdDev / PPG × 100) — lower = more predictable' },
+    { key: 'floor', label: 'Floor', tip: '10th percentile weekly score — your worst-case week' },
+    { key: 'ceiling', label: 'Ceiling', tip: '90th percentile weekly score — your best-case week', hide: true },
+    { key: 'range', label: 'Range', tip: 'Ceiling minus Floor — the weekly scoring spread', hide: true },
+    { key: 'games', label: 'GP', hide: true, tip: 'Games played' },
+    { key: 'annotation', label: '', hide: true, nosort: true, tip: '' }
+  ];
+
+  // Wild Cards columns
+  var WILD_COLUMNS = [
+    { key: 'name', label: 'Player', tip: '' },
+    { key: 'ppg', label: 'PPG', tip: 'Fantasy points per game (PPR)' },
+    { key: 'grade', label: 'Grade', tip: 'Consistency grade based on CoV percentile (A+ = most consistent, F = most volatile)' },
+    { key: 'stddev', label: 'StdDev', tip: 'Standard deviation of weekly fantasy scores — higher = more volatile' },
+    { key: 'cov', label: 'CoV%', tip: 'Coefficient of variation as % (StdDev / PPG × 100) — higher = less predictable' },
+    { key: 'floor', label: 'Floor', tip: '10th percentile weekly score — your worst-case week' },
+    { key: 'ceiling', label: 'Ceiling', tip: '90th percentile weekly score — your best-case week' },
+    { key: 'range', label: 'Range', tip: 'Ceiling minus Floor — the weekly scoring spread', hide: true },
+    { key: 'games', label: 'GP', hide: true, tip: 'Games played' },
+    { key: 'annotation', label: '', hide: true, nosort: true, tip: '' }
+  ];
+
+  function getColumns(section) {
+    return section === 'rock_solid' ? SOLID_COLUMNS : WILD_COLUMNS;
+  }
+
+  function buildPlayerRow(p, section, idx) {
+    var pos = (p.position || 'RB').toLowerCase();
+    var cols = getColumns(section);
+    var rankClass = idx === 0 ? ' card-hero' : idx <= 2 ? ' card-spotlight' : '';
+
+    var html = '<tr class="' + rankClass.trim() + '" data-pid="' + escapeHtml(p.player_id) + '">';
+
+    cols.forEach(function(col) {
+      var classes = [];
+      if (col.key !== 'name') classes.push('center');
+      if (col.hide) classes.push('hide-mobile');
+
+      if (col.key === 'name') {
+        html += '<td>';
+        html += '<div class="con-player-cell">';
+        if (p.headshot_url) {
+          html += '<img class="con-headshot" src="' + escapeHtml(p.headshot_url) + '" alt="Player headshot" loading="lazy" onerror="this.onerror=null;this.src=\'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><circle cx=%2220%22 cy=%2220%22 r=%2220%22 fill=%22%23d97757%22/><text x=%2220%22 y=%2225%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2216%22>?</text></svg>\'">';
+        }
+        html += '<div class="con-player-info">';
+        html += '<div class="con-player-name">' + escapeHtml(p.name) + '</div>';
+        html += '<div class="con-player-meta">';
+        html += '<span class="con-pos-badge ' + pos + '">' + escapeHtml(p.position) + '</span>';
+        html += '<span class="con-team-label">' + escapeHtml(p.team) + '</span>';
+        html += '</div></div></div>';
+        html += '</td>';
+      } else if (col.key === 'grade') {
+        var g = p.grade || 'C';
+        html += '<td class="' + classes.join(' ') + '">';
+        html += '<span class="con-grade-badge ' + gradeClass(g) + '">' + escapeHtml(g) + '</span>';
+        html += '</td>';
+      } else if (col.key === 'ppg') {
+        html += '<td class="' + classes.join(' ') + '" style="font-weight:700;">' + fmt(p.ppg) + '</td>';
+      } else if (col.key === 'stddev') {
+        html += '<td class="' + classes.join(' ') + '">' + fmt(p.stddev) + '</td>';
+      } else if (col.key === 'cov') {
+        html += '<td class="' + classes.join(' ') + '" style="font-weight:700;">' + fmt(p.cov * 100, 1) + '%</td>';
+      } else if (col.key === 'floor') {
+        html += '<td class="' + classes.join(' ') + '" style="color:var(--green);">' + fmt(p.floor) + '</td>';
+      } else if (col.key === 'ceiling') {
+        html += '<td class="' + classes.join(' ') + '" style="color:var(--blue);">' + fmt(p.ceiling) + '</td>';
+      } else if (col.key === 'range') {
+        html += '<td class="' + classes.join(' ') + '">' + fmt(p.range) + '</td>';
+      } else if (col.key === 'annotation') {
+        html += '<td class="' + classes.join(' ') + '"><span class="con-annotation">' + escapeHtml(p.annotation || '') + '</span></td>';
+      } else {
+        var val = p[col.key];
+        html += '<td class="' + classes.join(' ') + '">' + (val !== null && val !== undefined ? escapeHtml(String(val)) : '-') + '</td>';
+      }
+    });
+
+    html += '</tr>';
+    return html;
+  }
+
+  function buildTableHeader(section) {
+    var state = sortState[section];
+    var cols = getColumns(section);
+    var html = '<thead><tr>';
+    cols.forEach(function(col) {
+      var classes = [];
+      if (col.key !== 'name') classes.push('center');
+      if (col.hide) classes.push('hide-mobile');
+      var sorted = state.col === col.key;
+      if (sorted) classes.push('sorted');
+      var arrow = sorted ? (state.dir === 1 ? ' &#9650;' : ' &#9660;') : '';
+      var sortAttr = col.nosort ? '' : ' data-sort="' + col.key + '" data-section="' + section + '"';
+      var tipAttr = col.tip ? ' title="' + escapeHtml(col.tip) + '"' : '';
+      html += '<th class="' + classes.join(' ') + '"' + sortAttr + tipAttr + '>' + col.label + '<span class="sort-arrow">' + arrow + '</span></th>';
+    });
+    html += '</tr></thead>';
+    return html;
+  }
+
+  function sortPlayers(players, col, dir) {
+    return players.slice().sort(function(a, b) {
+      var va = a[col], vb = b[col];
+      if (va === null || va === undefined) va = -Infinity;
+      if (vb === null || vb === undefined) vb = -Infinity;
+      if (typeof va === 'string') return dir * va.localeCompare(vb);
+      return dir * (vb - va);
+    });
+  }
+
+  function buildTable(players, section) {
+    if (!players || !players.length) {
+      var label = section === 'rock_solid' ? 'consistent players' : 'volatile players';
+      return '<div class="panel-empty">' + (typeof razzleEmpty === 'function' ? razzleEmpty() : 'no ' + label + ' found') + '<span class="hint">try a different position or season</span></div>';
+    }
+
+    var isSolid = section === 'rock_solid';
+    var icon = isSolid ? '&#x1F3AF;' : '&#x1F3B2;';
+    var title = isSolid ? 'Rock Solid' : 'Wild Cards';
+    var subtitle = isSolid
+      ? 'lowest week-to-week variance (min 6 games, 2+ PPG)'
+      : 'highest week-to-week variance (most volatile scorers)';
+    var headerClass = isSolid ? 'solid' : 'wild';
+
+    var state = sortState[section];
+    var sorted = sortPlayers(players, state.col, state.dir);
+
+    var html = '<div class="con-section">';
+    html += '<div class="con-section-header ' + headerClass + '">';
+    html += '<span class="section-icon ' + headerClass + '">' + icon + '</span> ';
+    html += title + ' <span style="font-family:var(--font-hand); font-size:16px; color:var(--ink-light); font-weight:500;">(' + players.length + ' players) — ' + subtitle + '</span>';
+    html += '</div>';
+
+    html += '<table class="con-table" data-section="' + section + '"><caption class="sr-only">Fantasy scoring consistency rankings — ' + escapeHtml(title) + '</caption>';
+    html += buildTableHeader(section);
+    html += '<tbody>';
+    sorted.forEach(function(p, idx) {
+      html += buildPlayerRow(p, section, idx);
+    });
+    html += '</tbody></table>';
+    html += '</div>';
+    return html;
+  }
+
+  function render(data) {
+    currentData = data;
+    var body = document.getElementById('con-body');
+
+    if (!data || (!(data.rock_solid || []).length && !(data.wild_cards || []).length)) {
+      body.innerHTML = '<div class="panel-empty">' + (typeof razzleEmpty === 'function' ? razzleEmpty() : 'no data found') + '<span class="hint">try a different position or season</span></div>';
+      return;
+    }
+
+    var html = '';
+    html += buildTable(data.rock_solid, 'rock_solid');
+    html += buildTable(data.wild_cards, 'wild_cards');
+    body.innerHTML = html;
+
+    // Attach sort listeners
+    body.querySelectorAll('th[data-sort]').forEach(function(th) {
+      th.addEventListener('click', function() {
+        var col = th.getAttribute('data-sort');
+        var sec = th.getAttribute('data-section');
+        if (sortState[sec].col === col) {
+          sortState[sec].dir *= -1;
+        } else {
+          sortState[sec].col = col;
+          sortState[sec].dir = -1;
+        }
+        render(currentData);
+      });
+    });
+
+    // Attach row click
+    body.querySelectorAll('tr[data-pid]').forEach(function(tr) {
+      tr.addEventListener('click', function() {
+        var pid = tr.getAttribute('data-pid');
+        if (pid) window.location.href = '/player/' + encodeURIComponent(pid);
+      });
+    });
+  }
+
+  function loadData() {
+    var body = document.getElementById('con-body');
+    body.innerHTML = '<div class="con-loading">checking the tape...</div>';
+
+    var seasonSel = document.getElementById('season-select');
+    var season = seasonSel.value || '';
+    var url = '/api/consistency-rankings?limit=30';
+    if (season) url += '&season=' + season;
+    if (currentPosition) url += '&position=' + currentPosition;
+    if (currentScoring !== 'ppr') url += '&scoring=' + currentScoring;
+
+    fetch(url).then(function(resp) {
+      if (!resp.ok) throw new Error('API error ' + resp.status);
+      return resp.json();
+    }).then(function(data) {
+      // Populate season selector if needed
+      var seasonSel = document.getElementById('season-select');
+      if (seasonSel.options.length === 0 && data.available_seasons) {
+        data.available_seasons.forEach(function(s) {
+          var opt = document.createElement('option');
+          opt.value = s;
+          opt.textContent = s;
+          seasonSel.appendChild(opt);
+        });
+        seasonSel.value = data.season;
+      }
+      render(data);
+    }).catch(function(err) {
+      body.innerHTML = '<div class="panel-error">' + (typeof razzleError === 'function' ? razzleError() : 'something went wrong') + '<br><button onclick="location.reload()">retry</button></div>';
+    });
+  }
+
+  // Position tab clicks
+  document.getElementById('pos-tabs').addEventListener('click', function(e) {
+    var tab = e.target.closest('.con-pos-tab');
+    if (!tab) return;
+    document.querySelectorAll('.con-pos-tab').forEach(function(t) { t.classList.remove('active'); });
+    tab.classList.add('active');
+    currentPosition = tab.getAttribute('data-pos') || '';
+    loadData();
+    _saveState();
+  });
+
+  // Scoring tab clicks
+  document.getElementById('scoring-tabs').addEventListener('click', function(e) {
+    var tab = e.target.closest('.con-scoring-tab');
+    if (!tab) return;
+    document.querySelectorAll('.con-scoring-tab').forEach(function(t) { t.classList.remove('active'); });
+    tab.classList.add('active');
+    currentScoring = tab.getAttribute('data-scoring') || 'ppr';
+    loadData();
+    _saveState();
+  });
+
+  // Season change
+  document.getElementById('season-select').addEventListener('change', function() {
+    loadData();
+    _saveState();
+  });
+
+  // Export PNG
+  document.getElementById('export-btn').addEventListener('click', function() {
+    var btn = this; btn.disabled = true; btn.textContent = 'Exporting...';
+    var el = document.getElementById('main-content');
+    var _ec = getExportColors(); loadHtml2Canvas().then(function(h2c) { return h2c(el, { backgroundColor: _ec.bg, scale: 2 }); }).then(function(canvas) {
+      var ctx = canvas.getContext('2d');
+      ctx.font = '24px Caveat, cursive';
+      ctx.fillStyle = getExportColors().watermark;
+      ctx.textAlign = 'right';
+      ctx.fillText('razzle.lol', canvas.width - 20, canvas.height - 16);
+
+      var link = document.createElement('a');
+      link.download = 'razzle-consistency.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }).finally(function() { btn.disabled = false; btn.textContent = 'Export PNG'; });
+  });
+
+  // Analytics pageview
+  fetch('/api/analytics/pageview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: '/consistency.html', referrer: document.referrer || '' })
+  }).catch(function() {});
+
+  // Initial load — pass restored season so first fetch uses it
+  if (urlState.season) {
+    var _ss = document.getElementById('season-select');
+    var _opt = document.createElement('option');
+    _opt.value = urlState.season;
+    _opt.textContent = urlState.season;
+    _opt.selected = true;
+    _ss.appendChild(_opt);
+  }
+  loadData();
+})();
+</script>
+</body>
+</html>

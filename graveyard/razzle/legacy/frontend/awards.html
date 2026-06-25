@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Season Superlatives — Razzle</title>
+<meta property="og:title" content="Season Superlatives — Razzle">
+<meta property="og:description" content="The Razzle Awards: MVP, Most Efficient, Iron Man, Schedule Survivor, Breakout Star, and more. 10 data-driven fantasy superlatives with trophy cards.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Season Superlatives — Razzle">
+<meta name="twitter:description" content="The Razzle Awards: MVP, Most Efficient, Iron Man, Schedule Survivor, Breakout Star, and more. 10 data-driven fantasy superlatives.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Fantasy season superlatives on razzle.lol. 10 data-driven awards including MVP, Most Efficient, Iron Man, Schedule Survivor, Volume King, and Breakout Star.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=awards">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=awards">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="standalone-common.css">
+<style>
+
+  /* Award card grid */
+  .aw-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .aw-card {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 var(--ink);
+    overflow: hidden;
+  }
+
+  .aw-card-header {
+    background: var(--bg-warm);
+    padding: 12px 16px;
+    border-bottom: 3px solid var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .aw-trophy {
+    font-size: 24px;
+    line-height: 1;
+  }
+  .aw-card-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .aw-card-desc {
+    font-family: var(--font-hand);
+    font-size: 14px;
+    color: var(--ink-light);
+  }
+
+  /* Winner showcase */
+  .aw-winner {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 2px dashed var(--border-dashed);
+  }
+  .aw-winner-headshot {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 3px solid var(--ink);
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--bg-warm);
+  }
+  .aw-winner-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .aw-winner-name {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .aw-winner-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+  }
+
+  .aw-winner-annotation {
+    font-family: var(--font-hand);
+    font-size: 13px;
+    color: var(--ink-light);
+    margin-top: 2px;
+  }
+  .aw-winner-stat {
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .aw-stat-value {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--orange);
+  }
+  .aw-stat-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-light);
+    text-transform: uppercase;
+  }
+
+  /* Grades row under winner */
+  .aw-winner-grades {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+  }
+
+  .aw-grade {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: var(--radius-sm);
+    border: 2px solid;
+  }
+  .aw-grade.elite { background: var(--green-light); color: var(--green); border-color: var(--green); }
+  .aw-grade.good { background: var(--blue-light); color: var(--blue); border-color: var(--blue); }
+  .aw-grade.avg { background: var(--yellow-light); color: var(--ink-medium); border-color: var(--yellow); }
+  .aw-grade.below { background: var(--orange-light); color: var(--orange); border-color: var(--orange); }
+  .aw-grade.poor { background: var(--red-light); color: var(--red); border-color: var(--red); }
+
+  /* Runners up */
+  .aw-runners {
+    padding: 10px 16px;
+  }
+  .aw-runners-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--ink-light);
+    margin-bottom: 6px;
+  }
+  .aw-runner-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    border-bottom: 2px dashed var(--border-dashed);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .aw-runner-row:last-child { border-bottom: none; }
+  .aw-runner-row:hover { background: var(--bg-warm); }
+  .aw-runner-rank {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-light);
+    width: 20px;
+    text-align: center;
+  }
+  .aw-runner-headshot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid var(--ink);
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--bg-warm);
+  }
+  .aw-runner-name {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .aw-runner-pos {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: var(--radius-sm);
+    color: var(--text-on-accent);
+  }
+  .aw-runner-pos.qb { background: var(--pos-qb); }
+  .aw-runner-pos.rb { background: var(--pos-rb); }
+  .aw-runner-pos.wr { background: var(--pos-wr); }
+  .aw-runner-pos.te { background: var(--pos-te); }
+  .aw-runner-stat {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--orange);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 768px) {
+
+    .aw-grid { grid-template-columns: 1fr; }
+    .aw-winner-headshot { width: 44px; height: 44px; }
+    .aw-winner-name { font-size: 14px; }
+    .aw-stat-value { font-size: 18px; }
+}
+  
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div id="site-header" data-page="awards"></div>
+
+<main class="aw-page" id="main-content">
+  <div class="aw-header">
+    <h1>Season Superlatives</h1>
+    <div class="aw-subtitle">the Razzle Fantasy Awards — data-driven, no voter bias</div>
+  </div>
+
+  <div class="aw-controls">
+    <div class="aw-pos-tabs" id="pos-tabs" role="tablist" aria-label="Position filter">
+      <button class="aw-pos-tab active" data-pos="" aria-label="All positions" role="tab" aria-selected="true">All</button>
+      <button class="aw-pos-tab" data-pos="QB" aria-label="Quarterbacks" role="tab" aria-selected="false">QB</button>
+      <button class="aw-pos-tab" data-pos="RB" aria-label="Running Backs" role="tab" aria-selected="false">RB</button>
+      <button class="aw-pos-tab" data-pos="WR" aria-label="Wide Receivers" role="tab" aria-selected="false">WR</button>
+      <button class="aw-pos-tab" data-pos="TE" aria-label="Tight Ends" role="tab" aria-selected="false">TE</button>
+    </div>
+    <div class="aw-scoring-tabs" id="scoring-tabs">
+      <button class="aw-scoring-tab active" data-scoring="ppr">PPR</button>
+      <button class="aw-scoring-tab" data-scoring="half_ppr">Half</button>
+      <button class="aw-scoring-tab" data-scoring="std">Std</button>
+    </div>
+    <select class="aw-select" id="season-select" title="Season" aria-label="Season"></select>
+  </div>
+
+  <div class="aw-actions">
+    <button class="btn-chunky" id="export-btn" title="Export as PNG">Export PNG</button>
+  </div>
+
+  <div id="aw-body" role="status" aria-live="polite">
+    <div class="aw-loading" id="aw-loading">tallying the votes...
+      <div class="loading-skeleton">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card" style="height:150px"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Watermark -->
+<div style="position:fixed; bottom:10px; right:14px; font-family:var(--font-hand); font-size:14px; color:var(--ink-light); opacity:0.7; pointer-events:none; z-index:999;">razzle.lol</div>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  'use strict';
+
+
+  var TROPHY_MAP = {
+    mvp: '&#x1F3C6;',
+    most_efficient: '&#x26A1;',
+    iron_man: '&#x1F6E1;',
+    schedule_survivor: '&#x1F525;',
+    volume_king: '&#x1F451;',
+    breakout_star: '&#x1F31F;',
+    rising_stock: '&#x1F4C8;',
+    dominator: '&#x1F43E;',
+    redzone_king: '&#x1F3AF;',
+    best_floor: '&#x1F9F1;'
+  };
+
+  var currentPosition = '';
+  var currentScoring = 'ppr';
+  var currentData = null;
+
+  function gradeClass(grade) {
+    if (!grade) return 'avg';
+    if (grade === 'A+' || grade === 'A') return 'elite';
+    if (grade === 'B+' || grade === 'B') return 'good';
+    if (grade === 'C+' || grade === 'C') return 'avg';
+    if (grade === 'D') return 'below';
+    return 'poor';
+  }
+
+  function buildAwardCard(award, idx) {
+    var w = award.winner;
+    var pos = (w.position || 'RB').toLowerCase();
+    var trophy = TROPHY_MAP[award.key] || '&#x1F3C6;';
+    var rankClass = idx === 0 ? ' card-hero' : idx <= 2 ? ' card-spotlight' : '';
+
+    var html = '<div class="aw-card' + rankClass + '">';
+
+    // Header
+    html += '<div class="aw-card-header">';
+    html += '<span class="aw-trophy">' + trophy + '</span>';
+    html += '<div>';
+    html += '<div class="aw-card-title">' + escapeHtml(award.name) + '</div>';
+    html += '<div class="aw-card-desc">' + escapeHtml(award.description) + '</div>';
+    html += '</div></div>';
+
+    // Winner showcase
+    html += '<div class="aw-winner" data-pid="' + escapeHtml(w.player_id) + '" style="cursor:pointer;">';
+    if (w.headshot_url) {
+      html += '<img class="aw-winner-headshot" src="' + escapeHtml(w.headshot_url) + '" alt="Player headshot" loading="lazy" onerror="this.onerror=null;this.src=\'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><circle cx=%2220%22 cy=%2220%22 r=%2220%22 fill=%22%23d97757%22/><text x=%2220%22 y=%2225%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2216%22>?</text></svg>\'">';
+    }
+    html += '<div class="aw-winner-info">';
+    html += '<div class="aw-winner-name">' + escapeHtml(w.name) + '</div>';
+    html += '<div class="aw-winner-meta">';
+    html += '<span class="aw-pos-badge ' + pos + '">' + escapeHtml(w.position) + '</span>';
+    html += '<span class="aw-team-label">' + escapeHtml(w.team) + '</span>';
+    html += '<span class="aw-team-label">' + escapeHtml(String(w.ppg)) + ' PPG</span>';
+    html += '</div>';
+    html += '<div class="aw-winner-grades">';
+    html += '<span class="aw-grade ' + gradeClass(w.gpa_grade) + '">GPA ' + escapeHtml(w.gpa_grade) + '</span>';
+    html += '<span class="aw-grade ' + gradeClass(w.efficiency_grade) + '">Eff ' + escapeHtml(w.efficiency_grade) + '</span>';
+    html += '<span class="aw-grade ' + gradeClass(w.consistency_grade) + '">Con ' + escapeHtml(w.consistency_grade) + '</span>';
+    html += '<span class="aw-grade ' + gradeClass(w.sos_grade) + '">SOS ' + escapeHtml(w.sos_grade) + '</span>';
+    html += '</div>';
+    if (award.annotation) {
+      html += '<div class="aw-winner-annotation">' + escapeHtml(award.annotation) + '</div>';
+    }
+    html += '</div>';
+
+    // Key stat
+    html += '<div class="aw-winner-stat">';
+    html += '<div class="aw-stat-value">' + escapeHtml(w.key_stat) + '</div>';
+    html += '<div class="aw-stat-label">' + escapeHtml(award.stat_label) + '</div>';
+    html += '</div>';
+    html += '</div>';
+
+    // Runners up
+    if (award.runners_up && award.runners_up.length) {
+      html += '<div class="aw-runners">';
+      html += '<div class="aw-runners-title">Runners Up</div>';
+      award.runners_up.forEach(function(r, i) {
+        var rPos = (r.position || 'RB').toLowerCase();
+        html += '<div class="aw-runner-row" data-pid="' + escapeHtml(r.player_id) + '">';
+        html += '<span class="aw-runner-rank">' + (i + 2) + '</span>';
+        if (r.headshot_url) {
+          html += '<img class="aw-runner-headshot" src="' + escapeHtml(r.headshot_url) + '" alt="Player headshot" loading="lazy" onerror="this.onerror=null;this.src=\'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><circle cx=%2220%22 cy=%2220%22 r=%2220%22 fill=%22%23d97757%22/><text x=%2220%22 y=%2225%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2216%22>?</text></svg>\'">';
+        }
+        html += '<span class="aw-runner-pos ' + rPos + '">' + escapeHtml(r.position) + '</span>';
+        html += '<span class="aw-runner-name">' + escapeHtml(r.name) + '</span>';
+        html += '<span class="aw-runner-stat">' + escapeHtml(r.key_stat) + '</span>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    html += '</div>';
+    return html;
+  }
+
+  function render(data) {
+    currentData = data;
+    var body = document.getElementById('aw-body');
+
+    if (!data || !data.awards || !data.awards.length) {
+      body.innerHTML = '<div class="panel-empty">' + razzleEmpty() + '<span class="hint">try a different position or season</span></div>';
+      return;
+    }
+
+    var html = '<div class="aw-grid">';
+    data.awards.forEach(function(award, idx) {
+      html += buildAwardCard(award, idx);
+    });
+    html += '</div>';
+    body.innerHTML = html;
+
+    // Click handlers for player navigation
+    body.querySelectorAll('[data-pid]').forEach(function(el) {
+      el.addEventListener('click', function() {
+        var pid = this.getAttribute('data-pid');
+        if (pid) window.location.href = '/player/' + encodeURIComponent(pid);
+      });
+    });
+  }
+
+  function fetchData(pos, season) {
+    var body = document.getElementById('aw-body');
+    body.innerHTML = '<div class="aw-loading">tallying the votes...</div>';
+
+    var url = '/api/season-awards?';
+    var params = [];
+    if (pos) params.push('position=' + encodeURIComponent(pos));
+    if (season) params.push('season=' + encodeURIComponent(season));
+    if (currentScoring !== 'ppr') params.push('scoring=' + currentScoring);
+    url += params.join('&');
+
+    fetch(url).then(function(resp) {
+      if (!resp.ok) throw new Error('API error');
+      return resp.json();
+    }).then(function(data) {
+      // Populate season selector
+      var sel = document.getElementById('season-select');
+      if (data.available_seasons && data.available_seasons.length && sel.options.length === 0) {
+        data.available_seasons.forEach(function(s) {
+          var opt = document.createElement('option');
+          opt.value = s;
+          opt.textContent = s;
+          if (s === data.season) opt.selected = true;
+          sel.appendChild(opt);
+        });
+      }
+      render(data);
+    }).catch(function(err) {
+      body.innerHTML = '<div class="panel-error">' + razzleError() + '<br><button class="btn-chunky" onclick="location.reload()">retry</button></div>';
+    });
+  }
+
+  function _saveState() {
+    savePageState({ pos: currentPosition, season: document.getElementById('season-select').value, scoring: currentScoring });
+  }
+
+  // Position tab handlers
+  document.getElementById('pos-tabs').addEventListener('click', function(e) {
+    var tab = e.target.closest('.aw-pos-tab');
+    if (!tab) return;
+    document.querySelectorAll('.aw-pos-tab').forEach(function(t) { t.classList.remove('active'); });
+    tab.classList.add('active');
+    currentPosition = tab.getAttribute('data-pos') || '';
+    var season = document.getElementById('season-select').value;
+    fetchData(currentPosition, season);
+    _saveState();
+  });
+
+  // Scoring format tab clicks
+  document.getElementById('scoring-tabs').addEventListener('click', function(e) {
+    var tab = e.target.closest('.aw-scoring-tab');
+    if (!tab) return;
+    document.querySelectorAll('.aw-scoring-tab').forEach(function(t) { t.classList.remove('active'); });
+    tab.classList.add('active');
+    currentScoring = tab.getAttribute('data-scoring') || 'ppr';
+    var season = document.getElementById('season-select').value;
+    fetchData(currentPosition, season);
+    _saveState();
+  });
+
+  // Season selector handler
+  document.getElementById('season-select').addEventListener('change', function() {
+    fetchData(currentPosition, this.value);
+    _saveState();
+  });
+
+  // PNG export
+  document.getElementById('export-btn').addEventListener('click', function() {
+    var btn = this; btn.disabled = true; btn.textContent = 'Exporting...';
+    var el = document.getElementById('main-content');
+    var _ec = getExportColors(); loadHtml2Canvas().then(function(h2c) { return h2c(el, { backgroundColor: _ec.bg, scale: 2 }); }).then(function(canvas) {
+      var ctx = canvas.getContext('2d');
+      ctx.font = '24px Caveat, cursive';
+      ctx.fillStyle = getExportColors().watermark;
+      ctx.textAlign = 'right';
+      ctx.fillText('razzle.lol', canvas.width - 20, canvas.height - 16);
+      var link = document.createElement('a');
+      link.download = 'razzle-season-awards.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }).finally(function() { btn.disabled = false; btn.textContent = 'Export PNG'; });
+  });
+
+  // Analytics
+  fetch('/api/analytics/pageview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: '/awards.html', referrer: document.referrer || '' })
+  }).catch(function() {});
+
+  // Restore URL state
+  var _restored = restorePageState({ pos: '', season: '', scoring: 'ppr' });
+  if (_restored.pos) {
+    currentPosition = _restored.pos;
+    document.querySelectorAll('.aw-pos-tab').forEach(function(t) {
+      t.classList.toggle('active', (t.getAttribute('data-pos') || '') === _restored.pos);
+    });
+  }
+  if (_restored.scoring && ['ppr','half_ppr','std'].indexOf(_restored.scoring) !== -1) {
+    currentScoring = _restored.scoring;
+    document.querySelectorAll('.aw-scoring-tab').forEach(function(t) {
+      t.classList.toggle('active', t.getAttribute('data-scoring') === currentScoring);
+    });
+  }
+  if (_restored.season) {
+    var _sel = document.getElementById('season-select');
+    var _opt = document.createElement('option');
+    _opt.value = _restored.season;
+    _opt.textContent = _restored.season;
+    _opt.selected = true;
+    _sel.appendChild(_opt);
+  }
+
+  // Initial load
+  fetchData(currentPosition, _restored.season);
+
+})();
+</script>
+</body>
+</html>

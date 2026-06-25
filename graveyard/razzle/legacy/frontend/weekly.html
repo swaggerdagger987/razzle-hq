@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Weekly Scoring Heatmap — Razzle</title>
+<meta property="og:title" content="Weekly Scoring Heatmap — Razzle">
+<meta property="og:description" content="Week-by-week scoring heatmap. Every player, every week, color-coded by performance. Spot boom weeks, bust weeks, and consistency patterns instantly.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Weekly Scoring Heatmap — Razzle">
+<meta name="twitter:description" content="Week-by-week scoring heatmap. Every player, every week, color-coded. Spot boom weeks, bust weeks, and consistency patterns instantly.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Weekly fantasy scoring heatmap on razzle.lol. Player-by-week grid color-coded by performance. Spot booms, busts, and consistency patterns at a glance.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=weekly">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=weekly">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="standalone-common.css">
+<style>
+
+  /* Controls */
+
+  .weekly-pos-tab:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+
+  /* Heatmap table */
+  .heatmap-container {
+    overflow-x: auto;
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 var(--ink);
+    background: var(--bg-card);
+  }
+
+  .heatmap-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 700px;
+  }
+
+  .heatmap-table th {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--bg-warm);
+    padding: 8px 4px;
+    border-bottom: 3px solid var(--ink);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .heatmap-table th.player-col {
+    text-align: left;
+    padding-left: 12px;
+    min-width: 160px;
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    background: var(--bg-warm);
+  }
+  .heatmap-table th.ppg-col {
+    min-width: 50px;
+  }
+
+  .heatmap-table td {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    text-align: center;
+    padding: 6px 4px;
+    border-bottom: 2px dashed var(--border-dashed);
+    white-space: nowrap;
+    min-width: 42px;
+    transition: transform 0.1s;
+  }
+  .heatmap-table td:hover {
+    transform: scale(1.1);
+    z-index: 1;
+    position: relative;
+  }
+
+  .heatmap-table td.player-cell {
+    text-align: left;
+    padding-left: 8px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    position: sticky;
+    left: 0;
+    background: var(--bg-card);
+    z-index: 1;
+    border-right: 2px solid var(--ink-faint);
+    min-width: 160px;
+  }
+
+  .heatmap-table td.ppg-cell {
+    font-weight: 700;
+    border-left: 2px solid var(--ink-faint);
+  }
+
+  .player-cell-inner {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+  .player-cell-inner:hover {
+    color: var(--orange);
+  }
+
+  .player-pos-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--ink);
+    flex-shrink: 0;
+  }
+
+  .player-rank {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-light);
+    width: 20px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .player-team {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-light);
+    margin-left: 2px;
+  }
+
+  .heatmap-table tr:hover td {
+    background-color: var(--bg-warm);
+  }
+  .heatmap-table tr:hover td.player-cell {
+    background-color: var(--bg-card);
+  }
+
+  /* Score cell colors */
+  .score-cell { border-radius: var(--radius-sm); }
+
+  /* Legend */
+  .heatmap-legend {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    font-family: var(--font-hand);
+    font-size: 16px;
+    color: var(--ink-light);
+  }
+  .legend-bar {
+    display: flex;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 2px solid var(--ink);
+    height: 16px;
+  }
+  .legend-cell {
+    width: 32px;
+    height: 16px;
+  }
+
+  /* Bye week cell */
+  .bye-cell {
+    color: var(--ink-light);
+    font-size: 11px;
+    font-style: italic;
+  }
+
+  @media (max-width: 768px) {
+
+    .heatmap-table td { font-size: 11px; padding: 4px 3px; min-width: 36px; }
+    .heatmap-table td.player-cell { min-width: 130px; font-size: 12px; }
+    .heatmap-table th { font-size: 11px; padding: 6px 3px; }
+  }
+  @media (max-width: 480px) {
+    
+    .heatmap-table td.player-cell { min-width: 110px; font-size: 11px; }
+    .player-rank { display: none; }
+  }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<div id="site-header" data-page="weekly"></div>
+
+<main class="weekly-page" id="main-content">
+  <div class="weekly-header">
+    <h1>Weekly Scoring Heatmap</h1>
+    <div class="weekly-subtitle">every week, every player, at a glance</div>
+  </div>
+
+  <div class="weekly-controls">
+    <div class="weekly-pos-tabs" role="tablist" aria-label="Position filter">
+      <button class="weekly-pos-tab active" data-pos="ALL" aria-label="All positions">All</button>
+      <button class="weekly-pos-tab" data-pos="QB" aria-label="Quarterbacks">QB</button>
+      <button class="weekly-pos-tab" data-pos="RB" aria-label="Running backs">RB</button>
+      <button class="weekly-pos-tab" data-pos="WR" aria-label="Wide receivers">WR</button>
+      <button class="weekly-pos-tab" data-pos="TE" aria-label="Tight ends">TE</button>
+    </div>
+    <select class="weekly-season-select" id="season-select" title="Season" aria-label="Season"></select>
+  </div>
+
+  <div class="weekly-actions">
+    <button class="btn-chunky" id="export-btn" title="Export as PNG">Export PNG</button>
+  </div>
+
+  <div id="weekly-body" role="status" aria-live="polite">
+    <div class="weekly-loading" id="weekly-loading">rewinding the game tape...
+      <div class="loading-skeleton">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card" style="height:150px"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Watermark -->
+<div style="position:fixed; bottom:10px; right:14px; font-family:var(--font-hand); font-size:14px; color:var(--ink-light); opacity:0.7; pointer-events:none; z-index:999;">razzle.lol</div>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  'use strict';
+
+  var _cs = getComputedStyle(document.documentElement);
+  var POS_COLORS = {
+    QB: _cs.getPropertyValue('--pos-qb').trim() || '#5b7fff',
+    RB: _cs.getPropertyValue('--pos-rb').trim() || '#2ec4b6',
+    WR: _cs.getPropertyValue('--pos-wr').trim() || '#d97757',
+    TE: _cs.getPropertyValue('--pos-te').trim() || '#8b5cf6'
+  };
+
+  // Color scale: 5 tiers from cold (bad) to hot (good)
+  var HEAT_COLORS = [
+    { bg: 'var(--red-light)', text: 'var(--semantic-red)' },  // bottom 20% — red tint
+    { bg: 'var(--yellow-light)', text: 'var(--semantic-yellow)' },  // 20-40% — yellow tint
+    { bg: 'var(--bg-card)', text: 'var(--ink-medium)' },  // 40-60% — neutral sand
+    { bg: 'var(--green-light)', text: 'var(--semantic-green)' },  // 60-80% — green tint
+    { bg: 'var(--green-light)', text: 'var(--semantic-green)' },  // top 80%+ — strong green
+  ];
+
+
+  function getHeatColor(score, thresholds) {
+    if (score === null || score === undefined) return null;
+    if (score <= thresholds.p20) return HEAT_COLORS[0];
+    if (score <= thresholds.p40) return HEAT_COLORS[1];
+    if (score <= thresholds.p60) return HEAT_COLORS[2];
+    if (score <= thresholds.p80) return HEAT_COLORS[3];
+    return HEAT_COLORS[4];
+  }
+
+  var currentData = null;
+  var activePos = 'ALL';
+  var sortCol = 'total'; // 'total', 'ppg', or week number
+  var sortDir = -1; // -1 = desc, 1 = asc
+
+  function loadData() {
+    var season = document.getElementById('season-select').value || '';
+    var posParam = activePos === 'ALL' ? '' : activePos;
+    var url = '/api/weekly-heatmap?limit=40';
+    if (season) url += '&season=' + season;
+    if (posParam) url += '&position=' + posParam;
+
+    var loadEl = document.getElementById('weekly-loading');
+    if (!loadEl) {
+      loadEl = document.createElement('div');
+      loadEl.className = 'weekly-loading';
+      loadEl.id = 'weekly-loading';
+      document.getElementById('weekly-body').prepend(loadEl);
+    }
+    loadEl.style.display = '';
+    loadEl.textContent = razzleLoading();
+
+    fetch(url)
+      .then(function(r) {
+        if (!r.ok) throw new Error('API error');
+        return r.json();
+      })
+      .then(function(data) {
+        currentData = data;
+        populateSeasons(data.available_seasons, data.season);
+        renderHeatmap(data);
+      })
+      .catch(function() {
+        document.getElementById('weekly-body').innerHTML = razzleErrorHTML('location.reload()');
+      });
+  }
+
+  function populateSeasons(seasons, current) {
+    var sel = document.getElementById('season-select');
+    if (sel.options.length > 0) return;
+    seasons.forEach(function(s) {
+      var opt = document.createElement('option');
+      opt.value = s;
+      opt.textContent = s;
+      if (s === current) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+
+  function renderHeatmap(data) {
+    var container = document.getElementById('weekly-body');
+    if (!data.players || data.players.length === 0) {
+      container.innerHTML = '<div class="weekly-loading">' + razzleEmpty() + '</div>';
+      return;
+    }
+
+    var weeks = data.weeks || [];
+    var thresholds = data.thresholds || {};
+
+    // Sort players
+    var sorted = data.players.slice();
+    sorted.sort(function(a, b) {
+      var va, vb;
+      if (sortCol === 'total') {
+        va = a.total_pts || 0; vb = b.total_pts || 0;
+      } else if (sortCol === 'ppg') {
+        va = a.ppg || 0; vb = b.ppg || 0;
+      } else {
+        va = a.weeks[String(sortCol)]; vb = b.weeks[String(sortCol)];
+        va = va === null || va === undefined ? -999 : va;
+        vb = vb === null || vb === undefined ? -999 : vb;
+      }
+      return (va - vb) * sortDir;
+    });
+
+    // Build table HTML
+    var arrow = sortDir === -1 ? ' \u25BC' : ' \u25B2';
+    var html = '<div class="heatmap-container"><table class="heatmap-table"><caption class="sr-only">Weekly scoring heatmap by player and week</caption><thead><tr>';
+    html += '<th class="player-col" data-sort="total" style="cursor:pointer">Player' + (sortCol === 'total' ? arrow : '') + '</th>';
+    weeks.forEach(function(w) {
+      html += '<th data-sort="' + w + '" style="cursor:pointer">W' + w + (sortCol === w ? arrow : '') + '</th>';
+    });
+    html += '<th class="ppg-col">GP</th>';
+    html += '<th class="ppg-col" data-sort="ppg" style="cursor:pointer">PPG' + (sortCol === 'ppg' ? arrow : '') + '</th>';
+    html += '</tr></thead><tbody>';
+
+    sorted.forEach(function(p, idx) {
+      var pos = p.position || 'WR';
+      var posColor = POS_COLORS[pos] || 'var(--orange)';
+      var t = thresholds[pos] || thresholds['WR'] || { p20: 5, p40: 10, p60: 15, p80: 20 };
+
+      html += '<tr>';
+      html += '<td class="player-cell"><div class="player-cell-inner" data-pid="' + escapeHtml(p.player_id) + '">';
+      html += '<span class="player-rank">' + (idx + 1) + '</span>';
+      html += '<span class="player-pos-dot" style="background:' + posColor + '"></span>';
+      html += '<span style="font-family:var(--font-mono);font-size:11px;font-weight:700;color:' + posColor + ';margin-right:4px;">' + escapeHtml(pos) + '</span>';
+      html += '<span>' + escapeHtml(p.name) + '</span>';
+      html += '<span class="player-team">' + escapeHtml(p.team) + '</span>';
+      html += '</div></td>';
+
+      weeks.forEach(function(w) {
+        var score = p.weeks[String(w)];
+        if (score === null || score === undefined) {
+          html += '<td class="bye-cell">bye</td>';
+        } else {
+          var hc = getHeatColor(score, t);
+          html += '<td class="score-cell" style="background:' + hc.bg + '; color:' + hc.text + ';" title="' + escapeHtml(p.name) + ' Week ' + w + ': ' + score.toFixed(1) + ' pts">';
+          html += score.toFixed(1);
+          html += '</td>';
+        }
+      });
+
+      // Games + PPG columns
+      html += '<td class="ppg-cell" style="color:var(--ink-light)">' + p.games + '</td>';
+      var ppgVal = p.ppg != null ? p.ppg : 0;
+      var ppgColor = getHeatColor(ppgVal, t);
+      html += '<td class="ppg-cell score-cell" style="background:' + (ppgColor ? ppgColor.bg : '') + '; color:' + (ppgColor ? ppgColor.text : '') + ';">' + ppgVal.toFixed(1) + '</td>';
+      html += '</tr>';
+    });
+
+    html += '</tbody></table></div>';
+
+    // Legend with thresholds
+    var legendPos = activePos !== 'ALL' ? activePos : 'WR';
+    var lt = thresholds[legendPos] || { p20: 5, p40: 10, p60: 15, p80: 20 };
+    html += '<div class="heatmap-legend">';
+    html += '<span>&lt;' + lt.p20.toFixed(0) + '</span>';
+    html += '<div class="legend-bar">';
+    HEAT_COLORS.forEach(function(hc) {
+      html += '<div class="legend-cell" style="background:' + hc.bg + '"></div>';
+    });
+    html += '</div>';
+    html += '<span>' + lt.p80.toFixed(0) + '+</span>';
+    html += '</div>';
+    html += '<div style="text-align:center; font-family:var(--font-hand); font-size:14px; color:var(--ink-light); margin-top:4px;">PPR points (' + legendPos + ' thresholds) — click column headers to sort</div>';
+
+    container.innerHTML = html;
+
+    // Click handlers for sort headers
+    container.querySelectorAll('th[data-sort]').forEach(function(th) {
+      th.addEventListener('click', function() {
+        var col = th.getAttribute('data-sort');
+        var numCol = parseInt(col, 10);
+        col = isNaN(numCol) ? col : numCol;
+        if (sortCol === col) {
+          sortDir = sortDir * -1;
+        } else {
+          sortCol = col;
+          sortDir = -1;
+        }
+        renderHeatmap(currentData);
+      });
+    });
+
+    // Click handlers for player names
+    container.querySelectorAll('.player-cell-inner').forEach(function(el) {
+      el.addEventListener('click', function() {
+        var pid = el.getAttribute('data-pid');
+        if (pid) window.location.href = '/player/' + encodeURIComponent(pid);
+      });
+    });
+  }
+
+  // Position tabs
+  document.querySelectorAll('.weekly-pos-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.weekly-pos-tab').forEach(function(t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      activePos = tab.getAttribute('data-pos');
+      savePageState({ pos: activePos === 'ALL' ? '' : activePos, season: document.getElementById('season-select').value });
+      loadData();
+    });
+  });
+
+  // Season selector
+  document.getElementById('season-select').addEventListener('change', function() {
+    savePageState({ pos: activePos === 'ALL' ? '' : activePos, season: this.value });
+    loadData();
+  });
+
+  // Export PNG
+  document.getElementById('export-btn').addEventListener('click', function() {
+    var btn = this; btn.disabled = true; btn.textContent = 'Exporting...';
+    var el = document.getElementById('main-content');
+    loadHtml2Canvas().then(function(h2c) { return h2c(el, { backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf', scale: 2 }); }).then(function(canvas) {
+      // Add watermark
+      var ctx = canvas.getContext('2d');
+      ctx.font = '24px Caveat, cursive';
+      ctx.fillStyle = document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.25)' : 'rgba(45,31,20,0.25)';
+      ctx.textAlign = 'right';
+      ctx.fillText('razzle.lol', canvas.width - 30, canvas.height - 20);
+
+      var link = document.createElement('a');
+      link.download = 'razzle-weekly-heatmap.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }).finally(function() { btn.disabled = false; btn.textContent = 'Export PNG'; });
+  });
+
+  // Analytics
+  fetch('/api/analytics/pageview', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ page: '/weekly.html' }) }).catch(function() {});
+
+  // Restore URL state
+  var urlState = restorePageState({ pos: '', season: '' });
+  if (urlState.pos) {
+    activePos = urlState.pos;
+    document.querySelectorAll('.weekly-pos-tab').forEach(function(t) {
+      t.classList.toggle('active', (t.getAttribute('data-pos') || '') === urlState.pos);
+    });
+  }
+  if (urlState.season) {
+    var sel = document.getElementById('season-select');
+    var opt = document.createElement('option');
+    opt.value = urlState.season;
+    opt.textContent = urlState.season;
+    opt.selected = true;
+    sel.appendChild(opt);
+  }
+
+  // Load on init
+  loadData();
+})();
+</script>
+</body>
+</html>

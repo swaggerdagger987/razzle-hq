@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Pace & Milestones — Razzle</title>
+<meta property="og:title" content="Pace & Milestones — Razzle">
+<meta property="og:description" content="17-game pace projections with milestone badges. Who's on track for 1,000 yards, 100 receptions, or 40 TDs? Track every player's progress toward key benchmarks.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Pace & Milestones — Razzle">
+<meta name="twitter:description" content="17-game pace projections with milestone badges. Who's on track for 1,000 yards, 100 receptions, or 40 TDs?">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Pace and milestone tracker on razzle.lol. 17-game projected totals and progress tracking toward key fantasy football benchmarks.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=pace">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=pace">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .pace-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  .pace-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .pace-header h1 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    color: var(--ink);
+    margin: 0 0 4px;
+  }
+  .pace-header .pace-subtitle {
+    font-family: var(--font-hand);
+    font-size: 20px;
+    color: var(--ink-light);
+  }
+
+  /* Controls */
+  .pace-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .pace-controls select {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 6px 10px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+  }
+  .pace-controls .pos-tabs {
+    display: flex;
+    gap: 4px;
+  }
+  .pace-controls .pos-tab {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 5px 12px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .pace-controls .pos-tab.active {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  /* Export button */
+  .pace-export {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 5px 14px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .pace-export:hover { background: var(--ink); color: var(--bg); }
+
+  /* Loading */
+  .pace-loading {
+    text-align: center;
+    font-family: var(--font-hand);
+    font-size: 18px;
+    color: var(--ink-light);
+    padding: 60px 0;
+  }
+
+  /* Player cards */
+  .pace-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .pace-card {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: var(--radius-sm);
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 16px 20px;
+  }
+
+  .pace-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .pace-player-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .pace-player-name {
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--ink);
+  }
+  .pace-pos-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    color: var(--text-on-accent);
+    border: 2px solid var(--ink);
+  }
+  .pace-team {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-light);
+  }
+  .pace-games {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-light);
+  }
+
+  .pace-stats-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .pace-stat-chip {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 3px 10px;
+    border: 2px solid var(--ink-faint);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--ink);
+  }
+  .pace-stat-chip .val {
+    font-weight: 700;
+  }
+
+  /* Milestone bars */
+  .pace-milestones {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  .ms-item {
+    background: var(--bg);
+    border: 2px solid var(--ink-faint);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+  }
+  .ms-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .ms-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    border: 2px solid;
+  }
+  .ms-badge.on-pace {
+    background: var(--semantic-green-light);
+    color: var(--semantic-green);
+    border-color: var(--semantic-green);
+  }
+  .ms-badge.off-pace {
+    background: var(--semantic-red-light);
+    color: var(--semantic-red);
+    border-color: var(--semantic-red);
+  }
+  .ms-bar-bg {
+    height: 8px;
+    background: var(--ink-faint);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    margin-bottom: 3px;
+  }
+  .ms-bar-fill {
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.3s;
+  }
+  .ms-detail {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-light);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* Projected fpts highlight */
+  .pace-proj-fpts {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .pace-header h1 { font-size: 24px; }
+    .pace-card { padding: 12px 14px; }
+    .pace-milestones { grid-template-columns: 1fr 1fr; }
+    .pace-stats-row { gap: 6px; }
+  }
+  @media (max-width: 480px) {
+    .pace-milestones { grid-template-columns: 1fr; }
+    .pace-controls { gap: 8px; }
+  }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div id="site-header" data-page="pace"></div>
+
+<main class="pace-page" id="main-content">
+  <div class="pace-header">
+    <h1>Pace & Milestones</h1>
+    <div class="pace-subtitle">who's on track for a monster season</div>
+  </div>
+
+  <div class="pace-controls">
+    <select id="paceSeason" aria-label="Season"></select>
+    <div class="pos-tabs" role="tablist" aria-label="Position filter">
+      <button class="pos-tab active" data-pos="">ALL</button>
+      <button class="pos-tab" data-pos="QB">QB</button>
+      <button class="pos-tab" data-pos="RB">RB</button>
+      <button class="pos-tab" data-pos="WR">WR</button>
+      <button class="pos-tab" data-pos="TE">TE</button>
+    </div>
+    <button class="pace-export" id="paceExport" title="Export as PNG">Export PNG</button>
+  </div>
+
+  <div id="paceContent">
+    <div class="pace-loading">projecting season pace...</div>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  'use strict';
+
+
+  function fmt(v, dec) {
+    if (v === null || v === undefined) return '-';
+    return Number(v).toFixed(dec === undefined ? 1 : dec);
+  }
+
+  var _cs = getComputedStyle(document.documentElement);
+  var POS_COLORS = {
+    QB: _cs.getPropertyValue('--pos-qb').trim() || '#5b7fff',
+    RB: _cs.getPropertyValue('--pos-rb').trim() || '#2ec4b6',
+    WR: _cs.getPropertyValue('--pos-wr').trim() || '#d97757',
+    TE: _cs.getPropertyValue('--pos-te').trim() || '#8b5cf6'
+  };
+
+  var currentPosition = '';
+  var currentData = null;
+
+  /* ---- URL state ---- */
+
+  /* ---- Fetch ---- */
+  function load() {
+    var sel = document.getElementById('paceSeason');
+    var season = sel.value || '';
+    var pos = currentPosition;
+    savePageState({ season: season, pos: pos });
+
+    var url = '/api/pace-tracker?';
+    if (season) url += 'season=' + encodeURIComponent(season) + '&';
+    if (pos) url += 'position=' + encodeURIComponent(pos);
+
+    document.getElementById('paceContent').innerHTML = '<div class="pace-loading">' + razzleLoading() + '</div>';
+
+    fetch(url).then(function(r) {
+      if (!r.ok) throw new Error('API error');
+      return r.json();
+    }).then(function(data) {
+      currentData = data;
+      populateSeasons(data.season);
+      render(data);
+    }).catch(function() {
+      document.getElementById('paceContent').innerHTML = '<div class="pace-loading">delay of game — something went sideways</div>';
+    });
+  }
+
+  function populateSeasons(current) {
+    var sel = document.getElementById('paceSeason');
+    if (sel.options.length <= 1) {
+      sel.innerHTML = '';
+      var now = new Date();
+      var latestSeason = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+      for (var y = latestSeason; y >= 2015; y--) {
+        var opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        if (y === current) opt.selected = true;
+        sel.appendChild(opt);
+      }
+    }
+  }
+
+  /* ---- Render ---- */
+  function render(data) {
+    var players = data.players || [];
+    if (!players.length) {
+      document.getElementById('paceContent').innerHTML = '<div class="pace-loading">no qualifying players found (min 3 games)</div>';
+      return;
+    }
+
+    var html = '<div class="pace-grid">';
+    for (var i = 0; i < players.length; i++) {
+      var p = players[i];
+      var posColor = POS_COLORS[p.position] || (_cs.getPropertyValue('--ink-light').trim() || '#8a7565');
+
+      html += '<div class="pace-card">';
+      html += '<div class="pace-card-header">';
+      html += '<div class="pace-player-info">';
+      html += '<span class="pace-player-name">' + escapeHtml(p.name) + '</span>';
+      html += '<span class="pace-pos-badge" style="background:' + posColor + '">' + escapeHtml(p.position) + '</span>';
+      html += '<span class="pace-team">' + escapeHtml(p.team) + '</span>';
+      html += '<span class="pace-games">' + escapeHtml(String(p.games)) + 'G / ' + escapeHtml(String(p.games_remaining)) + ' left</span>';
+      html += '</div>';
+      html += '<span class="pace-proj-fpts" title="Projected 17-game PPR total">' + escapeHtml(String(fmt(p.proj_fpts, 0))) + ' proj pts</span>';
+      html += '</div>';
+
+      // Stat chips — position-specific projected totals
+      html += '<div class="pace-stats-row">';
+      html += '<span class="pace-stat-chip">' + escapeHtml(String(fmt(p.ppg, 1))) + ' <span class="val">PPG</span></span>';
+      if (p.position === 'QB') {
+        html += '<span class="pace-stat-chip"><span class="val">' + escapeHtml(String(p.proj_pass_yd)) + '</span> pass yd</span>';
+        html += '<span class="pace-stat-chip"><span class="val">' + escapeHtml(String(fmt(p.proj_pass_td, 0))) + '</span> pass TD</span>';
+        if (p.proj_rush_yd > 100) {
+          html += '<span class="pace-stat-chip"><span class="val">' + escapeHtml(String(p.proj_rush_yd)) + '</span> rush yd</span>';
+        }
+      } else if (p.position === 'RB') {
+        html += '<span class="pace-stat-chip"><span class="val">' + escapeHtml(String(p.proj_rush_yd)) + '</span> rush yd</span>';
+        html += '<span class="pace-stat-chip"><span class="val">' + escapeHtml(String(fmt(p.proj_rush_td, 0))) + '</span> rush TD</span>';
+        html += '<span class="pace-stat-chip"><span class="val">' + escapeHtml(String(fmt(p.proj_rec, 0))) + '</span> rec</span>';
+        html += '<span class="pace-stat-chip"><span class="val">' + escapeHtml(String(p.proj_rec_yd)) + '</span> rec yd</span>';
+      } else {
+        html += '<span class="pace-stat-chip"><span class="val">' + escapeHtml(String(p.proj_rec_yd)) + '</span> rec yd</span>';
+        html += '<span class="pace-stat-chip"><span class="val">' + escapeHtml(String(fmt(p.proj_rec, 0))) + '</span> rec</span>';
+        html += '<span class="pace-stat-chip"><span class="val">' + escapeHtml(String(fmt(p.proj_rec_td, 0))) + '</span> rec TD</span>';
+      }
+      html += '</div>';
+
+      // Milestones
+      var ms = p.milestones || [];
+      if (ms.length) {
+        html += '<div class="pace-milestones">';
+        for (var j = 0; j < ms.length; j++) {
+          var m = ms[j];
+          var barColor = m.on_pace ? (_cs.getPropertyValue('--green').trim() || '#2ec4b6') : (_cs.getPropertyValue('--orange').trim() || '#d97757');
+          var badgeClass = m.on_pace ? 'on-pace' : 'off-pace';
+          var badgeText = m.on_pace ? 'ON PACE' : 'OFF PACE';
+          var pctWidth = Math.min(100, m.pct);
+
+          html += '<div class="ms-item">';
+          html += '<div class="ms-label">';
+          html += '<span>' + escapeHtml(m.label) + '</span>';
+          html += '<span class="ms-badge ' + badgeClass + '">' + badgeText + '</span>';
+          html += '</div>';
+          html += '<div class="ms-bar-bg"><div class="ms-bar-fill" style="width:' + pctWidth + '%;background:' + barColor + '"></div></div>';
+          html += '<div class="ms-detail">';
+          html += '<span>' + escapeHtml(String(fmt(m.current, 0))) + ' / ' + escapeHtml(String(m.target)) + '</span>';
+          if (m.pace_needed > 0) {
+            html += '<span>need ' + escapeHtml(String(fmt(m.pace_needed, 1))) + '/g</span>';
+          } else {
+            html += '<span>done</span>';
+          }
+          html += '</div>';
+          html += '</div>';
+        }
+        html += '</div>';
+      }
+
+      html += '</div>';
+    }
+    html += '</div>';
+
+    document.getElementById('paceContent').innerHTML = html;
+  }
+
+  /* ---- Position tabs ---- */
+  document.querySelectorAll('.pos-tab').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.pos-tab').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentPosition = btn.getAttribute('data-pos') || '';
+      load();
+    });
+  });
+
+  /* ---- Season change ---- */
+  document.getElementById('paceSeason').addEventListener('change', load);
+
+  /* ---- PNG export ---- */
+  document.getElementById('paceExport').addEventListener('click', function() {
+    var btn = this; btn.disabled = true; btn.textContent = 'Exporting...';
+    var root = document.getElementById('main-content');
+    loadHtml2Canvas().then(function(h2c) { return h2c(root, { backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf', scale: 2 }); }).then(function(canvas) {
+      var ctx = canvas.getContext('2d');
+      ctx.font = "600 24px Caveat, cursive";
+      ctx.fillStyle = document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.15)' : 'rgba(45,31,20,0.12)';
+      ctx.fillText('razzle.lol', canvas.width - 130, canvas.height - 16);
+      var link = document.createElement('a');
+      link.download = 'razzle-pace.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }).finally(function() { btn.disabled = false; btn.textContent = 'Export PNG'; });
+  });
+
+  /* ---- Analytics ---- */
+  fetch('/api/analytics/pageview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: '/pace.html', referrer: document.referrer || '' })
+  }).catch(function() {});
+
+  /* ---- Init from URL ---- */
+  var init = restorePageState({ pos: '', season: '' });
+  if (init.pos) {
+    currentPosition = init.pos;
+    document.querySelectorAll('.pos-tab').forEach(function(b) {
+      b.classList.toggle('active', (b.getAttribute('data-pos') || '') === init.pos);
+    });
+  }
+  if (init.season) {
+    var sel = document.getElementById('paceSeason');
+    var opt = document.createElement('option');
+    opt.value = init.season;
+    opt.textContent = init.season;
+    opt.selected = true;
+    sel.appendChild(opt);
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>

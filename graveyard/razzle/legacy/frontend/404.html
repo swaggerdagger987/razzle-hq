@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>404 — Razzle</title>
+<meta property="og:title" content="404 — Razzle">
+<meta property="og:description" content="This page doesn't exist. Head to The Lab instead.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://razzle.lol/404.html">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="404 — Razzle">
+<meta name="twitter:description" content="This page doesn't exist. Head to The Lab instead.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Page not found. Head back to The Lab at razzle.lol — free fantasy football research lab.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="/styles.css">
+<style>
+  .four-oh-four {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 56px);
+    min-height: calc(100dvh - 56px);
+    padding: 40px 20px;
+    text-align: center;
+  }
+
+  .four-oh-four-code {
+    font-family: var(--font-display);
+    font-size: 120px;
+    color: var(--orange);
+    line-height: 1;
+    margin-bottom: 8px;
+    text-shadow: 4px 4px 0 var(--ink);
+  }
+
+  .four-oh-four-mascot {
+    font-size: 64px;
+    margin-bottom: 16px;
+    transform: rotate(-5deg);
+  }
+
+  .four-oh-four-title {
+    font-family: var(--font-display);
+    font-size: 32px;
+    margin-bottom: 8px;
+  }
+
+  .four-oh-four-subtitle {
+    font-family: var(--font-hand);
+    font-size: 20px;
+    color: var(--ink-light);
+    margin-bottom: 32px;
+  }
+
+  .four-oh-four-card {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 24px 32px;
+    max-width: 400px;
+  }
+
+  .four-oh-four-card p {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-medium);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .four-oh-four-links {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 480px) {
+    .four-oh-four-code { font-size: 80px; }
+    .four-oh-four-mascot { font-size: 48px; }
+    .four-oh-four-title { font-size: 20px; }
+  }
+
+  /* Tiger walk Easter egg */
+  .four-oh-four-mascot {
+    animation: tigerWalk 10s ease-in-out 3s infinite;
+  }
+
+  @keyframes tigerWalk {
+    0%   { transform: rotate(-5deg) translateX(0); }
+    5%   { transform: rotate(-5deg) translateX(0); }
+    25%  { transform: rotate(0deg) translateX(100vw); }
+    26%  { transform: rotate(0deg) scaleX(-1) translateX(100vw); }
+    50%  { transform: rotate(0deg) scaleX(-1) translateX(0); }
+    55%  { transform: rotate(-5deg) scaleX(1) translateX(0); }
+    100% { transform: rotate(-5deg) scaleX(1) translateX(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .four-oh-four-mascot, .tiger-annotation { animation: none; }
+  }
+
+  body { overflow-x: hidden; }
+
+  .tiger-annotation {
+    font-family: var(--font-hand);
+    font-size: 18px;
+    color: var(--ink-light);
+    opacity: 0;
+    margin-top: -8px;
+    margin-bottom: 8px;
+    animation: annotationFade 10s ease-in-out 3s infinite;
+  }
+
+  @keyframes annotationFade {
+    0%   { opacity: 0; }
+    8%   { opacity: 1; }
+    22%  { opacity: 1; }
+    28%  { opacity: 0; }
+    100% { opacity: 0; }
+  }
+
+  /* Dark mode */
+  [data-theme="dark"] .four-oh-four-card { background: var(--bg-card); }
+  [data-theme="dark"] .four-oh-four-card p { color: var(--ink-medium); }
+  [data-theme="dark"] .four-oh-four-title { color: var(--ink); }
+  [data-theme="dark"] .four-oh-four-subtitle { color: var(--ink-light); }
+  [data-theme="dark"] .four-oh-four-code { color: var(--orange); text-shadow: 4px 4px 0 rgba(237,224,207,0.3); }
+  [data-theme="dark"] .tiger-annotation { color: var(--ink-light); }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- NAV -->
+<div id="site-header" data-page="404"></div>
+
+<main class="four-oh-four" id="main-content">
+  <div class="four-oh-four-mascot">&#x1F42F;</div>
+  <div class="tiger-annotation">gone scouting the waiver wire...</div>
+  <div class="four-oh-four-code">404</div>
+  <div class="four-oh-four-title">wrong film room.</div>
+  <div class="four-oh-four-subtitle">Razzle checked everywhere. This page doesn't exist &mdash; or it was traded to another site.</div>
+  <div class="four-oh-four-card">
+    <p>The play you called isn't in the book. Head back to the Lab and we'll find what you need.</p>
+    <div class="four-oh-four-links">
+      <a href="/" class="btn-primary">Home</a>
+      <a href="/lab.html" class="btn-chunky">The Lab</a>
+      <a href="/agents.html" class="btn-chunky">Situation Room</a>
+    </div>
+  </div>
+</main>
+
+<script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Lab | Fourth Down Labs</title>
+    <meta
+      name="description"
+      content="Fourth Down Labs The Lab: custom dynasty player screening with shareable views and live stat filtering."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css?v=20260228-window-filters-1" />
+  </head>
+  <body>
+    <div class="ambient-backdrop" aria-hidden="true"></div>
+    <header class="site-header">
+      <a class="brand" href="./home.html">
+        <span class="brand-dot"></span>
+        Fourth Down Labs
+      </a>
+      <nav class="main-nav" aria-label="Primary">
+        <a class="nav-link" data-nav-page="lab" href="./lab.html">Open the Lab</a>
+        <a class="nav-link" data-nav-page="intel" href="./league-intel.html">League Intel</a>
+        <a class="nav-link" data-nav-page="agents" href="./agents.html">Agents</a>
+        <button id="connect-sleeper-btn" class="nav-cta nav-connect-btn" type="button">Connect Sleeper</button>
+      </nav>
+    </header>
+
+    <main class="site-shell">
+      <section class="hero-panel fade-in">
+        <p class="eyebrow">THE LAB</p>
+        <div class="lab-section-head">
+          <h1>Build multi-use screens like a capital-markets terminal.</h1>
+          <div class="lab-actions">
+            <button id="screen-save-view" class="secondary-btn" type="button">Save View</button>
+            <button id="screen-share-view" class="secondary-btn" type="button">Share View Link</button>
+          </div>
+        </div>
+        <p class="subhead">
+          Define your universe, stack custom criteria, and iterate quickly to isolate the exact players you are looking for.
+        </p>
+      </section>
+
+      <div class="hand-divider" aria-hidden="true"></div>
+
+      <section class="panel data-panel lab-slim-shell">
+        <article class="lab-card lab-slim-top">
+          <div class="lab-card-head">
+            <h2>Core Screen</h2>
+          </div>
+          <div class="lab-universe-grid">
+            <label>
+              Search
+              <input id="screen-search" placeholder="Player name..." />
+            </label>
+            <label>
+              Team
+              <select id="screen-team">
+                <option value="">All Teams</option>
+              </select>
+            </label>
+          </div>
+          <div class="lab-window-grid">
+            <label>
+              Stat Window
+              <select id="screen-stat-mode">
+                <option value="last_game">Last Game</option>
+                <option value="last_season">Last Season</option>
+                <option value="last_n_games">Last N Games</option>
+                <option value="custom_range">Custom Range</option>
+                <option value="latest">Latest Snapshot</option>
+              </select>
+            </label>
+            <label>
+              Season
+              <input id="screen-stat-season" type="number" min="1999" max="2100" step="1" placeholder="2024" />
+            </label>
+            <label>
+              Week Start
+              <input id="screen-stat-week-start" type="number" min="1" max="22" step="1" placeholder="12" />
+            </label>
+            <label>
+              Week End
+              <input id="screen-stat-week-end" type="number" min="1" max="22" step="1" placeholder="14" />
+            </label>
+            <label>
+              Last N Games
+              <input id="screen-stat-last-n" type="number" min="1" max="64" step="1" placeholder="5" />
+            </label>
+          </div>
+          <div class="position-filter-group">
+            <span class="filter-label">Seasons</span>
+            <div id="screen-season-pills" class="position-pills" role="group" aria-label="Season filters">
+              <button class="position-pill active" type="button" data-season="latest">Latest</button>
+              <button class="position-pill" type="button" data-season="2025">2025</button>
+              <button class="position-pill" type="button" data-season="2024">2024</button>
+              <button class="position-pill" type="button" data-season="2023">2023</button>
+              <button class="position-pill" type="button" data-season="2022">2022</button>
+              <button class="position-pill" type="button" data-season="2021">2021</button>
+              <button class="position-pill" type="button" data-season="2020">2020</button>
+              <button class="position-pill" type="button" data-season="career">Career</button>
+            </div>
+          </div>
+          <div class="position-filter-group">
+            <span class="filter-label">Aggregation</span>
+            <div id="screen-agg-pills" class="position-pills" role="group" aria-label="Aggregation mode">
+              <button class="position-pill active" type="button" data-agg="per_game">Per Game</button>
+              <button class="position-pill" type="button" data-agg="totals">Totals</button>
+            </div>
+          </div>
+          <div class="position-filter-group">
+            <span class="filter-label">Positions</span>
+            <div id="screen-position-pills" class="position-pills" role="group" aria-label="Position filters">
+              <button class="position-pill active" type="button" data-position="">All</button>
+              <button class="position-pill" type="button" data-position="QB">QB</button>
+              <button class="position-pill" type="button" data-position="RB">RB</button>
+              <button class="position-pill" type="button" data-position="WR">WR</button>
+              <button class="position-pill" type="button" data-position="TE">TE</button>
+              <button class="position-pill" type="button" data-position="K">K</button>
+              <button class="position-pill" type="button" data-position="PICK">PICK</button>
+            </div>
+          </div>
+          <div class="position-filter-group">
+            <span class="filter-label">Player Pool</span>
+            <div id="screen-relevance-pills" class="position-pills" role="group" aria-label="Relevance filter">
+              <button class="position-pill active" type="button" data-relevance="fantasy">Fantasy Relevant</button>
+              <button class="position-pill" type="button" data-relevance="all">All Players</button>
+            </div>
+          </div>
+          <div class="lab-runbar">
+            <div class="filter-actions">
+              <button id="screen-run" class="primary-btn" type="button">Run Screen</button>
+              <button id="screen-open-advanced" class="secondary-btn" type="button">Advanced Screener Builder</button>
+              <button id="screen-refresh-db" class="secondary-btn" type="button">Refresh Live DB</button>
+              <button id="screen-toggle-applied" class="secondary-btn" type="button">Applied Filters (0)</button>
+            </div>
+            <p id="screen-status" class="status" data-level="info">Ready. Run a screen to load results.</p>
+          </div>
+        </article>
+
+        <article class="active-filters-panel lab-card">
+          <div class="active-filters-head">
+            <h3>Active Criteria</h3>
+            <button id="screen-clear-filters" class="secondary-btn" type="button">Clear</button>
+          </div>
+          <div id="screen-active-filters" class="active-filters"></div>
+        </article>
+
+        <article id="screen-applied-panel" class="lab-card applied-filters-panel hidden">
+          <div class="active-filters-head">
+            <h3>Applied Filter Summary</h3>
+            <p id="screen-applied-summary" class="hint">0 filters</p>
+          </div>
+          <div id="screen-applied-list" class="applied-filters-list"></div>
+        </article>
+
+        <details class="lab-advanced">
+          <summary>Advanced Screener Builder</summary>
+          <div class="lab-advanced-grid">
+            <article class="metric-catalog-panel lab-card">
+              <div class="lab-card-head">
+                <h3>Metric Library</h3>
+              </div>
+              <label>
+                Find Metric
+                <div class="metric-find-row">
+                  <input id="metric-search" placeholder="Type: age, yac, air yards..." />
+                  <a class="secondary-btn metric-help-link" href="./metric-help.html">Metric Help</a>
+                </div>
+              </label>
+              <div id="screen-metric-categories" class="metric-categories" aria-label="Metric categories"></div>
+              <label>
+                Available Metrics
+                <select id="metric-select" class="metric-select" size="14" aria-label="Available metrics"></select>
+              </label>
+              <div class="metric-select-actions">
+                <button id="screen-add-column" class="secondary-btn" type="button">Add as Column</button>
+                <button id="screen-add-metric" class="secondary-btn" type="button">Add as Filter</button>
+              </div>
+            </article>
+          </div>
+        </details>
+
+        <article class="active-columns-panel data-panel lab-card">
+          <div class="lab-section-head">
+            <div class="active-filters-head">
+              <h3>Output Columns</h3>
+              <p class="hint">Drag to reorder and trim noise.</p>
+            </div>
+            <button id="screen-reset-columns" class="secondary-btn" type="button">Reset Columns</button>
+          </div>
+          <div id="screen-active-columns" class="active-columns"></div>
+        </article>
+
+        <article class="saved-views-panel lab-card">
+          <div class="active-filters-head">
+            <h3>Saved Screens</h3>
+            <button id="screen-clear-saved-views" class="secondary-btn" type="button">Clear Saved</button>
+          </div>
+          <div id="screen-saved-views" class="saved-views"></div>
+        </article>
+
+        <article class="data-panel lab-card lab-results-card">
+          <div class="results-head">
+            <h2>Results</h2>
+            <p id="screen-sort" class="hint">Sorted by Fantasy Points PPR (desc)</p>
+          </div>
+          <p id="screen-count" class="hint">0 players</p>
+          <div class="table-wrap lab-table-wrap">
+            <table class="screener-table">
+              <thead id="screen-results-head"></thead>
+              <tbody id="screen-results"></tbody>
+            </table>
+          </div>
+          <p class="brand-watermark">fourthdownlabs.com</p>
+        </article>
+      </section>
+    </main>
+    <div class="lab-scroll-buttons" aria-label="Scroll controls">
+      <button id="lab-scroll-up" class="lab-scroll-btn" type="button" aria-label="Scroll up">▲</button>
+      <button id="lab-scroll-down" class="lab-scroll-btn" type="button" aria-label="Scroll down">▼</button>
+    </div>
+
+    <script src="./themes.js"></script>
+    <script type="module" src="./lab.js"></script>
+  </body>
+</html>

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Drop Rate — Razzle</title>
+<meta property="og:title" content="Drop Rate — Razzle">
+<meta property="og:description" content="Sure hands or butterfingers? Drop rate rankings reveal which receivers you can trust and which ones leave points on the field.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Drop Rate — Razzle">
+<meta name="twitter:description" content="Sure hands or butterfingers? Drop rate rankings reveal which receivers you can trust and which leave points on the field.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Drop rate dashboard on razzle.lol. Sure hands vs butterfingers — which receivers can you trust and which leave fantasy points on the ground?">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=drops">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=drops">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .dr-page { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+  .dr-header { text-align: center; margin-bottom: 24px; }
+  .dr-header h1 { font-family: var(--font-display); font-size: 32px; color: var(--ink); margin: 0 0 4px; }
+  .dr-header .dr-subtitle { font-family: var(--font-hand); font-size: 20px; color: var(--ink-light); }
+  .dr-controls { display: flex; justify-content: center; align-items: center; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .dr-controls select { font-family: var(--font-mono); font-size: 13px; padding: 6px 10px; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--bg-card); }
+  .dr-controls .pos-tabs { display: flex; gap: 4px; }
+  .dr-controls .pos-tab { font-family: var(--font-mono); font-size: 12px; padding: 5px 12px; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--bg-card); cursor: pointer; font-weight: 700; }
+  .dr-controls .pos-tab.active { background: var(--ink); color: var(--bg); }
+  .dr-export { font-family: var(--font-mono); font-size: 12px; padding: 5px 14px; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--bg-card); cursor: pointer; font-weight: 700; }
+  .dr-export:hover { background: var(--ink); color: var(--bg); }
+  .dr-loading { text-align: center; font-family: var(--font-hand); font-size: 18px; color: var(--ink-light); padding: 60px 0; }
+
+  .dr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .dr-card { background: var(--bg-card); border: 3px solid var(--ink); border-radius: var(--radius-sm); box-shadow: 4px 4px 0 var(--ink); overflow: hidden; }
+  .dr-card-header { font-family: var(--font-display); font-size: 18px; padding: 10px 16px; color: var(--bg); }
+  .dr-card-header.sure { background: var(--semantic-green); }
+  .dr-card-header.butter { background: var(--semantic-red); }
+  .dr-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 12px; }
+  .dr-table th { background: var(--bg); padding: 6px 8px; text-align: right; font-size: 11px; font-weight: 700; border-bottom: 2px solid var(--ink-faint); white-space: nowrap; }
+  .dr-table th:first-child, .dr-table th:nth-child(2), .dr-table th:nth-child(3) { text-align: left; }
+  .dr-table td { padding: 6px 8px; text-align: right; border-bottom: 2px dashed var(--border-dashed); }
+  .dr-table td:first-child, .dr-table td:nth-child(2), .dr-table td:nth-child(3) { text-align: left; }
+  .dr-table tbody tr:hover { background: var(--orange-hover); }
+  .dr-rank { font-weight: 700; color: var(--ink-light); font-size: 11px; }
+  .dr-pos-badge { font-size: 11px; font-weight: 700; padding: 1px 5px; border-radius: var(--radius-sm); color: var(--text-on-accent); }
+  .dr-rate-badge { font-family: var(--font-mono); font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: var(--radius-sm); border: 2px solid; }
+  .dr-rate-good { background: var(--semantic-green-light); color: var(--semantic-green); border-color: var(--semantic-green); }
+  .dr-rate-mid { background: var(--yellow-light, #fef9c3); color: var(--ink-medium, #854d0e); border-color: var(--yellow, #854d0e); }
+  .dr-rate-bad { background: var(--semantic-red-light); color: var(--semantic-red); border-color: var(--semantic-red); }
+  .dr-bar-cell { width: 60px; }
+  .dr-bar { height: 12px; border-radius: var(--radius-sm); min-width: 2px; }
+  .dr-bar-good { background: var(--semantic-green); }
+  .dr-bar-bad { background: var(--semantic-red); }
+  .dr-empty { text-align: center; padding: 40px 16px; font-family: var(--font-hand); font-size: 16px; color: var(--ink-light); }
+
+  @media (max-width: 768px) {
+    .dr-page { padding: 16px 12px 40px; }
+    .dr-header h1 { font-size: 24px; }
+    .dr-grid { grid-template-columns: 1fr; }
+    .dr-bar-cell { width: 40px; }
+  }
+  @media (max-width: 480px) {
+    .dr-page { padding: 12px 8px 32px; }
+    .dr-header h1 { font-size: 20px; }
+    .dr-header .dr-subtitle { font-size: 16px; }
+    .dr-controls { gap: 8px; }
+    .dr-controls .pos-tab { padding: 4px 8px; font-size: 11px; }
+    .dr-table { font-size: 11px; }
+    .dr-table th, .dr-table td { padding: 4px 5px; }
+    .dr-bar-cell { width: 30px; }
+    .dr-card-header { font-size: 14px; padding: 8px 12px; }
+  }
+
+  /* Dark mode */
+  [data-theme="dark"] .dr-page { color: var(--ink); }
+  [data-theme="dark"] .dr-header h1 { color: var(--ink); }
+  [data-theme="dark"] .dr-subtitle { color: var(--ink-light); }
+  [data-theme="dark"] .dr-table th { color: var(--ink); border-color: var(--ink-faint); }
+  [data-theme="dark"] .dr-table td { color: var(--ink-medium); border-color: var(--ink-faint); }
+  [data-theme="dark"] .dr-card-header { color: var(--bg); }
+  [data-theme="dark"] .dr-controls .pos-tab { background: var(--bg-card); color: var(--ink); border-color: var(--ink-faint); }
+  [data-theme="dark"] .dr-controls .pos-tab.active { background: var(--ink); color: var(--bg-card); }
+  [data-theme="dark"] .dr-controls select { background: var(--bg-card); color: var(--ink); border-color: var(--ink-faint); }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<div id="site-header" data-page="drops"></div>
+
+<main class="dr-page" id="main-content">  <div class="dr-header">
+    <h1>Drop Rate</h1>
+    <div class="dr-subtitle">sure hands vs butterfingers</div>
+    <div class="dr-methodology" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--ink-light);margin-top:4px;" title="A 'drop' = incomplete, non-intercepted pass on throws under 15 air yards. Drop Rate = drops / all targets (not just short targets). This is a proxy metric from nflverse PBP data, not an official NFL stat. Drop rate + catch rate won't sum to 100% because deep incompletions aren't counted as drops.">drops = short-throw incompletions (&lt;15 air yards) · drop rate = drops / all targets · <span style="cursor:help;text-decoration:underline dotted" onclick="document.getElementById('dr-method-note').style.display=document.getElementById('dr-method-note').style.display==='none'?'block':'none'">methodology (?)</span></div>
+    <div id="dr-method-note" style="display:none;font-family:'Space Mono',monospace;font-size:11px;color:var(--ink-light);background:var(--bg-card);border:2px solid var(--ink-faint);padding:8px 12px;margin-top:6px;border-radius:4px;line-height:1.5;">
+      <strong>Not an official stat.</strong> Razzle defines a "drop" as any incomplete, non-intercepted pass with &lt;15 air yards. This includes throwaway balls, PBUs, and batted passes — not just catchable drops. PFF and NFL use subjective "catchable ball" criteria which we can't replicate from play-by-play data. Use as a directional signal, not gospel.
+    </div>
+  </div>
+
+  <div class="dr-controls">
+    <select id="dr-season" aria-label="Season selector"></select>
+    <div class="pos-tabs" role="tablist" aria-label="Position filter">
+      <button class="pos-tab active" data-pos="" role="tab" aria-selected="true">ALL</button>
+      <button class="pos-tab" data-pos="WR" role="tab" aria-selected="false">WR</button>
+      <button class="pos-tab" data-pos="TE" role="tab" aria-selected="false">TE</button>
+      <button class="pos-tab" data-pos="RB" role="tab" aria-selected="false">RB</button>
+    </div>
+    <button class="dr-export" onclick="exportPNG(this)">Export PNG</button>
+  </div>
+
+  <div id="dr-loading" class="dr-loading">analyzing drop rates...</div>
+  <div id="dr-content" style="display:none;">
+    <div class="dr-grid">
+      <div class="dr-card">
+        <div class="dr-card-header sure">Sure Hands</div>
+        <div id="dr-sure-wrap" style="overflow-x:auto"></div>
+      </div>
+      <div class="dr-card">
+        <div class="dr-card-header butter">Butterfingers</div>
+        <div id="dr-butter-wrap" style="overflow-x:auto"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+}
+
+var _cs = getComputedStyle(document.documentElement);
+const POS_COLORS = {
+  QB: _cs.getPropertyValue('--pos-qb').trim() || '#5b7fff',
+  RB: _cs.getPropertyValue('--pos-rb').trim() || '#2ec4b6',
+  WR: _cs.getPropertyValue('--pos-wr').trim() || '#d97757',
+  TE: _cs.getPropertyValue('--pos-te').trim() || '#8b5cf6'
+};
+let state = { season: null, position: "", data: null };
+
+function _saveState() {
+  savePageState({ season: state.season || '', position: state.position });
+}
+
+function initSeasons() {
+  const sel = document.getElementById("dr-season");
+  const _d = new Date(); const now = _d.getMonth() >= 8 ? _d.getFullYear() : _d.getFullYear() - 1;
+  for (let y = now; y >= 2020; y--) {
+    const opt = document.createElement("option");
+    opt.value = y; opt.textContent = y;
+    sel.appendChild(opt);
+  }
+  var urlState = restorePageState({ season: '', position: '' });
+  if (urlState.season) sel.value = urlState.season;
+  if (urlState.position) {
+    state.position = urlState.position.toUpperCase();
+    document.querySelectorAll(".pos-tab").forEach(t => {
+      t.classList.toggle("active", t.dataset.pos === state.position);
+    });
+  }
+  state.season = parseInt(sel.value, 10) || 0;
+  sel.addEventListener("change", () => { state.season = parseInt(sel.value, 10) || 0; _saveState(); loadData(); });
+}
+
+document.querySelectorAll(".pos-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".pos-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    state.position = tab.dataset.pos;
+    _saveState();
+    loadData();
+  });
+});
+
+async function loadData() {
+  document.getElementById("dr-loading").style.display = "";
+  document.getElementById("dr-content").style.display = "none";
+  let url = "/api/drop-rate?season=" + state.season;
+  if (state.position) url += "&position=" + state.position;
+  try {
+    state.data = await apiFetch(url);
+    render();
+  } catch (e) {
+    document.getElementById("dr-loading").textContent = razzleError();
+  }
+}
+
+function rateClass(r, good) {
+  if (good) {
+    if (r <= 4) return "dr-rate-good";
+    if (r <= 6) return "dr-rate-mid";
+    return "dr-rate-bad";
+  }
+  if (r >= 20) return "dr-rate-bad";
+  if (r >= 15) return "dr-rate-mid";
+  return "dr-rate-good";
+}
+
+function renderTable(players, type) {
+  if (players.length === 0) {
+    return '<div class="dr-empty">no ' + (type === "sure" ? "sure hands" : "butterfingers") + ' found for this filter</div>';
+  }
+  const maxDrops = Math.max(...players.map(p => p.drops), 1);
+  const barCls = type === "sure" ? "dr-bar-good" : "dr-bar-bad";
+  const isGood = type === "sure";
+
+  let html = '<table class="dr-table"><caption class="sr-only">Player drop rate and catch efficiency rankings</caption><thead><tr><th scope="col">#</th><th scope="col">Player</th><th scope="col">Pos</th><th scope="col" title="Drops / total targets. Drops only count incomplete passes under 15 air yards.">Drop%</th><th scope="col" title="Incomplete, non-intercepted passes on throws under 15 air yards">Drops</th><th scope="col" title="Total targets (all throws, including deep)">Tgt</th><th scope="col">Catch%</th><th scope="col">YAC/R</th><th scope="col"></th></tr></thead><tbody>';
+
+  players.forEach((p, i) => {
+    const posColor = POS_COLORS[p.position] || "#8a7565";
+    const barPct = maxDrops > 0 ? p.drops / maxDrops * 100 : 0;
+    const cls = rateClass(p.drop_rate, isGood);
+
+    html += '<tr>';
+    html += '<td class="dr-rank">' + (i + 1) + '</td>';
+    html += '<td>' + escapeHtml(p.name) + ' <span style="color:var(--ink-light);font-size:11px;">' + escapeHtml(p.team) + '</span></td>';
+    html += '<td><span class="dr-pos-badge" style="background:' + escapeHtml(posColor) + '">' + escapeHtml(p.position) + '</span></td>';
+    html += '<td><span class="dr-rate-badge ' + cls + '">' + escapeHtml(String(p.drop_rate)) + '%</span></td>';
+    html += '<td>' + escapeHtml(String(p.drops)) + '</td>';
+    html += '<td>' + escapeHtml(String(p.targets)) + '</td>';
+    html += '<td>' + escapeHtml(String(p.catch_rate)) + '%</td>';
+    html += '<td>' + escapeHtml(String(p.yac_per_rec)) + '</td>';
+    html += '<td class="dr-bar-cell"><div class="dr-bar ' + barCls + '" style="width:' + barPct + '%"></div></td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  return html;
+}
+
+function render() {
+  document.getElementById("dr-loading").style.display = "none";
+  document.getElementById("dr-content").style.display = "";
+  document.getElementById("dr-sure-wrap").innerHTML = renderTable(state.data.sure_hands || [], "sure");
+  document.getElementById("dr-butter-wrap").innerHTML = renderTable(state.data.butterfingers || [], "butter");
+}
+
+function exportPNG(btn) {
+  if (btn) { btn.disabled = true; btn.textContent = 'Exporting...'; }
+  const el = document.getElementById("main-content");
+  loadHtml2Canvas().then(function(h2c) { return h2c(el, { backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#ede0cf', scale: 2 }); }).then(canvas => {
+    const ctx = canvas.getContext("2d");
+    if (typeof drawRazzleWatermark === 'function') { drawRazzleWatermark(ctx, canvas); }
+    else { ctx.font = "600 24px Caveat, cursive"; ctx.fillStyle = (typeof getExportColors === 'function' ? getExportColors().watermark : (document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.18)' : 'rgba(45,31,20,0.13)')); ctx.fillText("razzle.lol", canvas.width - 220, canvas.height - 20); }
+    const link = document.createElement("a");
+    link.download = "razzle-drops.png";
+    link.href = canvas.toDataURL();
+    link.click();
+  }).finally(function() { if (btn) { btn.disabled = false; btn.textContent = 'Export PNG'; } });
+}
+
+// Analytics
+fetch("/api/analytics/pageview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ page: "/drops.html", referrer: document.referrer }) }).catch(() => {});
+
+initSeasons();
+loadData();
+</script>
+</body>
+</html>

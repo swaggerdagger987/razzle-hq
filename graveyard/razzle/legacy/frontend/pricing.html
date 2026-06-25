@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Razzle Pricing — The Screener Is Free Forever</title>
+<meta property="og:title" content="Pricing — Razzle">
+<meta property="og:description" content="The Screener is forever free. Pro adds league intelligence. Elite gets six AI agents who know your league inside out.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://razzle.lol/pricing.html">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Pricing — Razzle">
+<meta name="twitter:description" content="The Screener is forever free. Pro adds league intelligence. Elite gets six AI agents who know your league inside out.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Razzle pricing. The Screener is forever free. Pro unlocks league intelligence. Elite gives you six AI agents with full league context, cloud sync, and historical data.">
+<link rel="canonical" href="https://razzle.lol/pricing.html">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css?v=scene-20260416">
+<style>
+  .pricing-page { max-width: 1100px; margin: 0 auto; padding: 48px 24px 80px; }
+  .pricing-hero { text-align: center; margin-bottom: 40px; }
+  .pricing-hero h1 { font-family: var(--font-display); font-size: 36px; color: var(--ink); margin: 0 0 8px; }
+  .pricing-hero h1 span { color: var(--orange); }
+  .pricing-hero p { font-family: var(--font-mono); font-size: 14px; color: var(--ink-light); max-width: 500px; margin: 0 auto; }
+
+  /* Interval toggle */
+  .interval-toggle { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 32px; }
+  .interval-toggle label { font-family: var(--font-mono); font-size: 14px; color: var(--ink-light); cursor: pointer; transition: color 0.15s; }
+  .interval-toggle label.active { color: var(--ink); }
+  .interval-toggle .toggle-track {
+    width: 48px; height: 26px; background: var(--ink-faint); border: 2px solid var(--ink);
+    border-radius: var(--radius-lg); cursor: pointer; position: relative; transition: background 0.2s;
+  }
+  .interval-toggle .toggle-track.yearly { background: var(--orange); border-color: var(--ink); }
+  .interval-toggle .toggle-knob {
+    width: 18px; height: 18px; background: var(--bg-card); border: 2px solid var(--ink);
+    border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.2s;
+  }
+  .interval-toggle .toggle-track.yearly .toggle-knob { transform: translateX(22px); }
+  .save-badge {
+    font-family: var(--font-mono); font-size: 11px; color: var(--text-on-accent);
+    background: var(--green); padding: 2px 8px; border-radius: var(--radius-sm);
+    border: 2px solid var(--ink); transform: rotate(-2deg); display: inline-block;
+  }
+
+  /* Plan cards */
+  .plans-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 40px; }
+  @media (max-width: 900px) { .plans-grid { grid-template-columns: 1fr 1fr !important; } }
+  @media (max-width: 600px) { .plans-grid { grid-template-columns: 1fr !important; } }
+  @media (max-width: 480px) {
+    html, body { overflow-x: hidden; }
+    .pricing-page { padding: 24px 12px; }
+    .plan-card { padding: 20px 14px; }
+    .plan-name { font-size: 20px; }
+    .plan-price { font-size: 24px; }
+    .plan-cta .btn-primary, .plan-cta .btn-chunky { font-size: 13px; padding: 10px 0; }
+    .promo-row { flex-direction: column; }
+    .promo-row input { width: 100%; }
+    .feature-matrix { font-size: 11px; }
+    .feature-matrix th { font-size: 11px; padding: 8px 4px; }
+    .feature-matrix td { padding: 6px 4px; }
+  }
+  @media (max-width: 375px) {
+    .pricing-page { padding: 20px 8px; }
+    .plan-card { padding: 16px 10px; }
+    .plan-name { font-size: 18px; }
+    .plan-price { font-size: 24px; }
+    .feature-matrix { font-size: 11px; }
+    .feature-matrix th { padding: 6px 3px; }
+  }
+
+  .plan-card.free { border-color: var(--green); box-shadow: 4px 4px 0 var(--green); }
+  .plan-card.free .plan-badge { background: var(--green); }
+
+  .plan-card {
+    background: var(--bg-card, #f7efe5); border: 3px solid var(--ink);
+    border-radius: var(--radius); padding: 28px 24px; position: relative;
+    box-shadow: 4px 4px 0 var(--ink); transition: box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .plan-card:hover {
+    box-shadow: 6px 6px 0 var(--ink); transform: translate(-2px, -2px);
+  }
+  .plan-card.free:hover { box-shadow: 6px 6px 0 var(--green); }
+  .plan-card.elite:hover { box-shadow: 6px 6px 0 var(--purple); }
+  .plan-card.elite { border-color: var(--purple); box-shadow: 4px 4px 0 var(--purple); }
+  .plan-card.elite .plan-badge { background: var(--purple); }
+
+  .plan-badge {
+    position: absolute; top: -12px; right: 16px;
+    font-family: var(--font-mono); font-size: 11px; color: var(--text-on-accent);
+    background: var(--orange); padding: 3px 12px; border-radius: var(--radius-sm);
+    border: 2px solid var(--ink); transform: rotate(3deg);
+  }
+
+  .plan-name { font-family: var(--font-display); font-size: 24px; color: var(--ink); margin: 0 0 4px; }
+  .plan-price { font-family: var(--font-display); font-size: 36px; color: var(--ink); margin: 0 0 2px; }
+  .plan-price span { font-size: 16px; color: var(--ink-light); }
+  .plan-interval { font-family: var(--font-mono); font-size: 12px; color: var(--ink-light); margin: 0 0 20px; }
+  .plan-interval .yearly-price { color: var(--orange); font-weight: 700; }
+
+  .plan-features { list-style: none; padding: 0; margin: 0 0 24px; }
+  .plan-features li {
+    font-family: var(--font-mono); font-size: 12px; color: var(--ink-medium, #5c4a3d);
+    padding: 6px 0; border-bottom: 2px dashed var(--border-dashed);
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  .plan-features li:last-child { border-bottom: none; }
+  .plan-features .check { color: var(--green); font-weight: 700; flex-shrink: 0; }
+  .plan-features .check.elite-check { color: var(--orange); }
+  .plan-features .highlight { color: var(--orange); font-weight: 700; }
+
+  .plan-cta { width: 100%; }
+  .plan-cta .btn-primary { width: 100%; font-size: 14px; padding: 12px 0; }
+  .plan-cta .btn-chunky { width: 100%; font-size: 14px; padding: 12px 0; }
+
+  /* Promo code */
+  .promo-section { text-align: center; margin-bottom: 40px; }
+  .promo-row { display: flex; gap: 8px; justify-content: center; align-items: center; max-width: 360px; margin: 0 auto; }
+  .promo-row input { flex: 1; font-family: var(--font-mono); font-size: 13px; padding: 8px 12px;
+    border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--bg-card, #f7efe5); }
+  .promo-feedback { font-family: var(--font-mono); font-size: 11px; margin-top: 6px; min-height: 16px; }
+
+  /* Feature matrix */
+  .matrix-section { margin-top: 48px; }
+  .matrix-section h2 { font-family: var(--font-display); font-size: 20px; text-align: center; margin: 0 0 20px; }
+  .feature-matrix { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 12px; }
+  .feature-matrix th { font-family: var(--font-mono); font-size: 13px; padding: 10px 8px;
+    border-bottom: 3px solid var(--ink); text-align: center; }
+  .feature-matrix th:first-child { text-align: left; }
+  .feature-matrix td { padding: 8px; border-bottom: 2px dashed var(--border-dashed); text-align: center; }
+  .feature-matrix td:first-child { text-align: left; color: var(--ink-medium, #5c4a3d); }
+  .feature-matrix .yes { color: var(--green); font-weight: 700; }
+  .feature-matrix .no { color: var(--ink-light); }
+  .feature-matrix .limit { color: var(--orange); font-weight: 600; }
+  .feature-matrix .group-row td { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--ink-light); padding-top: 16px; border-bottom: 3px solid var(--ink); }
+
+  /* Manage link */
+  .manage-section { text-align: center; margin-top: 24px; font-family: var(--font-mono); font-size: 12px; }
+  .manage-section a { color: var(--orange); }
+
+  /* Already subscribed banner */
+  .subscribed-banner {
+    text-align: center; padding: 16px 24px; background: var(--bg-card, #f7efe5);
+    border: 3px solid var(--green); border-radius: 8px;
+    box-shadow: 4px 4px 0 var(--green); margin-bottom: 32px; display: none;
+  }
+  .subscribed-banner.visible { display: block; }
+  .subscribed-banner p { font-family: var(--font-display); font-size: 16px; margin: 0 0 8px; }
+  .subscribed-banner .plan-name-badge { color: var(--orange); }
+
+  .free-chip {
+    font-family: var(--font-mono); font-size: 12px; color: var(--ink);
+    background: var(--bg); padding: 5px 12px; border-radius: var(--radius-sm);
+    border: 2px solid var(--green);
+  }
+  .btn-elite { background: var(--purple); border-color: var(--ink); }
+  .btn-elite:hover { box-shadow: 4px 4px 0 var(--purple); }
+
+  /* Dark mode overrides */
+  [data-theme="dark"] .btn-elite { color: var(--bg); }
+  [data-theme="dark"] .plan-card { background: var(--bg-card); }
+  [data-theme="dark"] .plan-features li { color: var(--ink-medium); }
+  [data-theme="dark"] .free-celebration { background: var(--bg-card) !important; }
+  [data-theme="dark"] .free-chip { background: var(--bg-warm); color: var(--ink); }
+  [data-theme="dark"] .feature-matrix td { color: var(--ink); }
+  [data-theme="dark"] .feature-matrix td:first-child { color: var(--ink); }
+  [data-theme="dark"] .feature-matrix .no { color: var(--ink-medium); }
+  [data-theme="dark"] .feature-matrix .group-row td { color: var(--ink); font-weight: 700; }
+  [data-theme="dark"] .feature-matrix th { color: var(--ink); }
+  [data-theme="dark"] .subscribed-banner { background: var(--bg-card); }
+  [data-theme="dark"] .promo-row input { background: var(--bg-card); color: var(--ink); }
+  [data-theme="dark"] .interval-toggle label { color: var(--ink-light); }
+  [data-theme="dark"] .interval-toggle label.active { color: var(--ink); }
+  [data-theme="dark"] .save-badge { color: var(--bg); }
+  [data-theme="dark"] .plan-badge { color: var(--bg); }
+  [data-theme="dark"] #trialBanner { background: var(--orange-light) !important; color: var(--ink); }
+  [data-theme="dark"] #trialBanner div { color: var(--ink) !important; }
+  [data-theme="dark"] #trialActiveBanner { background: var(--orange-light) !important; color: var(--ink); }
+  [data-theme="dark"] #trialActiveBanner div { color: var(--ink) !important; }
+  [data-theme="dark"] .free-celebration div { color: var(--ink); }
+  [data-theme="dark"] .promo-section { color: var(--ink); }
+
+  /* Trial banner mobile compaction */
+  @media (max-width: 480px) {
+    #trialBanner,
+    #trialActiveBanner {
+      padding: 10px 12px !important;
+      margin-bottom: 16px !important;
+    }
+    #trialBanner div:first-child,
+    #trialActiveBanner #trialBannerTitle {
+      font-size: 16px !important;
+    }
+    #trialBanner div:nth-child(2),
+    #trialActiveBanner #trialCountdown {
+      font-size: 11px !important;
+    }
+    #trialBanner .btn-primary,
+    #trialActiveBanner .btn-primary {
+      padding: 8px 16px !important;
+      font-size: 12px !important;
+      margin-top: 8px !important;
+    }
+    .subscribed-banner {
+      padding: 10px 12px;
+      margin-bottom: 16px;
+    }
+    .subscribed-banner p { font-size: 14px; }
+  }
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What's the difference between Pro and Elite?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Same analytical tools. Elite adds server-side AI agents (no API key needed, unlimited queries) and priority support. Pro: you bring your own API key from OpenRouter (60 seconds, costs $1-3/month in usage). Think of Pro as the DIY option and Elite as the easy button."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is there a free trial?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Every new account gets 7 days of full Pro access automatically. No credit card required. Just sign up and you're in. After 7 days, you can subscribe to keep Pro or continue using the Screener for free."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I cancel anytime?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Cancel from your account at any time. You keep access through the end of your billing period. No cancellation fees, no hassle."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need a Sleeper account?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. The Screener works without Sleeper. But connecting Sleeper unlocks league-contextualized AI — agents analyze YOUR roster, YOUR rivals, YOUR league's scoring settings. That's where the real value is."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What happens when my trial ends?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "You keep the Screener and all your saved work — formulas, views, watchlist. Nothing is lost. The Pro panels and Situation Room lock until you subscribe. Pick it back up any time."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which API keys work with Pro?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "OpenRouter (recommended — gives access to GPT-4o, Claude, Gemini, and more), OpenAI, or Anthropic. Set your key in the Situation Room settings. Your key is encrypted and never logged."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What formats do the agents support?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "All of them. Redraft, dynasty, keeper, best ball, superflex, 2QB, IDP. The agents detect your league format from Sleeper settings and adapt their analysis automatically. A redraft question gets a different answer than a dynasty question."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is the Screener really free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. 100+ stat columns, 70+ analytical panels, custom formulas, radar charts, scatter plots, prospect screener, shareable URLs, image export. All forever free. No account required. The Screener is the product — Pro and Elite unlock the intelligence on top."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is my API key safe?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Your key is stored in your browser only — we never see it. Browser extensions on the page could technically read it, so we recommend creating a dedicated key with a monthly spending cap on OpenRouter. That way you're covered even in the worst case."
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body class="has-bg-scene">
+
+<!-- ===== SUNDAY MORNING SCENE — Full Background ===== -->
+<div class="bg-scene" aria-hidden="true">
+  <div class="bg-scene__obj bg-scene__obj--sway" style="top:6%;left:50%;margin-left:-230px;--r:5deg;">
+    <svg width="460" height="360" viewBox="0 0 460 360">
+      <rect x="10" y="10" width="444" height="344" rx="4" fill="#1a1a1a" stroke="none"/>
+      <rect x="4" y="4" width="444" height="344" rx="4" fill="#FFFEF8" stroke="#111" stroke-width="5" stroke-linejoin="round"/>
+      <rect x="16" y="14" width="420" height="8" rx="2" fill="#111" stroke="none"/>
+      <rect x="24" y="32" width="300" height="22" rx="3" fill="#0a0a0a" stroke="none"/>
+      <rect x="24" y="60" width="220" height="14" rx="2" fill="#333" stroke="none"/>
+      <rect x="16" y="82" width="420" height="5" rx="1" fill="#111" stroke="none"/>
+      <rect x="160" y="96" width="3" height="240" fill="#ccc" stroke="none"/>
+      <rect x="310" y="96" width="3" height="240" fill="#ccc" stroke="none"/>
+      <rect x="22" y="102" width="128" height="7" rx="2" fill="#333" stroke="none"/>
+      <rect x="22" y="116" width="120" height="7" rx="2" fill="#444" stroke="none"/>
+      <rect x="22" y="130" width="126" height="7" rx="2" fill="#333" stroke="none"/>
+      <rect x="22" y="144" width="110" height="7" rx="2" fill="#444" stroke="none"/>
+      <rect x="22" y="158" width="124" height="7" rx="2" fill="#333" stroke="none"/>
+      <rect x="22" y="172" width="118" height="7" rx="2" fill="#444" stroke="none"/>
+      <rect x="172" y="102" width="128" height="7" rx="2" fill="#333" stroke="none"/>
+      <rect x="172" y="116" width="118" height="7" rx="2" fill="#444" stroke="none"/>
+      <rect x="172" y="130" width="130" height="7" rx="2" fill="#333" stroke="none"/>
+      <rect x="172" y="144" width="112" height="7" rx="2" fill="#444" stroke="none"/>
+      <rect x="322" y="152" width="118" height="110" rx="4" fill="#f0ede5" stroke="#222" stroke-width="3"/>
+      <rect x="330" y="160" width="70" height="10" rx="2" fill="#111" stroke="none"/>
+      <rect x="330" y="178" width="100" height="3" fill="#888" stroke="none"/>
+      <rect x="330" y="190" width="100" height="3" fill="#888" stroke="none"/>
+      <rect x="330" y="202" width="100" height="3" fill="#888" stroke="none"/>
+      <ellipse cx="90" cy="165" rx="62" ry="38" fill="none" stroke="#E53935" stroke-width="4.5" stroke-linecap="round"/>
+      <rect x="4" y="176" width="444" height="2" fill="#ddd8cc" stroke="none"/>
+    </svg>
+  </div>
+  <div class="bg-scene__obj bg-scene__obj--rock" style="top:4%;right:5%;--r:-8deg;">
+    <svg width="200" height="200" viewBox="0 0 200 200">
+      <ellipse cx="94" cy="108" rx="82" ry="78" fill="#1a1a1a" stroke="none" opacity="0.25"/>
+      <ellipse cx="90" cy="104" rx="82" ry="78" fill="#e8e0d4" stroke="#222" stroke-width="4.5"/>
+      <ellipse cx="90" cy="100" rx="58" ry="56" fill="#FFFDF5" stroke="#111" stroke-width="5"/>
+      <ellipse cx="90" cy="100" rx="50" ry="48" fill="#2B1400" stroke="#3a2010" stroke-width="2"/>
+      <path d="M55 90 Q65 74 90 82 Q118 92 100 108 Q86 118 68 108 Q52 100 58 92" fill="#E8854A" stroke="none" opacity="0.85"/>
+      <circle cx="68" cy="82" r="8" fill="#fff" stroke="none" opacity="0.5"/>
+      <path d="M148 72 Q182 72 182 100 Q182 128 148 128" fill="none" stroke="#111" stroke-width="5" stroke-linecap="round"/>
+      <path d="M148 80 Q172 80 172 100 Q172 120 148 120" fill="#FFFDF5" stroke="none"/>
+    </svg>
+    <div class="bg-scene__steam" style="left:60px;top:-14px;animation-delay:-0.3s;width:10px;height:10px;background:rgba(255,255,255,0.85);"></div>
+    <div class="bg-scene__steam" style="left:80px;top:-20px;animation-delay:-1.8s;width:12px;height:12px;background:rgba(255,255,255,0.75);"></div>
+    <div class="bg-scene__steam" style="left:100px;top:-10px;animation-delay:-3.2s;width:9px;height:9px;background:rgba(255,255,255,0.8);"></div>
+  </div>
+  <div class="bg-scene__obj bg-scene__obj--sway bg-scene__obj--tablet-hide" style="top:28%;left:2%;--r:-7deg;">
+    <svg width="200" height="280" viewBox="0 0 200 280">
+      <rect x="10" y="22" width="184" height="252" rx="8" fill="#1a1a1a" stroke="none"/>
+      <rect x="4" y="16" width="184" height="252" rx="8" fill="#8B6914" stroke="#111" stroke-width="5" stroke-linejoin="round"/>
+      <rect x="16" y="42" width="160" height="216" rx="3" fill="#FFFEF8" stroke="#111" stroke-width="3"/>
+      <rect x="54" y="4" width="84" height="32" rx="6" fill="#C0C0C0" stroke="#111" stroke-width="4.5"/>
+      <rect x="26" y="82" width="32" height="14" rx="4" fill="#5B7FFF" stroke="#111" stroke-width="2"/>
+      <rect x="66" y="86" width="90" height="6" rx="2" fill="#555" stroke="none"/>
+      <rect x="26" y="104" width="32" height="14" rx="4" fill="#2EC4B6" stroke="#111" stroke-width="2"/>
+      <rect x="66" y="108" width="82" height="6" rx="2" fill="#555" stroke="none"/>
+      <rect x="26" y="148" width="32" height="14" rx="4" fill="#D97757" stroke="#111" stroke-width="2"/>
+      <rect x="66" y="152" width="88" height="6" rx="2" fill="#555" stroke="none"/>
+      <rect x="26" y="192" width="32" height="14" rx="4" fill="#8B5CF6" stroke="#111" stroke-width="2"/>
+      <rect x="66" y="196" width="72" height="6" rx="2" fill="#555" stroke="none"/>
+      <line x1="60" y1="221" x2="158" y2="221" stroke="#E53935" stroke-width="3.5" stroke-linecap="round"/>
+      <rect x="66" y="236" width="78" height="6" rx="2" fill="#2EC4B6" stroke="none"/>
+    </svg>
+  </div>
+  <div class="bg-scene__obj bg-scene__obj--drift" style="bottom:20%;left:12%;--r:28deg;">
+    <svg width="340" height="44" viewBox="0 0 340 44">
+      <rect x="32" y="11" width="260" height="26" rx="3" fill="#1a1a1a" stroke="none"/>
+      <rect x="28" y="6" width="260" height="26" rx="3" fill="#FFD600" stroke="#111" stroke-width="4.5" stroke-linejoin="round"/>
+      <polygon points="0,19 28,6 28,32" fill="#FFD600" stroke="#111" stroke-width="4.5" stroke-linejoin="round"/>
+      <polygon points="8,19 28,10 28,28" fill="#DEBB72" stroke="none"/>
+      <polygon points="0,19 10,15 10,23" fill="#333" stroke="none"/>
+      <rect x="288" y="6" width="22" height="26" rx="2" fill="#C0C0C0" stroke="#111" stroke-width="4"/>
+      <rect x="310" y="8" width="24" height="22" rx="6" fill="#E75480" stroke="#111" stroke-width="4"/>
+    </svg>
+  </div>
+  <div class="bg-scene__obj bg-scene__obj--rock bg-scene__obj--tablet-hide" style="top:48%;right:3%;--r:-5deg;">
+    <svg width="200" height="150" viewBox="0 0 200 150">
+      <path d="M6 4 L190 4 L190 132 L174 126 L158 134 L142 127 L126 136 L110 128 L94 134 L78 126 L62 132 L46 124 L30 130 L14 124 L6 128 Z" fill="#FFFEF8" stroke="#111" stroke-width="4.5" stroke-linejoin="round"/>
+      <rect x="16" y="16" width="66" height="12" rx="3" fill="#111" stroke="none"/>
+      <line x1="16" y1="36" x2="178" y2="36" stroke="#111" stroke-width="2.5"/>
+      <rect x="16" y="44" width="160" height="5" rx="1" fill="#555" stroke="none"/>
+      <rect x="16" y="56" width="148" height="5" rx="1" fill="#666" stroke="none"/>
+      <rect x="16" y="68" width="156" height="5" rx="1" fill="#555" stroke="none"/>
+      <rect x="16" y="80" width="140" height="5" rx="1" fill="#666" stroke="none"/>
+      <rect x="84" y="52" width="70" height="14" rx="3" fill="#4AE54A" stroke="none" opacity="0.55"/>
+      <circle cx="148" cy="58" r="18" fill="none" stroke="#E53935" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <svg class="bg-scene__paw bg-scene__paw--pulse" style="bottom:10%;left:36%;" width="70" height="75" viewBox="0 0 70 75">
+    <ellipse cx="35" cy="50" rx="17" ry="19" fill="#E8854A" stroke="#111" stroke-width="3.5"/>
+    <ellipse cx="16" cy="26" rx="9" ry="11" fill="#E8854A" stroke="#111" stroke-width="3"/>
+    <ellipse cx="35" cy="16" rx="9" ry="11" fill="#E8854A" stroke="#111" stroke-width="3"/>
+    <ellipse cx="54" cy="26" rx="9" ry="11" fill="#E8854A" stroke="#111" stroke-width="3"/>
+  </svg>
+  <svg class="bg-scene__paw" style="bottom:19%;left:28%;opacity:0.5;" width="55" height="60" viewBox="0 0 70 75">
+    <ellipse cx="35" cy="50" rx="17" ry="19" fill="#E8854A" stroke="#111" stroke-width="3.5"/>
+    <ellipse cx="16" cy="26" rx="9" ry="11" fill="#E8854A" stroke="#111" stroke-width="3"/>
+    <ellipse cx="35" cy="16" rx="9" ry="11" fill="#E8854A" stroke="#111" stroke-width="3"/>
+    <ellipse cx="54" cy="26" rx="9" ry="11" fill="#E8854A" stroke="#111" stroke-width="3"/>
+  </svg>
+  <svg class="bg-scene__paw" style="bottom:27%;left:21%;opacity:0.25;" width="40" height="44" viewBox="0 0 70 75">
+    <ellipse cx="35" cy="50" rx="17" ry="19" fill="#E8854A" stroke="#111" stroke-width="3.5"/>
+    <ellipse cx="16" cy="26" rx="9" ry="11" fill="#E8854A" stroke="#111" stroke-width="3"/>
+    <ellipse cx="35" cy="16" rx="9" ry="11" fill="#E8854A" stroke="#111" stroke-width="3"/>
+    <ellipse cx="54" cy="26" rx="9" ry="11" fill="#E8854A" stroke="#111" stroke-width="3"/>
+  </svg>
+</div>
+<!-- ===== END SUNDAY MORNING SCENE ===== -->
+
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div id="site-header" data-page="pricing"></div>
+
+<main class="pricing-page" id="main-content">
+
+  <!-- Already subscribed banner (shown for Pro/Elite users) -->
+  <div class="subscribed-banner" id="subscribedBanner">
+    <p>You're on <span class="plan-name-badge" id="currentPlanName">Pro</span></p>
+    <a href="#" onclick="openManageSubscription(); return false;" class="btn-chunky" style="font-size:13px; padding:6px 16px;">Manage Subscription</a>
+  </div>
+
+  <!-- Trial banner (visible to non-authenticated users) -->
+  <div id="trialBanner" style="display:none; background:var(--orange-light, #f7e4d8); border:3px solid var(--orange); border-radius:var(--radius); box-shadow:4px 4px 0 var(--ink); padding:16px 24px; margin-bottom:24px; text-align:center;">
+    <div style="font-family:var(--font-display); font-size:20px; color:var(--ink); margin-bottom:4px;">7 days of Pro. On the house.</div>
+    <div style="font-family:var(--font-mono); font-size:13px; color:var(--ink-medium);">Full access. No card. Just sign up and start pulling film.</div>
+    <a href="#" onclick="if(typeof openAuthModal==='function')openAuthModal(); return false;" class="btn-primary" style="margin-top:12px; display:inline-block; padding:10px 28px; font-size:14px;">Create Free Account</a>
+  </div>
+
+  <!-- Trial active banner (visible to users currently on trial) -->
+  <div id="trialActiveBanner" style="display:none; background:var(--orange-light, #f7e4d8); border:3px solid var(--orange); border-radius:var(--radius); box-shadow:4px 4px 0 var(--ink); padding:16px 24px; margin-bottom:24px; text-align:center;">
+    <div id="trialBannerTitle" style="font-family:var(--font-display); font-size:18px; color:var(--ink); margin-bottom:4px;">Your Elite Trial is Active</div>
+    <div id="trialCountdown" style="font-family:var(--font-mono); font-size:13px; color:var(--ink-medium);"></div>
+    <div style="font-family:var(--font-hand); font-size:16px; color:var(--ink-light); margin-top:4px;">subscribe now to keep your Elite access when the trial ends</div>
+  </div>
+
+  <div class="pricing-hero">
+    <h1>The Screener is <span>forever free.</span></h1>
+    <p>No account. No catch. No trial that expires. Pro and Elite add the intelligence layer.</p>
+  </div>
+
+  <!-- Interval toggle -->
+  <div class="interval-toggle">
+    <label id="monthlyLabel" onclick="setPricingInterval('month')">Monthly</label>
+    <button type="button" class="toggle-track yearly" id="intervalToggle" onclick="toggleInterval()" role="switch" aria-checked="true" aria-label="Toggle monthly or yearly pricing" style="border:none;cursor:pointer;">
+      <div class="toggle-knob"></div>
+    </button>
+    <label id="yearlyLabel" class="active" onclick="setPricingInterval('year')">Yearly</label>
+    <span class="save-badge" id="saveBadge">save 33%</span>
+  </div>
+
+  <!-- What everyone gets -->
+  <div class="free-celebration" style="background:var(--bg-card); border:3px solid var(--green); border-radius:12px; box-shadow:4px 4px 0 var(--green); padding:32px 28px; margin-bottom:32px; text-align:center;">
+    <div style="font-family:var(--font-display); font-size:20px; margin-bottom:4px;">What everyone gets. <span style="color:var(--green);">Forever.</span></div>
+    <div style="font-family:var(--font-hand); font-size:18px; color:var(--ink-light); margin-bottom:20px;">no account, no card, no catch</div>
+    <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; max-width:600px; margin:0 auto;">
+      <span class="free-chip">Screener (100+ columns)</span>
+      <span class="free-chip">70+ analytical panels (preview)</span>
+      <span class="free-chip">Custom formulas</span>
+      <span class="free-chip">Compare tool</span>
+      <span class="free-chip">Trade analyzer</span>
+      <span class="free-chip">Charts &amp; heat maps</span>
+      <span class="free-chip">PNG export</span>
+      <span class="free-chip">Shareable URLs</span>
+      <span class="free-chip">Sleeper connection</span>
+      <span class="free-chip">10 seasons of data</span>
+    </div>
+    <div style="margin-top:20px;">
+      <a href="/lab.html" class="btn-chunky" style="display:inline-block; text-align:center; text-decoration:none; font-size:14px; padding:10px 28px;">Open the Screener</a>
+    </div>
+  </div>
+
+  <!-- Upgrade cards -->
+  <div style="text-align:center; margin-bottom:20px; font-family:var(--font-hand); font-size:20px; color:var(--orange);">
+    try Pro free for 7 days. no credit card.
+  </div>
+  <div style="font-family:var(--font-display); font-size:20px; text-align:center; margin-bottom:20px;">Want more? <span style="color:var(--orange);">Two ways to upgrade.</span></div>
+
+  <div class="plans-grid" style="grid-template-columns:1fr 1fr;">
+
+    <!-- PRO -->
+    <div class="plan-card" role="region" aria-labelledby="plan-pro">
+      <div class="plan-badge">the film room upgrade</div>
+      <h3 class="plan-name" id="plan-pro">Pro</h3>
+      <div class="plan-price" id="proPrice">$79.99<span>/yr</span></div>
+      <div class="plan-interval" id="proInterval">that's <span class="yearly-price">$6.67/mo</span> — save 33%<br><span style="font-size:11px;color:var(--ink-light);">billed annually at $79.99</span></div>
+
+      <ul class="plan-features">
+        <li><span class="check">&#10003;</span> <span class="highlight">Everything free, plus:</span></li>
+        <li><span class="check">&#10003;</span> 20 AI queries/day included (no API key needed)</li>
+        <li><span class="check">&#10003;</span> League-contextualized agents</li>
+        <li><span class="check">&#10003;</span> Unlimited custom formulas</li>
+        <li><span class="check">&#10003;</span> Cloud sync (formulas, watchlist, views)</li>
+        <li><span class="check">&#10003;</span> CSV export</li>
+        <li><span class="check">&#10003;</span> Compare up to 4 players</li>
+        <li><span class="check">&#10003;</span> Roster grading</li>
+        <li><span class="check">&#10003;</span> 7-day free trial</li>
+      </ul>
+
+      <div class="plan-cta">
+        <button class="btn-primary" onclick="handleCheckout('pro')">Get Pro</button>
+      </div>
+    </div>
+
+    <!-- ELITE -->
+    <div class="plan-card elite" role="region" aria-labelledby="plan-elite">
+      <div class="plan-badge">full war machine</div>
+      <h3 class="plan-name" id="plan-elite">Elite</h3>
+      <div class="plan-price" id="elitePrice">$149.99<span>/yr</span></div>
+      <div class="plan-interval" id="eliteInterval">that's <span class="yearly-price">$12.50/mo</span> — save 37%<br><span style="font-size:11px;color:var(--ink-light);">billed annually at $149.99</span></div>
+
+      <ul class="plan-features">
+        <li><span class="check elite-check">&#9733;</span> <span class="highlight">Everything in Pro, plus:</span></li>
+        <li><span class="check elite-check">&#9733;</span> <span class="highlight">Unlimited AI queries — nothing to set up</span></li>
+        <li><span class="check elite-check">&#9733;</span> <span class="highlight">No API key needed — we handle it</span></li>
+        <li><span class="check elite-check">&#9733;</span> <span class="highlight">Agent memory</span> (multi-season, per-league)</li>
+        <li><span class="check elite-check">&#9733;</span> <span class="highlight">Weekly Razzle briefings</span></li>
+        <li><span class="check elite-check">&#9733;</span> Priority data refresh</li>
+        <li><span class="check elite-check">&#9733;</span> Full historical data (2015+)</li>
+        <li><span class="check">&#10003;</span> 7-day free Elite trial on sign-up</li>
+      </ul>
+
+      <div class="plan-cta">
+        <button class="btn-primary btn-elite" onclick="handleCheckout('elite')">Get Elite</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center; margin-top:16px; font-family:var(--font-mono); font-size:11px; color:var(--ink-light);">
+    <svg style="width:14px; height:14px; vertical-align:middle; margin-right:4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    Secured by Stripe. Cancel anytime.
+  </div>
+
+  <!-- Social proof -->
+  <div style="text-align:center; margin:24px 0 8px; display:flex; flex-wrap:wrap; justify-content:center; gap:16px; font-family:var(--font-mono); font-size:11px; color:var(--ink-light);">
+    <span>10 seasons of nflverse data</span>
+    <span style="color:var(--ink-faint);">|</span>
+    <span>used by dynasty and redraft players on r/DynastyFF</span>
+    <span style="color:var(--ink-faint);">|</span>
+    <span>built by one person who watches too much film</span>
+  </div>
+
+  <div style="text-align:center; margin:16px 0 8px;">
+    <div style="font-family:var(--font-mono); font-size:12px; color:var(--ink-light); background:var(--bg-card); display:inline-block; padding:8px 20px; border:2px dashed var(--border-dashed); border-radius:8px;">Pro gives you the full film room. Elite adds agent memory, weekly briefings, and runs the AI for you — no API key needed.</div>
+  </div>
+
+  <!-- Promo code -->
+  <div class="promo-section">
+    <div class="promo-row">
+      <input type="text" id="promoCodeInput" placeholder="promo code" autocomplete="off" spellcheck="false"
+        aria-label="Promo code" aria-describedby="promoCodeFeedback" oninput="clearPromoFeedback()" onkeydown="if(event.key==='Enter') validatePromoCode()">
+      <button class="btn-chunky" style="font-size:12px; padding:8px 14px;" onclick="validatePromoCode()">Apply</button>
+    </div>
+    <div class="promo-feedback" id="promoCodeFeedback" role="alert"></div>
+  </div>
+
+  <!-- Feature comparison matrix -->
+  <div class="matrix-section">
+    <h2>The full breakdown</h2>
+    <div style="overflow-x:auto;">
+    <table class="feature-matrix">
+      <caption class="sr-only">Feature comparison between Free and Pro plans</caption>
+      <thead>
+        <tr>
+          <th style="width:50%;">Feature</th>
+          <th style="width:16%;">Free</th>
+          <th style="width:17%;">Pro</th>
+          <th style="width:17%;">Elite</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Screener -->
+        <tr class="group-row"><td colspan="4">Screener / Lab</td></tr>
+        <tr><td>Lab screener (100+ columns)</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td></tr>
+        <tr><td>70+ analytical panels (dynasty rankings, trade values, breakouts, aging curves, and more)</td><td class="limit">Preview</td><td class="yes">Full access</td><td class="yes">Full access</td></tr>
+        <tr><td>Season selector</td><td class="yes">All (2015+)</td><td class="yes">All (2015+)</td><td class="yes">All (2015+)</td></tr>
+        <tr><td>Compare mode</td><td class="limit">2 players</td><td class="yes">4 players</td><td class="yes">4 players</td></tr>
+
+        <!-- Formulas -->
+        <tr class="group-row"><td colspan="4">Custom Formulas</td></tr>
+        <tr><td>Formula builder</td><td class="limit">3 max</td><td class="yes">Unlimited</td><td class="yes">Unlimited</td></tr>
+        <tr><td>Formula cloud sync</td><td class="no">&mdash;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td></tr>
+        <tr><td>Formula Store (browse)</td><td class="limit">Preview</td><td class="yes">Full</td><td class="yes">Full</td></tr>
+        <tr><td>Formula Store (publish)</td><td class="no">&mdash;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td></tr>
+
+        <!-- AI -->
+        <tr class="group-row"><td colspan="4">Situation Room (AI)</td></tr>
+        <tr><td>Generic AI queries</td><td class="limit">5/day</td><td class="limit">20/day</td><td class="yes">Unlimited</td></tr>
+        <tr><td>League-contextualized AI</td><td class="no">&mdash;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td></tr>
+        <tr><td>AI setup</td><td class="limit">Built-in</td><td class="limit">Free API key (~$1-3/mo)</td><td class="yes">Nothing — we handle it</td></tr>
+        <tr><td>Agent memory</td><td class="no">&mdash;</td><td class="no">&mdash;</td><td class="yes">&#10003;</td></tr>
+        <tr><td>Weekly briefings</td><td class="no">&mdash;</td><td class="no">&mdash;</td><td class="yes">&#10003;</td></tr>
+
+        <!-- Data -->
+        <tr class="group-row"><td colspan="4">Data &amp; Export</td></tr>
+        <tr><td>CSV export</td><td class="no">&mdash;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td></tr>
+        <tr><td>Watchlist cloud sync</td><td class="no">&mdash;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td></tr>
+        <tr><td>Saved views cloud sync</td><td class="no">&mdash;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td></tr>
+
+        <!-- League -->
+        <tr class="group-row"><td colspan="4">League Tools</td></tr>
+        <tr><td>Sleeper connection</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td></tr>
+        <tr><td>Bureau summary (league odds, rosters)</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td></tr>
+        <tr><td>Bureau deep-dive (Self-Scout, Trade Network, Pressure Map, Manager Profiles, Power Rankings)</td><td class="no">&mdash;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td></tr>
+        <tr><td>Roster grading</td><td class="no">&mdash;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td></tr>
+        <tr><td>Trade finder (league-specific)</td><td class="no">&mdash;</td><td class="yes">&#10003;</td><td class="yes">&#10003;</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="matrix-section" style="margin-top:56px;">
+    <h2>Questions we keep getting</h2>
+    <div style="max-width:680px; margin:0 auto;">
+
+      <details class="faq-item" style="border-bottom:2px dashed var(--border-dashed); padding:12px 0;">
+        <summary style="font-family:var(--font-mono); font-size:14px; color:var(--ink); cursor:pointer; padding:4px 0; list-style:none;">
+          <span style="display:flex; align-items:center; justify-content:space-between; gap:8px;">What's the difference between Pro and Elite? <span class="faq-chevron" style="font-size:12px; transition:transform 0.2s; flex-shrink:0;">&#9660;</span></span>
+        </summary>
+        <div style="font-family:var(--font-mono); font-size:12px; color:var(--ink-medium); line-height:1.7; padding-top:8px;">Same analytical tools. Elite adds server-side AI agents (no API key needed, unlimited queries) and priority support. Pro: you bring your own API key from OpenRouter (60 seconds, costs $1-3/month in usage). Think of Pro as the DIY option and Elite as the easy button.</div>
+      </details>
+
+      <details class="faq-item" style="border-bottom:2px dashed var(--border-dashed); padding:12px 0;">
+        <summary style="font-family:var(--font-mono); font-size:14px; color:var(--ink); cursor:pointer; padding:4px 0; list-style:none;">
+          <span style="display:flex; align-items:center; justify-content:space-between; gap:8px;">Is there a free trial? <span class="faq-chevron" style="font-size:12px; transition:transform 0.2s; flex-shrink:0;">&#9660;</span></span>
+        </summary>
+        <div style="font-family:var(--font-mono); font-size:12px; color:var(--ink-medium); line-height:1.7; padding-top:8px;">Yes. Every new account gets 7 days of full Pro access automatically. No credit card required. Just sign up and you're in. After 7 days, you can subscribe to keep Pro or continue using the Screener for free.</div>
+      </details>
+
+      <details class="faq-item" style="border-bottom:2px dashed var(--border-dashed); padding:12px 0;">
+        <summary style="font-family:var(--font-mono); font-size:14px; color:var(--ink); cursor:pointer; padding:4px 0; list-style:none;">
+          <span style="display:flex; align-items:center; justify-content:space-between; gap:8px;">Can I cancel anytime? <span class="faq-chevron" style="font-size:12px; transition:transform 0.2s; flex-shrink:0;">&#9660;</span></span>
+        </summary>
+        <div style="font-family:var(--font-mono); font-size:12px; color:var(--ink-medium); line-height:1.7; padding-top:8px;">Yes. Cancel from your account at any time. You keep access through the end of your billing period. No cancellation fees, no hassle.</div>
+      </details>
+
+      <details class="faq-item" style="border-bottom:2px dashed var(--border-dashed); padding:12px 0;">
+        <summary style="font-family:var(--font-mono); font-size:14px; color:var(--ink); cursor:pointer; padding:4px 0; list-style:none;">
+          <span style="display:flex; align-items:center; justify-content:space-between; gap:8px;">Do I need a Sleeper account? <span class="faq-chevron" style="font-size:12px; transition:transform 0.2s; flex-shrink:0;">&#9660;</span></span>
+        </summary>
+        <div style="font-family:var(--font-mono); font-size:12px; color:var(--ink-medium); line-height:1.7; padding-top:8px;">No. The Screener works without Sleeper. But connecting Sleeper unlocks league-contextualized AI — agents analyze YOUR roster, YOUR rivals, YOUR league's scoring settings. That's where the real value is.</div>
+      </details>
+
+      <details class="faq-item" style="border-bottom:2px dashed var(--border-dashed); padding:12px 0;">
+        <summary style="font-family:var(--font-mono); font-size:14px; color:var(--ink); cursor:pointer; padding:4px 0; list-style:none;">
+          <span style="display:flex; align-items:center; justify-content:space-between; gap:8px;">What happens when my trial ends? <span class="faq-chevron" style="font-size:12px; transition:transform 0.2s; flex-shrink:0;">&#9660;</span></span>
+        </summary>
+        <div style="font-family:var(--font-mono); font-size:12px; color:var(--ink-medium); line-height:1.7; padding-top:8px;">You keep the Screener and all your saved work — formulas, views, watchlist. Nothing is lost. The Pro panels and Situation Room lock until you subscribe. Pick it back up any time.</div>
+      </details>
+
+      <details class="faq-item" style="border-bottom:2px dashed var(--border-dashed); padding:12px 0;">
+        <summary style="font-family:var(--font-mono); font-size:14px; color:var(--ink); cursor:pointer; padding:4px 0; list-style:none;">
+          <span style="display:flex; align-items:center; justify-content:space-between; gap:8px;">Which API keys work with Pro? <span class="faq-chevron" style="font-size:12px; transition:transform 0.2s; flex-shrink:0;">&#9660;</span></span>
+        </summary>
+        <div style="font-family:var(--font-mono); font-size:12px; color:var(--ink-medium); line-height:1.7; padding-top:8px;">OpenRouter (recommended — gives access to GPT-4o, Claude, Gemini, and more), OpenAI, or Anthropic. Set your key in the Situation Room settings. Your key is encrypted and never logged.</div>
+      </details>
+
+      <details class="faq-item" style="border-bottom:2px dashed var(--border-dashed); padding:12px 0;">
+        <summary style="font-family:var(--font-mono); font-size:14px; color:var(--ink); cursor:pointer; padding:4px 0; list-style:none;">
+          <span style="display:flex; align-items:center; justify-content:space-between; gap:8px;">What formats do the agents support? <span class="faq-chevron" style="font-size:12px; transition:transform 0.2s; flex-shrink:0;">&#9660;</span></span>
+        </summary>
+        <div style="font-family:var(--font-mono); font-size:12px; color:var(--ink-medium); line-height:1.7; padding-top:8px;">All of them. Redraft, dynasty, keeper, best ball, superflex, 2QB, IDP. The agents detect your league format from Sleeper settings and adapt their analysis automatically. A redraft question gets a different answer than a dynasty question.</div>
+      </details>
+
+      <details class="faq-item" style="border-bottom:2px dashed var(--border-dashed); padding:12px 0;">
+        <summary style="font-family:var(--font-mono); font-size:14px; color:var(--ink); cursor:pointer; padding:4px 0; list-style:none;">
+          <span style="display:flex; align-items:center; justify-content:space-between; gap:8px;">Do you offer refunds? <span class="faq-chevron" style="font-size:12px; transition:transform 0.2s; flex-shrink:0;">&#9660;</span></span>
+        </summary>
+        <div style="font-family:var(--font-mono); font-size:12px; color:var(--ink-medium); line-height:1.7; padding-top:8px;">If you're not happy within the first 14 days, email swaggerdagger987@gmail.com and we'll sort it out. No questions asked.</div>
+      </details>
+
+      <details class="faq-item" style="border-bottom:2px dashed var(--border-dashed); padding:12px 0;">
+        <summary style="font-family:var(--font-mono); font-size:14px; color:var(--ink); cursor:pointer; padding:4px 0; list-style:none;">
+          <span style="display:flex; align-items:center; justify-content:space-between; gap:8px;">Is the Screener really free? <span class="faq-chevron" style="font-size:12px; transition:transform 0.2s; flex-shrink:0;">&#9660;</span></span>
+        </summary>
+        <div style="font-family:var(--font-mono); font-size:12px; color:var(--ink-medium); line-height:1.7; padding-top:8px;">Yes. 100+ stat columns, 70+ analytical panels, custom formulas, radar charts, scatter plots, prospect screener, shareable URLs, image export. All forever free. No account required. The Screener is the product — Pro and Elite unlock the intelligence on top.</div>
+      </details>
+
+      <details class="faq-item" style="padding:12px 0;">
+        <summary style="font-family:var(--font-mono); font-size:14px; color:var(--ink); cursor:pointer; padding:4px 0; list-style:none;">
+          <span style="display:flex; align-items:center; justify-content:space-between; gap:8px;">Is my API key safe? <span class="faq-chevron" style="font-size:12px; transition:transform 0.2s; flex-shrink:0;">&#9660;</span></span>
+        </summary>
+        <div style="font-family:var(--font-mono); font-size:12px; color:var(--ink-medium); line-height:1.7; padding-top:8px;">Your key is stored in your browser only &mdash; we never see it. Browser extensions on the page could technically read it, so we recommend creating a dedicated key with a monthly spending cap on OpenRouter. That way you're covered even in the worst case.</div>
+      </details>
+
+    </div>
+  </div>
+
+  <!-- Early Adopter / Lifetime Deals (rendered dynamically) -->
+  <div id="promotionsSection" style="display:none; margin-top:32px; padding:20px 0; border-top:2px dashed var(--border-dashed);">
+    <h2 style="font-family:var(--font-display); font-size:20px; text-align:center; margin:0 0 16px;">Launch Specials</h2>
+    <div id="promotionsGrid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap:16px; max-width:680px; margin:0 auto;"></div>
+  </div>
+
+  <!-- Discounts mention -->
+  <div style="text-align:center; margin-top:24px; font-family:var(--font-mono); font-size:11px; color:var(--ink-light);">
+    Student/Military: 50% off any plan — DM <a href="https://twitter.com/razzle_lol" target="_blank" rel="noopener noreferrer" style="color:var(--orange);">@razzle_lol</a> on Twitter. League discount: 10+ members from the same Sleeper league get 15% off each.
+  </div>
+
+  <!-- Manage link for existing subscribers -->
+  <div class="manage-section">
+    Already subscribed? <a href="#" onclick="openManageSubscription(); return false;">Manage your subscription</a>
+  </div>
+
+</main>
+
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+  // Pricing page logic
+  var _pricingInterval = 'year'; // Default to yearly per pricing strategy
+
+  var PRICES = {
+    pro:   { month: '$9.99',  year: '$79.99',  monthlyEquiv: '$6.67',  save: '33%' },
+    elite: { month: '$19.99', year: '$149.99', monthlyEquiv: '$12.50', save: '37%' }
+  };
+
+  function setPricingInterval(interval) {  // renamed from setInterval to avoid shadowing native
+    _pricingInterval = interval;
+    updatePricingUI();
+  }
+
+  function toggleInterval() {
+    _pricingInterval = _pricingInterval === 'month' ? 'year' : 'month';
+    updatePricingUI();
+  }
+
+  function updatePricingUI() {
+    var yearly = _pricingInterval === 'year';
+    var toggle = document.getElementById('intervalToggle');
+    var badge = document.getElementById('saveBadge');
+    var monthlyLabel = document.getElementById('monthlyLabel');
+    var yearlyLabel = document.getElementById('yearlyLabel');
+
+    toggle.setAttribute('aria-checked', yearly ? 'true' : 'false');
+    if (yearly) {
+      toggle.classList.add('yearly');
+      badge.style.opacity = '1';
+      monthlyLabel.classList.remove('active');
+      yearlyLabel.classList.add('active');
+
+      document.getElementById('proPrice').innerHTML = PRICES.pro.year + '<span>/yr</span>';
+      document.getElementById('proInterval').innerHTML = 'that\'s <span class="yearly-price">' + PRICES.pro.monthlyEquiv + '/mo</span> — save ' + PRICES.pro.save + '<br><span style="font-size:11px;color:var(--ink-light);">billed annually at ' + PRICES.pro.year + '</span>';
+      document.getElementById('elitePrice').innerHTML = PRICES.elite.year + '<span>/yr</span>';
+      document.getElementById('eliteInterval').innerHTML = 'that\'s <span class="yearly-price">' + PRICES.elite.monthlyEquiv + '/mo</span> — save ' + PRICES.elite.save + '<br><span style="font-size:11px;color:var(--ink-light);">billed annually at ' + PRICES.elite.year + '</span>';
+    } else {
+      toggle.classList.remove('yearly');
+      badge.style.opacity = '0';
+      monthlyLabel.classList.add('active');
+      yearlyLabel.classList.remove('active');
+
+      document.getElementById('proPrice').innerHTML = PRICES.pro.month + '<span>/mo</span>';
+      document.getElementById('proInterval').textContent = 'billed monthly';
+      document.getElementById('elitePrice').innerHTML = PRICES.elite.month + '<span>/mo</span>';
+      document.getElementById('eliteInterval').textContent = 'billed monthly';
+    }
+  }
+
+  function handleCheckout(plan) {
+    var token = localStorage.getItem('razzle_token');
+    if (!token) {
+      // Store checkout intent so _resumePendingCheckout() fires after auth
+      var interval = plan + '_' + _pricingInterval;
+      try { sessionStorage.setItem('razzle_pending_checkout', interval); } catch(_) {}
+      if (typeof openAuthModal === 'function') {
+        openAuthModal();
+      }
+      return;
+    }
+    // Build interval string: pro_month, pro_year, elite_month, elite_year
+    var interval = plan + '_' + _pricingInterval;
+    if (typeof startCheckout === 'function') {
+      startCheckout(interval);
+    }
+  }
+
+  function clearPromoFeedback() {
+    var fb = document.getElementById('promoCodeFeedback');
+    if (fb) fb.textContent = '';
+  }
+
+  // Easter egg promo codes
+  var EASTER_EGG_CODES = {
+    'RAZZLEDAZZLE': "now THAT's a football name. 10% off? ...nah, but you earned our respect.",
+    'TIGER': 'Razzle approves. no discount, but have a tiger paw: \uD83D\uDC3E',
+    'GOAT': "that's what they call Razzle around the office."
+  };
+
+  function validatePromoCode() {
+    var input = document.getElementById('promoCodeInput');
+    var fb = document.getElementById('promoCodeFeedback');
+    if (!input || !fb) return;
+    var code = input.value.trim().toUpperCase();
+    if (!code) return;
+
+    var easterMsg = EASTER_EGG_CODES[code];
+    if (easterMsg) {
+      fb.textContent = easterMsg;
+      fb.style.color = 'var(--orange)';
+      input.style.borderColor = 'var(--orange)';
+      setTimeout(function() {
+        input.style.borderColor = '';
+      }, 3000);
+      return;
+    }
+
+    // Fall through to API validation for real Stripe promo codes
+    fetch((window.location.origin) + '/api/billing/validate-promo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: input.value.trim() })
+    }).then(function(resp) {
+      if (!resp.ok) { fb.textContent = "couldn't verify that one. try again."; fb.style.color = 'var(--ink-light)'; return; }
+      return resp.json();
+    }).then(function(data) {
+      if (!data) return;
+      if (data.valid) {
+        fb.textContent = (data.percent_off || 0) + '% off applied';
+        fb.style.color = 'var(--green)';
+        input.style.borderColor = 'var(--green)';
+      } else {
+        fb.textContent = data.error || "that code didn't hit. double-check the spelling.";
+        fb.style.color = 'var(--ink-light)';
+      }
+    }).catch(function() {
+      fb.textContent = "couldn't verify that one";
+      fb.style.color = 'var(--ink-light)';
+    });
+  }
+
+  // Check if already subscribed and show appropriate banners
+  function checkSubscription() {
+    try {
+      var user = JSON.parse(localStorage.getItem('razzle_user') || 'null');
+      var trialBanner = document.getElementById('trialBanner');
+      var trialActiveBanner = document.getElementById('trialActiveBanner');
+      var trialCountdown = document.getElementById('trialCountdown');
+
+      // Get plan card CTA buttons
+      var proCta = document.querySelector('.plan-card:not(.elite) .plan-cta button');
+      var eliteCta = document.querySelector('.plan-card.elite .plan-cta button');
+
+      if (!user) {
+        // Not logged in — show trial CTA, update buttons to "Sign Up Free"
+        if (trialBanner) trialBanner.style.display = 'block';
+        if (proCta) proCta.textContent = 'Sign Up Free';
+        if (eliteCta) eliteCta.textContent = 'Sign Up Free';
+        return;
+      }
+
+      // Check if on active trial
+      if (user.trial_active && user.plan_source === 'trial') {
+        if (trialActiveBanner) trialActiveBanner.style.display = 'block';
+        if (trialCountdown) {
+          var days = user.trial_days_remaining || 0;
+          var hours = user.trial_hours_remaining || 0;
+          var timeLabel = days >= 1 ? days + ' day' + (days !== 1 ? 's' : '') : (hours > 0 ? hours + ' hour' + (hours !== 1 ? 's' : '') : 'less than 1 hour');
+          trialCountdown.textContent = timeLabel + ' remaining on your free trial';
+        }
+        // Update buttons — user already has trial access
+        if (proCta) proCta.textContent = 'Subscribe to Pro';
+        if (eliteCta) eliteCta.textContent = 'Subscribe to Elite';
+        return;
+      }
+
+      // Check if on paid plan
+      if (user.plan && user.plan !== 'free') {
+        var banner = document.getElementById('subscribedBanner');
+        var planName = document.getElementById('currentPlanName');
+        if (banner) banner.classList.add('visible');
+        if (planName) {
+          var displayName = user.plan.replace('_lifetime', ' Lifetime');
+          planName.textContent = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+        }
+        // Update buttons for paid users
+        if (proCta) proCta.textContent = 'Current Plan';
+        if (eliteCta) {
+          var isElite = user.plan === 'elite' || user.plan === 'elite_lifetime';
+          eliteCta.textContent = isElite ? 'Current Plan' : 'Upgrade to Elite';
+        }
+      } else {
+        // Free user — check if expired trial
+        var isExpiredTrial = user.plan_source === 'trial' && !user.trial_active;
+        if (isExpiredTrial) {
+          if (proCta) proCta.textContent = 'Subscribe to Pro';
+          if (eliteCta) eliteCta.textContent = 'Subscribe to Elite';
+          // Show expired trial banner with correct title
+          if (trialActiveBanner) {
+            trialActiveBanner.style.display = 'block';
+            var bannerTitle = document.getElementById('trialBannerTitle');
+            if (bannerTitle) bannerTitle.textContent = 'Your Elite Trial Has Ended';
+            if (trialCountdown) trialCountdown.textContent = 'subscribe to keep Elite access';
+          }
+        } else {
+          if (proCta) proCta.textContent = 'Subscribe to Pro';
+          if (eliteCta) eliteCta.textContent = 'Subscribe to Elite';
+        }
+      }
+    } catch (e) {}
+  }
+
+  // Load promotional pricing
+  async function loadPromotions() {
+    try {
+      var resp = await fetch((typeof API_BASE !== 'undefined' ? API_BASE : '') + '/api/billing/promotions');
+      if (!resp.ok) return;
+      var data = await resp.json();
+      var cards = [];
+      var esc = typeof escapeHtml === 'function' ? escapeHtml : function(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
+
+      // Early adopter cards
+      var ea = data.early_adopter;
+      if (ea && ea.enabled) {
+        if (ea.pro.available) {
+          cards.push(
+            '<div style="background:var(--bg-card); border:3px solid var(--orange); border-radius:var(--radius); box-shadow:4px 4px 0 var(--ink); padding:16px 20px; text-align:center;">' +
+              '<div style="font-family:var(--font-mono); font-size:14px; margin-bottom:4px;">Early Adopter Pro</div>' +
+              '<div style="font-family:var(--font-display); font-size:24px; color:var(--orange);">' + esc(ea.pro.price) + '</div>' +
+              '<div style="font-family:var(--font-mono); font-size:11px; color:var(--ink-light);">' + esc(ea.pro.savings) + ' — ' + esc(String(ea.pro.remaining)) + ' of ' + esc(String(ea.pro.limit)) + ' spots left</div>' +
+              '<button class="btn-primary" style="margin-top:12px; width:100%;" onclick="handleCheckout(\'ea_pro\')">Claim Early Adopter</button>' +
+            '</div>'
+          );
+        }
+        if (ea.elite.available) {
+          cards.push(
+            '<div style="background:var(--bg-card); border:3px solid var(--purple); border-radius:var(--radius); box-shadow:4px 4px 0 var(--ink); padding:16px 20px; text-align:center;">' +
+              '<div style="font-family:var(--font-mono); font-size:14px; margin-bottom:4px;">Early Adopter Elite</div>' +
+              '<div style="font-family:var(--font-display); font-size:24px; color:var(--purple);">' + esc(ea.elite.price) + '</div>' +
+              '<div style="font-family:var(--font-mono); font-size:11px; color:var(--ink-light);">' + esc(ea.elite.savings) + ' — ' + esc(String(ea.elite.remaining)) + ' of ' + esc(String(ea.elite.limit)) + ' spots left</div>' +
+              '<button class="btn-primary" style="margin-top:12px; width:100%;" onclick="handleCheckout(\'ea_elite\')">Claim Early Adopter</button>' +
+            '</div>'
+          );
+        }
+      }
+
+      // Lifetime cards
+      var lt = data.lifetime;
+      if (lt && lt.enabled && lt.available) {
+        cards.push(
+          '<div style="background:var(--bg-card); border:3px solid var(--green); border-radius:var(--radius); box-shadow:4px 4px 0 var(--ink); padding:16px 20px; text-align:center;">' +
+            '<div style="font-family:var(--font-mono); font-size:14px; margin-bottom:4px;">Lifetime Pro</div>' +
+            '<div style="font-family:var(--font-display); font-size:24px; color:var(--green);">' + esc(lt.pro_price) + '</div>' +
+            '<div style="font-family:var(--font-mono); font-size:11px; color:var(--ink-light);">one-time — ' + esc(String(lt.remaining)) + ' of ' + esc(String(lt.limit)) + ' lifetime spots left</div>' +
+            '<button class="btn-primary" style="margin-top:12px; width:100%;" onclick="handleCheckout(\'lifetime_pro\')">Go Lifetime</button>' +
+          '</div>'
+        );
+        cards.push(
+          '<div style="background:var(--bg-card); border:3px solid var(--purple); border-radius:var(--radius); box-shadow:4px 4px 0 var(--ink); padding:16px 20px; text-align:center;">' +
+            '<div style="font-family:var(--font-mono); font-size:14px; margin-bottom:4px;">Lifetime Elite</div>' +
+            '<div style="font-family:var(--font-display); font-size:24px; color:var(--purple);">' + esc(lt.elite_price) + '</div>' +
+            '<div style="font-family:var(--font-mono); font-size:11px; color:var(--ink-light);">one-time — ' + esc(String(lt.remaining)) + ' of ' + esc(String(lt.limit)) + ' lifetime spots left</div>' +
+            '<button class="btn-primary" style="margin-top:12px; width:100%;" onclick="handleCheckout(\'lifetime_elite\')">Go Lifetime</button>' +
+          '</div>'
+        );
+      }
+
+      if (cards.length > 0) {
+        document.getElementById('promotionsSection').style.display = 'block';
+        document.getElementById('promotionsGrid').innerHTML = cards.join('');
+      }
+    } catch (e) {
+      // Promotions are optional — silently fail
+    }
+  }
+
+  // Update handleCheckout to support ea_ and lifetime_ prefixes
+  var _origHandleCheckout = handleCheckout;
+  handleCheckout = function(plan) {
+    var token = localStorage.getItem('razzle_token');
+    if (!token) {
+      if (typeof openAuthModal === 'function') openAuthModal();
+      return;
+    }
+    // For ea_ and lifetime_ plans, pass directly as interval
+    if (plan.startsWith('ea_') || plan.startsWith('lifetime_')) {
+      var interval = plan.startsWith('ea_') ? plan + '_year' : plan;
+      if (typeof startCheckout === 'function') startCheckout(interval);
+      return;
+    }
+    _origHandleCheckout(plan);
+  };
+
+  // Re-check subscription state after auth changes (login/register within page)
+  window.addEventListener('razzle-plan-changed', checkSubscription);
+
+  // Init — default to yearly per pricing strategy
+  checkSubscription();
+  updatePricingUI();
+  loadPromotions();
+  fetch("/api/analytics/pageview",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({page:location.pathname})}).catch(function(){});
+</script>
+</body>
+</html>

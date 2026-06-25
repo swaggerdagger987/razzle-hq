@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Season Pace Tracker — Razzle</title>
+<meta property="og:title" content="Season Pace Tracker — Razzle">
+<meta property="og:description" content="Who's on pace for 1,000 yards? 100 receptions? 40 TDs? Season pace projections with milestone badges tracking progress toward key benchmarks.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Season Pace Tracker — Razzle">
+<meta name="twitter:description" content="Who's on pace for 1,000 yards? 100 receptions? 40 TDs? Pace projections with milestone badges.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Season pace tracker on razzle.lol. 17-game projected totals and milestone tracking for every fantasy-relevant player.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=seasonpace">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=seasonpace">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .sp-page { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+  .sp-header { text-align: center; margin-bottom: 24px; }
+  .sp-header h1 { font-family: var(--font-display); font-size: 32px; color: var(--ink); margin: 0 0 4px; }
+  .sp-header .sp-subtitle { font-family: var(--font-hand); font-size: 20px; color: var(--ink-light); }
+  .sp-controls { display: flex; justify-content: center; align-items: center; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .sp-controls select { font-family: var(--font-mono); font-size: 13px; padding: 6px 10px; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--bg-card); }
+  .sp-controls .pos-tabs { display: flex; gap: 4px; }
+  .sp-controls .pos-tab { font-family: var(--font-mono); font-size: 12px; padding: 5px 12px; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--bg-card); cursor: pointer; font-weight: 700; }
+  .sp-controls .pos-tab.active { background: var(--ink); color: var(--bg); }
+  .sp-export { font-family: var(--font-mono); font-size: 12px; padding: 5px 14px; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--bg-card); cursor: pointer; font-weight: 700; }
+  .sp-export:hover { background: var(--ink); color: var(--bg); }
+  .sp-loading { text-align: center; font-family: var(--font-hand); font-size: 18px; color: var(--ink-light); padding: 60px 0; }
+
+  .sp-card { background: var(--bg-card); border: 3px solid var(--ink); border-radius: var(--radius-sm); box-shadow: 4px 4px 0 var(--ink); overflow: hidden; }
+  .sp-card-header { font-family: var(--font-display); font-size: 18px; padding: 10px 16px; background: var(--ink); color: var(--bg); }
+  .sp-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 12px; }
+  .sp-table th { background: var(--bg); padding: 6px 8px; text-align: right; font-size: 11px; font-weight: 700; border-bottom: 2px solid var(--ink-faint); white-space: nowrap; }
+  .sp-table th:first-child, .sp-table th:nth-child(2), .sp-table th:nth-child(3) { text-align: left; }
+  .sp-table td { padding: 6px 8px; text-align: right; border-bottom: 2px dashed var(--border-dashed); }
+  .sp-table td:first-child, .sp-table td:nth-child(2), .sp-table td:nth-child(3) { text-align: left; }
+  .sp-table tbody tr:hover { background: var(--bg-warm); }
+  .sp-rank { font-weight: 700; color: var(--ink-light); font-size: 11px; }
+  .sp-pos-badge { font-size: 11px; font-weight: 700; padding: 1px 5px; border-radius: var(--radius-sm); color: var(--text-on-accent); }
+  .sp-milestone { display: inline-block; font-family: var(--font-mono); font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: var(--radius-sm); margin: 1px 2px; border: 2px solid; }
+  .sp-milestone-gold { background: var(--yellow-light); color: var(--ink-medium); border-color: var(--ink-medium); }
+  .sp-milestone-silver { background: var(--blue-light); color: var(--blue); border-color: var(--blue); }
+  /* .sp-empty removed — uses .panel-empty from styles.css */
+
+  @media (max-width: 768px) {
+    .sp-page { padding: 16px 12px 40px; }
+    .sp-header h1 { font-size: 24px; }
+  }
+  @media (max-width: 480px) {
+    .sp-page { padding: 12px 8px 32px; }
+    .sp-header h1 { font-size: 20px; }
+    .sp-header .sp-subtitle { font-size: 16px; }
+    .sp-controls { gap: 8px; }
+    .sp-controls .pos-tab { padding: 4px 8px; font-size: 11px; }
+    .sp-table { font-size: 11px; }
+    .sp-table th, .sp-table td { padding: 4px 5px; }
+    .sp-card-header { font-size: 14px; padding: 8px 12px; }
+    .sp-milestone { font-size: 11px; padding: 1px 4px; }
+  }
+
+  /* Dark mode */
+  [data-theme="dark"] .sp-page { color: var(--ink); }
+  [data-theme="dark"] .sp-header h1 { color: var(--ink); }
+  [data-theme="dark"] .sp-subtitle { color: var(--ink-light); }
+  [data-theme="dark"] .sp-table th { color: var(--ink); border-color: var(--ink-faint); }
+  [data-theme="dark"] .sp-table td { color: var(--ink-medium); border-color: var(--ink-faint); }
+  [data-theme="dark"] .sp-card-header { color: var(--bg); }
+  [data-theme="dark"] .sp-controls .pos-tab { background: var(--bg-card); color: var(--ink); border-color: var(--ink-faint); }
+  [data-theme="dark"] .sp-controls .pos-tab.active { background: var(--ink); color: var(--bg-card); }
+  [data-theme="dark"] .sp-controls select { background: var(--bg-card); color: var(--ink); border-color: var(--ink-faint); }
+  [data-theme="dark"] .sp-milestone-gold { background: #4a3f1f; color: #ffd866; border-color: #ffd866; }
+  [data-theme="dark"] .sp-milestone-silver { background: #1f2f4a; color: #7eb8ff; border-color: #7eb8ff; }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<div id="site-header" data-page="seasonpace"></div>
+
+<main class="sp-page" id="main-content">  <div class="sp-header">
+    <h1>Season Pace Tracker</h1>
+    <div class="sp-subtitle">projected season totals — who's on track for milestone seasons?</div>
+  </div>
+
+  <div class="sp-controls">
+    <select id="sp-season" aria-label="Season selector"></select>
+    <div class="pos-tabs" role="tablist" aria-label="Position filter">
+      <button class="pos-tab active" data-pos="" role="tab" aria-selected="true">ALL</button>
+      <button class="pos-tab" data-pos="QB" role="tab" aria-selected="false">QB</button>
+      <button class="pos-tab" data-pos="RB" role="tab" aria-selected="false">RB</button>
+      <button class="pos-tab" data-pos="WR" role="tab" aria-selected="false">WR</button>
+      <button class="pos-tab" data-pos="TE" role="tab" aria-selected="false">TE</button>
+    </div>
+    <button class="sp-export" onclick="exportPNG(this)">Export PNG</button>
+  </div>
+
+  <div id="sp-loading" class="sp-loading">extrapolating the pace...
+    <div class="skeleton-cards"><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+  </div>
+  <div id="sp-content" style="display:none;">
+    <div class="sp-card">
+      <div class="sp-card-header">Milestone Watch</div>
+      <div id="sp-table-wrap" role="status" aria-live="polite" style="overflow-x:auto"></div>
+    </div>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+}
+
+const POS_COLORS = getPosColors();
+const ELITE_MILESTONES = ["5000 pass yd", "40 pass TD", "1500 rush yd", "1500 rec yd"];
+let state = { season: null, position: "", data: null };
+
+function initSeasons() {
+  const sel = document.getElementById("sp-season");
+  const _d = new Date(); const now = _d.getMonth() >= 8 ? _d.getFullYear() : _d.getFullYear() - 1;
+  for (let y = now; y >= 2020; y--) {
+    const opt = document.createElement("option");
+    opt.value = y; opt.textContent = y;
+    sel.appendChild(opt);
+  }
+  const restored = restorePageState({ season: '', position: '' });
+  if (restored.season) sel.value = restored.season;
+  if (restored.position) {
+    state.position = restored.position.toUpperCase();
+    document.querySelectorAll(".pos-tab").forEach(t => {
+      t.classList.toggle("active", t.dataset.pos === state.position);
+    });
+  }
+  state.season = parseInt(sel.value, 10) || 0;
+  sel.addEventListener("change", () => { state.season = parseInt(sel.value, 10) || 0; savePageState({ season: state.season, position: state.position }); loadData(); });
+}
+
+document.querySelectorAll(".pos-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".pos-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    state.position = tab.dataset.pos;
+    savePageState({ season: state.season, position: state.position });
+    loadData();
+  });
+});
+
+async function loadData() {
+  document.getElementById("sp-loading").style.display = "";
+  document.getElementById("sp-content").style.display = "none";
+  let url = "/api/season-pace?season=" + state.season;
+  if (state.position) url += "&position=" + state.position;
+  try {
+    state.data = await apiFetch(url);
+    render();
+  } catch (e) {
+    document.getElementById("sp-loading").style.display = "none";
+    document.getElementById("sp-content").style.display = "";
+    document.getElementById("sp-table-wrap").innerHTML = '<div class="panel-error">' + razzleError() + '<br><button class="btn-chunky" onclick="loadData()">retry</button></div>';
+  }
+}
+
+function render() {
+  document.getElementById("sp-loading").style.display = "none";
+  document.getElementById("sp-content").style.display = "";
+  const players = state.data.players || [];
+  const wrap = document.getElementById("sp-table-wrap");
+
+  if (players.length === 0) {
+    wrap.innerHTML = '<div class="panel-empty">' + razzleEmpty() + '<span class="hint">try a different position or season</span></div>';
+    return;
+  }
+
+  let html = '<table class="sp-table"><caption class="sr-only">Season pace tracker with projected milestones</caption><thead><tr><th scope="col">#</th><th scope="col">Player</th><th scope="col">Pos</th><th scope="col">GP</th><th scope="col">PPG</th><th scope="col">Milestones</th></tr></thead><tbody>';
+
+  players.forEach((p, i) => {
+    const posColor = POS_COLORS[p.position] || "var(--ink-light)";
+    const milestoneHtml = (p.milestones || []).map(m => {
+      const cls = ELITE_MILESTONES.includes(m) ? "sp-milestone-gold" : "sp-milestone-silver";
+      return '<span class="sp-milestone ' + cls + '">' + escapeHtml(m) + '</span>';
+    }).join(" ");
+
+    html += '<tr>';
+    html += '<td class="sp-rank">' + (i + 1) + '</td>';
+    html += '<td>' + escapeHtml(p.name) + ' <span style="color:var(--ink-light);font-size:11px;">' + escapeHtml(p.team) + '</span></td>';
+    html += '<td><span class="sp-pos-badge" style="background:' + escapeHtml(posColor) + '">' + escapeHtml(p.position) + '</span></td>';
+    html += '<td>' + escapeHtml(String(p.games)) + '</td>';
+    html += '<td>' + escapeHtml(String(p.ppg)) + '</td>';
+    html += '<td style="text-align:left">' + milestoneHtml + '</td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+function exportPNG(btn) {
+  if (btn) { btn.disabled = true; btn.textContent = 'Exporting...'; }
+  const el = document.getElementById("main-content");
+  loadHtml2Canvas().then(function(h2c) { return h2c(el, { backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf', scale: 2 }); }).then(canvas => {
+    const ctx = canvas.getContext("2d");
+    if (typeof drawRazzleWatermark === 'function') { drawRazzleWatermark(ctx, canvas); }
+    else { ctx.font = "600 24px Caveat, cursive"; ctx.fillStyle = (typeof getExportColors === 'function' ? getExportColors().watermark : (document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.18)' : 'rgba(45,31,20,0.13)')); ctx.fillText("razzle.lol", canvas.width - 220, canvas.height - 20); }
+    const link = document.createElement("a");
+    link.download = "razzle-season-pace.png";
+    link.href = canvas.toDataURL();
+    link.click();
+  }).finally(function() { if (btn) { btn.disabled = false; btn.textContent = 'Export PNG'; } });
+}
+
+// Analytics
+fetch("/api/analytics/pageview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ page: "/seasonpace.html", referrer: document.referrer }) }).catch(() => {});
+
+initSeasons();
+loadData();
+</script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+services:
+  - type: web
+    name: razzle-api
+    runtime: python
+    healthCheckPath: /api/health
+    plan: standard
+    numInstances: 1
+    autoDeploy: true
+    buildCommand: |
+      pip install -r requirements.txt
+      # DB lives on persistent disk at /data (mounted below). Uploaded manually via
+      # gh release + SCP. No download needed during build.
+      echo "--- Minifying JS/CSS with Python (rjsmin + rcssmin) ---"
+      python scripts/build_dist.py
+    startCommand: uvicorn backend.server:app --host 0.0.0.0 --port $PORT --workers 2
+    disk:
+      name: razzle-data
+      mountPath: /data
+      sizeGB: 2
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+      - key: ENVIRONMENT
+        value: "production"
+      # Required secrets (set in Render dashboard, NOT committed to code):
+      # JWT_SECRET              - Secret key for JWT signing (random 64+ hex string)
+      # ENCRYPTION_KEY          - Key for encrypting BYOK API keys at rest (random 64+ hex string)
+      # STRIPE_SECRET_KEY       - Stripe API secret key (sk_live_...)
+      # STRIPE_WEBHOOK_SECRET   - Stripe webhook signing secret (whsec_...)
+      # STRIPE_PRICE_PRO_MONTHLY   - Stripe price ID for Pro monthly (price_...)
+      # STRIPE_PRICE_PRO_YEARLY    - Stripe price ID for Pro yearly (price_...)
+      # STRIPE_PRICE_ELITE_MONTHLY - Stripe price ID for Elite monthly (price_...)
+      # STRIPE_PRICE_ELITE_YEARLY  - Stripe price ID for Elite yearly (price_...)
+      # STRIPE_COUPON_RAZZLE       - Stripe coupon ID for RAZZLE promo code
+      # GH_TOKEN                - GitHub token for DB download from releases
+      # RAZZLE_BASE_URL         - Base URL for billing redirects (default: https://razzle.lol)
+      # RAZZLE_LLM_API_KEY     - OpenRouter API key for Elite AI-included mode (optional)
+      # RAZZLE_LLM_BASE_URL    - LLM provider base URL (optional, defaults to OpenRouter)
+      # RAZZLE_LLM_MODEL       - LLM model ID (optional, defaults to anthropic/claude-3.5-haiku)
+      # SENTRY_DSN              - Sentry error monitoring DSN (optional)
+      #
+      # Optional promotional pricing:
+      # EA_ENABLED              - Enable early adopter pricing ("true" to enable)
+      # LIFETIME_ENABLED        - Enable lifetime deals ("true" to enable)
+      # STRIPE_PRICE_EA_PRO_YEARLY     - Early adopter Pro yearly price ID
+      # STRIPE_PRICE_EA_ELITE_YEARLY   - Early adopter Elite yearly price ID
+      # STRIPE_PRICE_LIFETIME_PRO      - Lifetime Pro price ID
+      # STRIPE_PRICE_LIFETIME_ELITE    - Lifetime Elite price ID

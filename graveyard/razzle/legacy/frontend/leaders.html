@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Stat Leaders — Razzle</title>
+<meta property="og:title" content="Stat Leaders — Razzle">
+<meta property="og:description" content="Stat leaderboards across 10 categories with gold, silver, and bronze medals. Season selector, position filters. Who leads the league in what matters?">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Stat Leaders — Razzle">
+<meta name="twitter:description" content="Stat leaderboards across 10 categories with gold, silver, and bronze medals. Who leads the league in what matters?">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Fantasy football stat leaders on razzle.lol. Leaderboards across 10 categories with medal rankings, season selectors, and position filters.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=leaders">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=leaders">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="standalone-common.css">
+<style>
+
+  /* Position filter tabs */
+  .leaders-filters {
+    display: flex;
+    gap: 0;
+  }
+  .leaders-filter-btn {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    padding: 8px 18px;
+    border: 2px solid var(--ink);
+    background: var(--bg-card);
+    color: var(--ink);
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .leaders-filter-btn:first-child { border-radius: 8px 0 0 8px; }
+  .leaders-filter-btn:last-child { border-radius: 0 8px 8px 0; }
+  .leaders-filter-btn:not(:first-child) { border-left: none; }
+  .leaders-filter-btn:hover { background: var(--bg-warm); }
+  .leaders-filter-btn.active {
+    background: var(--ink);
+    color: var(--bg-card);
+  }
+  .leaders-filter-btn.active.pos-qb { background: var(--pos-qb); border-color: var(--pos-qb); }
+  .leaders-filter-btn.active.pos-rb { background: var(--pos-rb); border-color: var(--pos-rb); }
+  .leaders-filter-btn.active.pos-wr { background: var(--pos-wr); border-color: var(--pos-wr); }
+  .leaders-filter-btn.active.pos-te { background: var(--pos-te); border-color: var(--pos-te); }
+
+  /* Category card grid */
+  .leaders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
+    gap: 16px;
+  }
+
+  /* Category card */
+  .leaders-card {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 var(--ink);
+    overflow: hidden;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .leaders-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+
+  .leaders-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 2px dashed var(--border-dashed);
+    background: var(--bg-warm);
+  }
+  .leaders-card-title {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .leaders-card-annotation {
+    font-family: var(--font-hand);
+    font-size: 16px;
+    color: var(--ink-light);
+  }
+
+  /* Leader rows */
+  .leaders-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .leaders-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-bottom: 2px dashed var(--border-dashed);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .leaders-row:last-child { border-bottom: none; }
+  .leaders-row:hover { background: var(--bg-warm); }
+
+  /* Rank badge */
+  .leaders-rank {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    min-width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .leaders-rank.gold {
+    background: var(--yellow);
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .leaders-rank.silver {
+    background: var(--ink-faint);
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .leaders-rank.bronze {
+    background: var(--orange);
+    color: var(--text-on-accent);
+    border: 2px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .leaders-rank.normal {
+    color: var(--ink-light);
+  }
+
+  /* Player headshot in row */
+  .leaders-row .player-headshot,
+  .leaders-row .player-headshot-fallback {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .leaders-row .player-headshot {
+    border: 2px solid var(--ink);
+    object-fit: cover;
+  }
+  .leaders-row .player-headshot-fallback {
+    background: var(--bg-warm);
+    border: 2px solid var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  /* Stat value */
+  .leaders-stat-value {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    flex-shrink: 0;
+    text-align: right;
+    min-width: 50px;
+  }
+
+  @media (max-width: 768px) {
+    .leaders-grid { grid-template-columns: 1fr; }
+    
+    .leaders-filter-btn { padding: 6px 12px; font-size: 12px; }
+    
+  }
+  @media (max-width: 480px) {
+    .leaders-row { padding: 5px 10px; gap: 6px; }
+    
+    .leaders-stat-value { font-size: 12px; min-width: 40px; }
+    .leaders-rank { min-width: 24px; height: 24px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- NAV -->
+<div id="site-header" data-page="leaders"></div>
+
+<main class="leaders-page" id="main-content">  <div class="leaders-header">
+    <h1>Stat Leaders</h1>
+    <div class="leaders-subtitle">who's putting up the numbers</div>
+  </div>
+
+  <div class="leaders-controls">
+    <div class="leaders-filters" id="leadersFilters" role="tablist" aria-label="Position filter">
+      <button class="leaders-filter-btn active" data-pos="" role="tab" aria-selected="true">All</button>
+      <button class="leaders-filter-btn pos-qb" data-pos="QB" role="tab" aria-selected="false">QB</button>
+      <button class="leaders-filter-btn pos-rb" data-pos="RB" role="tab" aria-selected="false">RB</button>
+      <button class="leaders-filter-btn pos-wr" data-pos="WR" role="tab" aria-selected="false">WR</button>
+      <button class="leaders-filter-btn pos-te" data-pos="TE" role="tab" aria-selected="false">TE</button>
+    </div>
+    <select class="leaders-season-select" id="leadersSeason" aria-label="Season">
+      <option value="">pulling film...</option>
+    </select>
+  </div>
+
+  <div class="leaders-actions">
+    <button class="btn-chunky" id="leadersExportBtn" title="Export as PNG">Export PNG</button>
+  </div>
+
+  <div id="leadersContent" role="status" aria-live="polite">
+    <div class="leaders-loading">crowning the stat kings...
+      <div class="loading-skeleton">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card" style="height:150px"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  var state = { position: "", season: 0, data: null, loading: false };
+
+  var content = document.getElementById("leadersContent");
+  var seasonSelect = document.getElementById("leadersSeason");
+
+  // Category annotations (Caveat personality)
+  var annotations = {
+    ppg: "the whole package",
+    passing_yards: "slinging it",
+    passing_tds: "finding the end zone",
+    rushing_yards: "ground game kings",
+    rushing_tds: "punching it in",
+    receiving_yards: "racking up yardage",
+    receiving_tds: "red zone royalty",
+    receptions: "the target hogs",
+    target_share: "eating all the targets",
+    yards_per_carry: "efficiency kings"
+  };
+
+  // ---- Fetch leaders ----
+  async function loadLeaders() {
+    state.loading = true;
+    content.innerHTML = '<div class="leaders-loading">' + razzleLoading() + '</div>';
+
+    try {
+      var url = "/api/stat-leaders?limit=10";
+      if (state.position) url += "&position=" + encodeURIComponent(state.position);
+      if (state.season) url += "&season=" + state.season;
+      var data = await apiFetch(url);
+      state.data = data;
+      state.loading = false;
+
+      // Populate season dropdown if first load
+      if (data.seasons && seasonSelect.options.length <= 1) {
+        seasonSelect.innerHTML = "";
+        for (var i = 0; i < data.seasons.length; i++) {
+          var opt = document.createElement("option");
+          opt.value = data.seasons[i];
+          opt.textContent = data.seasons[i] + " season";
+          if (data.seasons[i] === data.season) opt.selected = true;
+          seasonSelect.appendChild(opt);
+        }
+      }
+
+      renderCategories(data.categories || []);
+    } catch (err) {
+      state.loading = false;
+      content.innerHTML = '<div class="panel-error">' + razzleError() + '<br><button onclick="location.reload()">retry</button></div>';
+    }
+  }
+
+  // Rate stats only shown when a specific position is filtered
+  var rateStats = { target_share: true, yards_per_carry: true };
+
+  // ---- Render category cards ----
+  function renderCategories(categories) {
+    if (!categories.length) {
+      content.innerHTML = '<div class="panel-empty">' + razzleEmpty() + '<span class="hint">try a different position or season</span></div>';
+      return;
+    }
+
+    var html = '<div class="leaders-grid">';
+
+    for (var c = 0; c < categories.length; c++) {
+      var cat = categories[c];
+      // Hide rate stats on "All" view — they only make sense per position
+      if (!state.position && rateStats[cat.key]) continue;
+      var annotation = annotations[cat.key] || "";
+
+      html += '<div class="leaders-card">';
+      html += '<div class="leaders-card-header">';
+      html += '<span class="leaders-card-title">' + escapeHtml(cat.label) + '</span>';
+      if (annotation) {
+        html += '<span class="leaders-card-annotation">' + escapeHtml(annotation) + '</span>';
+      }
+      html += '</div>';
+
+      html += '<ul class="leaders-list">';
+
+      for (var i = 0; i < cat.leaders.length; i++) {
+        var p = cat.leaders[i];
+        var rank = i + 1;
+        var rankClass = rank === 1 ? "gold" : rank === 2 ? "silver" : rank === 3 ? "bronze" : "normal";
+        var posLower = (p.position || "wr").toLowerCase();
+
+        // Headshot or fallback initials
+        var imgHtml;
+        if (p.headshot_url) {
+          imgHtml = '<img class="player-headshot" src="' + escapeAttr(p.headshot_url) + '" alt="Player headshot" loading="lazy" onerror="this.onerror=null;this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
+          imgHtml += '<span class="player-headshot-fallback" style="display:none">' + escapeHtml((p.full_name || "?").substring(0, 2).toUpperCase()) + '</span>';
+        } else {
+          imgHtml = '<span class="player-headshot-fallback">' + escapeHtml((p.full_name || "?").substring(0, 2).toUpperCase()) + '</span>';
+        }
+
+        html += '<li class="leaders-row" data-pid="' + escapeAttr(p.player_id) + '">';
+        html += '<span class="leaders-rank ' + rankClass + '">' + rank + '</span>';
+        html += imgHtml;
+        html += '<div class="leaders-player-info">';
+        html += '<span class="leaders-player-name">' + escapeHtml(p.full_name) + '</span>';
+        html += '<span class="leaders-pos-badge ' + posLower + '">' + escapeHtml(p.position) + '</span>';
+        html += '<span class="leaders-team">' + escapeHtml(p.team) + '</span>';
+        html += '</div>';
+        html += '<span class="leaders-stat-value">' + escapeHtml(p.stat_display) + '</span>';
+        html += '</li>';
+      }
+
+      html += '</ul>';
+      html += '</div>';
+    }
+
+    html += '</div>';
+    content.innerHTML = html;
+
+    // Click to open player profile
+    content.querySelectorAll(".leaders-row[data-pid]").forEach(function(row) {
+      row.addEventListener("click", function() {
+        var pid = this.getAttribute("data-pid");
+        if (pid) window.location.href = "/player/" + encodeURIComponent(pid);
+      });
+    });
+  }
+
+  // ---- Position filter ----
+  document.getElementById("leadersFilters").addEventListener("click", function(e) {
+    var btn = e.target.closest(".leaders-filter-btn");
+    if (!btn) return;
+    this.querySelectorAll(".leaders-filter-btn").forEach(function(b) { b.classList.remove("active"); });
+    btn.classList.add("active");
+    state.position = btn.getAttribute("data-pos") || "";
+    savePageState({ season: state.season || '', position: state.position });
+    loadLeaders();
+  });
+
+  // ---- Season selector ----
+  seasonSelect.addEventListener("change", function() {
+    state.season = parseInt(this.value, 10) || 0;
+    savePageState({ season: state.season || '', position: state.position });
+    loadLeaders();
+  });
+
+  // ---- PNG export ----
+  document.getElementById("leadersExportBtn").addEventListener("click", function() {
+    var btn = this; btn.disabled = true; btn.textContent = 'Exporting...';
+    var page = document.getElementById("main-content");
+    if (!page) { btn.disabled = false; btn.textContent = 'Export PNG'; return; }
+    doExport(page, btn);
+  });
+
+  function doExport(el, btn) {
+    loadHtml2Canvas().then(function(h2c) { return h2c(el, { backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf', scale: 2, useCORS: true }); }).then(function(canvas) {
+      // Add watermark
+      var ctx = canvas.getContext("2d");
+      ctx.font = "600 24px Caveat, cursive";
+      ctx.fillStyle = document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.25)' : 'rgba(45,31,20,0.25)';
+      ctx.textAlign = "right";
+      ctx.fillText("razzle.lol", canvas.width - 24, canvas.height - 18);
+
+      var link = document.createElement("a");
+      link.download = "razzle-stat-leaders.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }).finally(function() { if (btn) { btn.disabled = false; btn.textContent = 'Export PNG'; } });
+  }
+
+  // ---- Restore URL state ----
+  var restored = restorePageState({ season: '', position: '' });
+  if (restored.position) {
+    state.position = restored.position;
+    document.querySelectorAll(".leaders-filter-btn").forEach(function(b) {
+      b.classList.toggle("active", (b.getAttribute("data-pos") || "") === state.position);
+    });
+  }
+  if (restored.season) {
+    state.season = parseInt(restored.season, 10) || 0;
+  }
+
+  // ---- Initial load ----
+  loadLeaders();
+})();
+</script>
+<script>fetch("/api/analytics/pageview",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({page:location.pathname})}).catch(function(){});</script>
+</body>
+</html>

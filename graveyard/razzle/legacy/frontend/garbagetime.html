@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Garbage Time Detector — Razzle</title>
+<meta property="og:title" content="Garbage Time Detector — Razzle">
+<meta property="og:description" content="Are those stats real or just garbage time inflation? Separate legitimate producers from players who pad stats in blowouts.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Garbage Time Detector — Razzle">
+<meta name="twitter:description" content="Are those stats real or just garbage time inflation? Separate legitimate producers from stat padders.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Garbage time detector on razzle.lol. Separate clean producers from players who pad stats in blowouts. Context matters.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=garbagetime">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=garbagetime">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .gt-page { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+  .gt-header { text-align: center; margin-bottom: 24px; }
+  .gt-header h1 { font-family: var(--font-display); font-size: 32px; color: var(--ink); margin: 0 0 4px; }
+  .gt-header .gt-subtitle { font-family: var(--font-hand); font-size: 20px; color: var(--ink-light); }
+  .gt-controls { display: flex; justify-content: center; align-items: center; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .gt-controls select { font-family: var(--font-mono); font-size: 13px; padding: 6px 10px; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--bg-card); }
+  .gt-controls .pos-tabs { display: flex; gap: 4px; }
+  .gt-controls .pos-tab { font-family: var(--font-mono); font-size: 12px; padding: 5px 12px; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--bg-card); cursor: pointer; font-weight: 700; }
+  .gt-controls .pos-tab.active { background: var(--ink); color: var(--bg); }
+  .gt-export { font-family: var(--font-mono); font-size: 12px; padding: 5px 14px; border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--bg-card); cursor: pointer; font-weight: 700; }
+  .gt-export:hover { background: var(--ink); color: var(--bg); }
+  .gt-loading { text-align: center; font-family: var(--font-hand); font-size: 18px; color: var(--ink-light); padding: 60px 0; }
+
+  .gt-sections { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .gt-card { background: var(--bg-card); border: 3px solid var(--ink); border-radius: var(--radius-sm); box-shadow: 4px 4px 0 var(--ink); overflow: hidden; }
+  .gt-card-header { font-family: var(--font-display); font-size: 18px; padding: 10px 16px; color: var(--bg); }
+  .gt-card-header.padders { background: var(--semantic-red); }
+  .gt-card-header.clean { background: var(--semantic-green); }
+  .gt-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 12px; }
+  .gt-table th { background: var(--bg); padding: 6px 8px; text-align: right; font-size: 11px; font-weight: 700; border-bottom: 2px solid var(--ink-faint); white-space: nowrap; }
+  .gt-table th:first-child, .gt-table th:nth-child(2), .gt-table th:nth-child(3) { text-align: left; }
+  .gt-table td { padding: 6px 8px; text-align: right; border-bottom: 2px dashed var(--border-dashed); }
+  .gt-table td:first-child, .gt-table td:nth-child(2), .gt-table td:nth-child(3) { text-align: left; }
+  .gt-table tbody tr:hover { background: var(--bg-warm); }
+  .gt-rank { font-weight: 700; color: var(--ink-light); font-size: 11px; }
+  .gt-pos-badge { font-size: 11px; font-weight: 700; padding: 1px 5px; border-radius: var(--radius-sm); color: var(--text-on-accent); }
+  .gt-pct-badge { font-family: var(--font-mono); font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: var(--radius-sm); border: 2px solid; }
+  .gt-pct-high { background: var(--semantic-red-light); color: var(--semantic-red); border-color: var(--semantic-red); }
+  .gt-pct-mid { background: var(--yellow-light); color: var(--ink-medium); border-color: var(--ink-medium); }
+  .gt-pct-low { background: var(--semantic-green-light); color: var(--semantic-green); border-color: var(--semantic-green); }
+  .gt-bar-cell { width: 80px; }
+  .gt-bar { height: 12px; border-radius: var(--radius-sm); min-width: 2px; }
+  .gt-bar.red { background: var(--orange); }
+  .gt-bar.green { background: var(--green); }
+  /* .gt-empty removed — uses .panel-empty from styles.css */
+
+  @media (max-width: 768px) {
+    .gt-sections { grid-template-columns: 1fr; }
+    .gt-page { padding: 16px 12px 40px; }
+    .gt-header h1 { font-size: 24px; }
+    .gt-bar-cell { width: 50px; }
+  }
+  @media (max-width: 480px) {
+    .gt-page { padding: 12px 8px 32px; }
+    .gt-header h1 { font-size: 20px; }
+    .gt-header .gt-subtitle { font-size: 16px; }
+    .gt-controls { gap: 8px; }
+    .gt-controls .pos-tab { padding: 4px 8px; font-size: 11px; }
+    .gt-table { font-size: 11px; }
+    .gt-table th, .gt-table td { padding: 4px 5px; }
+    .gt-bar-cell { width: 35px; }
+    .gt-card-header { font-size: 14px; padding: 8px 12px; }
+  }
+
+  /* Dark mode */
+  [data-theme="dark"] .gt-page { color: var(--ink); }
+  [data-theme="dark"] .gt-header h1 { color: var(--ink); }
+  [data-theme="dark"] .gt-subtitle { color: var(--ink-light); }
+  [data-theme="dark"] .gt-table th { color: var(--ink); border-color: var(--ink-faint); }
+  [data-theme="dark"] .gt-table td { color: var(--ink-medium); border-color: var(--ink-faint); }
+  [data-theme="dark"] .gt-card-header { color: var(--bg); }
+  [data-theme="dark"] .gt-controls .pos-tab { background: var(--bg-card); color: var(--ink); border-color: var(--ink-faint); }
+  [data-theme="dark"] .gt-controls .pos-tab.active { background: var(--ink); color: var(--bg-card); }
+  [data-theme="dark"] .gt-controls select { background: var(--bg-card); color: var(--ink); border-color: var(--ink-faint); }
+  [data-theme="dark"] .gt-card { background: var(--bg-card); border-color: var(--ink-faint); box-shadow: 4px 4px 0 var(--ink-faint); }
+  [data-theme="dark"] .gt-card-header.padders { background: var(--semantic-red-light); color: var(--semantic-red); }
+  [data-theme="dark"] .gt-card-header.clean { background: var(--semantic-green-light); color: var(--semantic-green); }
+  [data-theme="dark"] .gt-table th { background: var(--bg-warm); }
+  [data-theme="dark"] .gt-table tbody tr:hover { background: var(--bg-warm); }
+  [data-theme="dark"] .gt-export { background: var(--bg-card); color: var(--ink); border-color: var(--ink-faint); }
+  [data-theme="dark"] .gt-export:hover { background: var(--ink); color: var(--bg-card); }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<div id="site-header" data-page="garbagetime"></div>
+
+<main class="gt-page" id="main-content">  <div class="gt-header">
+    <h1>Garbage Time Detector</h1>
+    <div class="gt-subtitle">stat padders vs clean producers — who inflates in blowouts?</div>
+  </div>
+
+  <div class="gt-controls">
+    <select id="gt-season" aria-label="Season selector"></select>
+    <div class="pos-tabs" role="tablist" aria-label="Position filter">
+      <button class="pos-tab active" data-pos="" role="tab" aria-selected="true">ALL</button>
+      <button class="pos-tab" data-pos="QB" role="tab" aria-selected="false">QB</button>
+      <button class="pos-tab" data-pos="RB" role="tab" aria-selected="false">RB</button>
+      <button class="pos-tab" data-pos="WR" role="tab" aria-selected="false">WR</button>
+      <button class="pos-tab" data-pos="TE" role="tab" aria-selected="false">TE</button>
+    </div>
+    <button class="gt-export" onclick="exportPNG(this)">Export PNG</button>
+  </div>
+
+  <div id="gt-loading" class="gt-loading">filtering garbage time...
+    <div class="skeleton-cards"><div class="skeleton-card"></div><div class="skeleton-card"></div><div class="skeleton-card"></div></div>
+  </div>
+  <div class="gt-sections" id="gt-sections" role="status" aria-live="polite" style="display:none;"></div>
+</main>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+}
+
+const POS_COLORS = getPosColors();
+let state = { season: null, position: "", data: null };
+
+function initSeasons() {
+  const sel = document.getElementById("gt-season");
+  const _d = new Date(); const now = _d.getMonth() >= 8 ? _d.getFullYear() : _d.getFullYear() - 1;
+  for (let y = now; y >= 2020; y--) {
+    const opt = document.createElement("option");
+    opt.value = y; opt.textContent = y;
+    sel.appendChild(opt);
+  }
+  const restored = restorePageState({ season: '', position: '' });
+  if (restored.season) sel.value = restored.season;
+  if (restored.position) {
+    state.position = restored.position.toUpperCase();
+    document.querySelectorAll(".pos-tab").forEach(t => {
+      t.classList.toggle("active", t.dataset.pos === state.position);
+    });
+  }
+  state.season = parseInt(sel.value, 10) || 0;
+  sel.addEventListener("change", () => { state.season = parseInt(sel.value, 10) || 0; savePageState({ season: state.season, position: state.position }); loadData(); });
+}
+
+document.querySelectorAll(".pos-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".pos-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    state.position = tab.dataset.pos;
+    savePageState({ season: state.season, position: state.position });
+    loadData();
+  });
+});
+
+async function loadData() {
+  document.getElementById("gt-loading").style.display = "";
+  document.getElementById("gt-sections").style.display = "none";
+  let url = "/api/garbage-time?season=" + state.season;
+  if (state.position) url += "&position=" + state.position;
+  try {
+    state.data = await apiFetch(url);
+    render();
+  } catch (e) {
+    document.getElementById("gt-loading").style.display = "none";
+    document.getElementById("gt-sections").style.display = "";
+    document.getElementById("gt-sections").innerHTML = '<div class="panel-error">' + razzleError() + '<br><button class="btn-chunky" onclick="loadData()">retry</button></div>';
+  }
+}
+
+function pctClass(pct) {
+  if (pct >= 20) return "gt-pct-high";
+  if (pct >= 10) return "gt-pct-mid";
+  return "gt-pct-low";
+}
+
+function render() {
+  document.getElementById("gt-loading").style.display = "none";
+  document.getElementById("gt-sections").style.display = "";
+  const d = state.data;
+  const sections = document.getElementById("gt-sections");
+  sections.innerHTML = "";
+
+  sections.innerHTML += buildCard("Stat Padders — High Garbage Time %", "padders", d.stat_padders || [], true);
+  sections.innerHTML += buildCard("Clean Producers — Low Garbage Time %", "clean", d.clean_producers || [], false);
+}
+
+function buildCard(title, cls, players, isPadders) {
+  if (players.length === 0) {
+    return '<div class="gt-card"><div class="gt-card-header ' + escapeHtml(cls) + '">' + escapeHtml(title) + '</div><div class="panel-empty">' + razzleEmpty() + '<span class="hint">try a different position or season</span></div></div>';
+  }
+
+  const maxVal = Math.max(...players.map(p => isPadders ? p.garbage_time_pct : p.ppg), 1);
+  let html = '<div class="gt-card"><div class="gt-card-header ' + escapeHtml(cls) + '">' + escapeHtml(title) + '</div>';
+  html += '<div style="overflow-x:auto">';
+  html += '<table class="gt-table"><caption class="sr-only">Garbage time fantasy production — ' + escapeHtml(title) + '</caption><thead><tr><th scope="col">#</th><th scope="col">Player</th><th scope="col">Pos</th><th scope="col">GT%</th><th scope="col">PPG</th><th scope="col">Avg Diff</th><th scope="col"></th></tr></thead><tbody>';
+
+  players.forEach((p, i) => {
+    const posColor = POS_COLORS[p.position] || (_cs.getPropertyValue('--ink-light').trim() || '#8a7565');
+    const pctCls = pctClass(p.garbage_time_pct);
+    const barVal = isPadders ? p.garbage_time_pct : p.ppg;
+    const barPct = maxVal > 0 ? barVal / maxVal * 100 : 0;
+    const barCls = isPadders ? "red" : "green";
+
+    html += '<tr>';
+    html += '<td class="gt-rank">' + (i + 1) + '</td>';
+    html += '<td>' + escapeHtml(p.name) + ' <span style="color:var(--ink-light);font-size:11px;">' + escapeHtml(p.team) + '</span></td>';
+    html += '<td><span class="gt-pos-badge" style="background:' + escapeHtml(posColor) + '">' + escapeHtml(p.position) + '</span></td>';
+    html += '<td><span class="gt-pct-badge ' + pctCls + '">' + escapeHtml(String(p.garbage_time_pct)) + '%</span></td>';
+    html += '<td>' + escapeHtml(String(p.ppg)) + '</td>';
+    html += '<td>' + escapeHtml(String(p.avg_score_diff)) + '</td>';
+    html += '<td class="gt-bar-cell"><div class="gt-bar ' + barCls + '" style="width:' + barPct + '%"></div></td>';
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div></div>';
+  return html;
+}
+
+function exportPNG(btn) {
+  if (btn) { btn.disabled = true; btn.textContent = 'Exporting...'; }
+  const el = document.getElementById("main-content");
+  var _ec = getExportColors(); loadHtml2Canvas().then(function(h2c) { return h2c(el, { backgroundColor: _ec.bg, scale: 2 }); }).then(canvas => {
+    const ctx = canvas.getContext("2d");
+    if (typeof drawRazzleWatermark === 'function') { drawRazzleWatermark(ctx, canvas); }
+    else { ctx.font = "600 24px Caveat, cursive"; ctx.fillStyle = getExportColors().watermark; ctx.fillText("razzle.lol", canvas.width - 220, canvas.height - 20); }
+    const link = document.createElement("a");
+    link.download = "razzle-garbage-time.png";
+    link.href = canvas.toDataURL();
+    link.click();
+  }).finally(function() { if (btn) { btn.disabled = false; btn.textContent = 'Export PNG'; } });
+}
+
+// Analytics
+fetch("/api/analytics/pageview", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ page: "/garbagetime.html", referrer: document.referrer }) }).catch(() => {});
+
+initSeasons();
+loadData();
+</script>
+</body>
+</html>

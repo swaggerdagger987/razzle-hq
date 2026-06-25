@@ -1,0 +1,8 @@
+fastapi==0.129.0
+uvicorn[standard]==0.40.0
+sqlalchemy==2.0.46
+alembic==1.18.4
+pydantic==2.12.5
+pytest==9.0.2
+httpx==0.28.1
+eval-type-backport==0.3.1

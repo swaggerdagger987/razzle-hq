@@ -1,0 +1,3716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#ede0cf">
+<title>Situation Room — Razzle</title>
+<meta property="og:title" content="Situation Room — Razzle">
+<meta property="og:description" content="Six AI agents who know your league. Hawkeye (Scout), Octo (Quant), Dr. Dolphin (Medical), Bones (Diplomat), Atlas (Historian), and Razzle himself. Drop a scenario, get a briefing in seconds.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://razzle.lol/agents.html">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Situation Room — Razzle">
+<meta name="twitter:description" content="Six AI agents who know your league. Hawkeye (Scout), Octo (Quant), Dr. Dolphin (Medical), Bones (Diplomat), Atlas (Historian), and Razzle himself. Drop a scenario, get a briefing in seconds.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Razzle's Situation Room. Six specialist AI agents with full league context — Hawkeye, Octo, Dr. Dolphin, Bones, Atlas, and Razzle. Trade strategies, championship probability, and personalized briefings powered by pixel-art intelligence.">
+<link rel="canonical" href="https://razzle.lol/agents.html">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ===== RESET & BASE ===== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ede0cf;
+    --bg-warm: #f7efe5;
+    --bg-card: #f7efe5;
+    --bg-ink: #1a110a;
+    --ink: #2d1f14;
+    --ink-medium: #5c4a3d;
+    --ink-light: #8a7565;
+    --ink-faint: #c4b5a5;
+    --orange: #d97757;
+    --orange-light: #f2c4a8;
+    --yellow: #ffc857;
+    --green: #2ec4b6;
+    --blue: #5b7fff;
+    --purple: #8b5cf6;
+    --red: #d44040;
+    --shadow-drop: rgba(45,31,20,0.15);
+    --font-display: 'Luckiest Guy', cursive;
+    --font-mono: 'Space Mono', monospace;
+    --font-hand: 'Caveat', cursive;
+    --radius-sm: 6px;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg-ink);
+    color: #ede0cf;
+    font-family: var(--font-mono);
+  }
+
+  /* ===== LAYOUT ===== */
+  .lab-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* ===== HEADER BAR ===== */
+  .lab-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background: #2d1f14;
+    border-bottom: 3px solid #5c4a3d;
+    flex-shrink: 0;
+    min-height: 48px;
+  }
+
+  .lab-header-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    letter-spacing: -0.5px;
+    color: var(--orange);
+  }
+
+  .lab-header-subtitle {
+    font-family: var(--font-hand);
+    font-size: 15px;
+    color: #8a7565;
+    margin-left: 12px;
+  }
+
+  .lab-header-controls {
+    font-size: 11px;
+    color: #8a7565;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ===== MAIN AREA ===== */
+  .lab-main {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* ===== CANVAS AREA ===== */
+  .canvas-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    position: relative;
+    min-width: 0;
+  }
+
+  .canvas-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--yellow);
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  .canvas-container {
+    border: 3px solid #5c4a3d;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 4px 4px 0 #2d1f14;
+    background: #0a0a12;
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .canvas-container canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    image-rendering: pixelated;
+  }
+
+  .canvas-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .canvas-placeholder-icon {
+    font-size: 48px;
+    filter: drop-shadow(2px 2px 0 rgba(45,31,20,0.3));
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+  }
+
+  .canvas-placeholder-text {
+    font-family: var(--font-hand);
+    font-size: 22px;
+    color: #8a7565;
+  }
+
+  .canvas-placeholder-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #c4b5a5;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .canvas-hints {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #8a7565;
+    text-align: center;
+    margin-top: 8px;
+  }
+
+  /* ===== ROSTER SIDEBAR ===== */
+  .roster-sidebar {
+    width: 220px;
+    background: #2d1f14;
+    border-left: 3px solid #5c4a3d;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .roster-header {
+    font-family: var(--font-display);
+    font-size: 16px;
+    letter-spacing: -0.5px;
+    padding: 12px 14px;
+    background: #3b2821;
+    border-bottom: 2px solid #5c4a3d;
+    color: var(--orange);
+    text-align: center;
+  }
+
+  .roster-list {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .roster-agent {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 2px dashed #3b2821;
+    transition: background 0.1s;
+  }
+
+  .roster-agent:last-child { border-bottom: none; }
+  .roster-agent:hover { background: #3b2821; }
+  .roster-agent.selected { background: #5c3325; }
+
+  .roster-avatar {
+    width: 32px;
+    height: 32px;
+    image-rendering: pixelated;
+    flex-shrink: 0;
+    border-radius: 4px;
+  }
+
+  .roster-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .roster-name {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .roster-role {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: #8a7565;
+  }
+
+  .roster-status {
+    font-family: var(--font-hand);
+    font-size: 12px;
+    color: #c4b5a5;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .roster-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  .roster-key-hint {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: #5c4a3d;
+    background: #1a110a;
+    border-radius: 3px;
+    padding: 1px 4px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  /* ===== SELECTED AGENT INFO BAR ===== */
+  .selected-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    background: #3b2821;
+    border-top: 2px solid #5c4a3d;
+    flex-shrink: 0;
+    min-height: 42px;
+  }
+
+  .selected-info-name {
+    font-family: var(--font-display);
+    font-size: 16px;
+  }
+
+  .selected-info-role {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #8a7565;
+  }
+
+  .selected-info-activity {
+    font-family: var(--font-hand);
+    font-size: 14px;
+    margin-left: auto;
+  }
+
+  .selected-info-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 4px;
+  }
+
+  /* ===== STATUS BAR ===== */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 16px;
+    background: rgba(26, 17, 10, 0.85);
+    border-top: 2px solid #5c4a3d;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: #8a7565;
+    flex-shrink: 0;
+  }
+
+  .status-dot-live {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #2ec4b6;
+    display: inline-block;
+    margin-right: 6px;
+    animation: blink-live 2s ease-in-out infinite;
+  }
+
+  @keyframes blink-live {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    .roster-sidebar { display: none; }
+    .lab-header-subtitle { display: none; }
+    .lab-header-controls { display: none; }
+    .canvas-label { display: none; }
+    .canvas-hints { display: none; }
+    .canvas-area { padding: 4px; }
+    .canvas-container {
+      border-width: 2px;
+      border-radius: 8px;
+    }
+    .lab-header { padding: 6px 12px; min-height: 40px; }
+    .selected-info { padding: 6px 12px; min-height: 36px; }
+  }
+
+  /* ===== IN-GAME DIALOG (Crystal style) =====
+     Anchored INSIDE the canvas frame so it reads as part of the game,
+     not a floating overlay. Agents keep walking behind it. Click "×" to
+     minimize and uncover the full scene. */
+  .rz-dialog {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    background: #f7efe5;
+    color: #2d1f14;
+    border: 4px solid #1a110a;
+    box-shadow: 0 0 0 2px #f7efe5, 0 0 0 5px #1a110a, 8px 8px 0 rgba(0,0,0,0.5);
+    padding: 14px 18px 12px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.55;
+    z-index: 15;
+    transition: transform 0.22s ease, opacity 0.22s ease;
+  }
+  .rz-dialog[data-open="false"] {
+    transform: translateY(calc(100% + 16px));
+    opacity: 0;
+    pointer-events: none;
+  }
+  .rz-dialog-speaker {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-family: var(--font-display);
+    font-size: 15px;
+    letter-spacing: 0.6px;
+    color: #d97757;
+  }
+  .rz-dialog-speaker .rz-dialog-role {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: #8a7565;
+    text-transform: uppercase;
+    font-weight: normal;
+  }
+  .rz-dialog-close {
+    background: transparent;
+    border: 2px solid #1a110a;
+    color: #1a110a;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    line-height: 1;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .rz-dialog-close:hover { background: #d44040; color: #fff; border-color: #1a110a; }
+
+  .rz-dialog-text {
+    min-height: 44px;
+    max-height: 28vh;
+    overflow-y: auto;
+    cursor: pointer; /* click-to-skip-typing */
+  }
+  .rz-dialog-caret {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background: #1a110a;
+    margin-left: 6px;
+    animation: rz-blink 0.7s steps(2) infinite;
+    vertical-align: middle;
+    visibility: hidden;
+  }
+  @keyframes rz-blink { 50% { opacity: 0; } }
+
+  .rz-dialog-form {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .rz-dialog-form input {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 10px;
+    background: #ede0cf;
+    border: 2px solid #1a110a;
+    color: #1a110a;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    outline: none;
+  }
+  .rz-dialog-form input::placeholder { color: #8a7565; }
+  .rz-dialog-form input:focus { background: #fff8e5; }
+  .rz-dialog-form button {
+    padding: 0 14px;
+    background: #d97757;
+    color: #1a110a;
+    border: 2px solid #1a110a;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+  }
+  .rz-dialog-form button:hover { background: #ffc857; }
+  .rz-dialog-form button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .rz-dialog-hint {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+    font-size: 9px;
+    letter-spacing: 1.2px;
+    color: #8a7565;
+    text-transform: uppercase;
+  }
+  .rz-dialog-hint .rz-dialog-quick {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .rz-dialog-hint .rz-dialog-quick button {
+    background: transparent;
+    border: 1.5px solid #5c4a3d;
+    color: #5c4a3d;
+    padding: 3px 8px;
+    font-family: inherit;
+    font-size: 9px;
+    letter-spacing: 1px;
+    cursor: pointer;
+  }
+  .rz-dialog-hint .rz-dialog-quick button:hover { background: #d97757; color: #1a110a; border-color: #1a110a; }
+
+  /* Re-opener: small tab when the dialog is minimized */
+  .rz-dialog-reopen {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    z-index: 14;
+    background: #1a110a;
+    color: #d97757;
+    border: 2px solid #d97757;
+    padding: 6px 12px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    display: none;
+  }
+  .rz-dialog[data-open="false"] ~ .rz-dialog-reopen { display: block; }
+  .rz-dialog-reopen:hover { background: #d97757; color: #1a110a; }
+
+  @media (max-width: 640px) {
+    .rz-dialog {
+      left: 6px;
+      right: 6px;
+      bottom: 6px;
+      padding: 10px 12px 10px;
+      font-size: 12px;
+    }
+    .rz-dialog-speaker { font-size: 13px; }
+    .rz-dialog-speaker .rz-dialog-role { display: none; }
+    .rz-dialog-text { max-height: 22vh; }
+    .rz-dialog-hint { font-size: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="lab-wrapper">
+  <div id="site-header" data-page="agents"></div>
+
+  <!-- Main area: canvas + sidebar -->
+  <div class="lab-main">
+    <!-- Canvas area -->
+    <div class="canvas-area">
+      <div class="canvas-label">Situation Room &mdash; Live Feed</div>
+      <div class="canvas-container" id="canvasContainer">
+        <canvas id="warRoomCanvas" width="1664" height="1536" tabindex="0"></canvas>
+        <div class="canvas-placeholder" id="canvasPlaceholder">
+          <div class="canvas-placeholder-icon">&#x1F42F;</div>
+          <div class="canvas-placeholder-text">agents are setting up the Situation Room...</div>
+          <div class="canvas-placeholder-sub">pulling film...</div>
+        </div>
+
+        <!-- In-game Pokemon-style dialog (Crystal look) -->
+        <div id="rzDialog" class="rz-dialog" data-open="false">
+          <div class="rz-dialog-speaker">
+            <span><span id="rzDialogName">Situation Room</span> <span class="rz-dialog-role" id="rzDialogRole">click an agent to start</span></span>
+            <button type="button" class="rz-dialog-close" id="rzDialogClose" aria-label="Close dialog">&times;</button>
+          </div>
+          <div class="rz-dialog-text" id="rzDialogText" title="click to skip typing">…</div>
+          <span class="rz-dialog-caret" id="rzDialogCaret"></span>
+          <form class="rz-dialog-form" id="rzDialogForm" autocomplete="off">
+            <input type="text" id="rzDialogInput" placeholder="type to the agent…" maxlength="200" aria-label="Message to agent" />
+            <button type="submit" aria-label="Send">SEND</button>
+          </form>
+          <div class="rz-dialog-hint">
+            <span>space · next line &nbsp;·&nbsp; click text · skip typing</span>
+            <span class="rz-dialog-quick">
+              <button type="button" data-rz-preset="Who should I start at flex this week?">start/sit?</button>
+              <button type="button" data-rz-preset="What's my championship probability?">championship?</button>
+              <button type="button" data-rz-preset="Any injuries on my roster?">injuries?</button>
+            </span>
+          </div>
+        </div>
+        <button type="button" id="rzDialogReopen" class="rz-dialog-reopen" aria-label="Open dialog">▲ talk to selected agent</button>
+      </div>
+      <div class="canvas-hints">Click agent to select &middot; Drag to pan &middot; Keys 1-6 switch agents</div>
+    </div>
+
+    <!-- Roster sidebar -->
+    <div class="roster-sidebar">
+      <div class="roster-header">Agent Roster</div>
+      <div class="roster-list" id="rosterList"></div>
+    </div>
+  </div>
+
+  <!-- Selected agent info bar -->
+  <div class="selected-info" id="selectedInfo">
+    <span class="selected-info-name" id="selName" style="color:#d97757;">Situation Room</span>
+    <span class="selected-info-role" id="selRole">click an agent or press 1-6 to follow</span>
+    <span class="selected-info-activity" id="selActivity">
+      <span class="selected-info-dot" id="selDot" style="background:#2ec4b6;"></span>
+      <span id="selState">live</span>
+    </span>
+  </div>
+
+  <!-- Room view control -->
+  <div style="position:absolute;bottom:52px;right:12px;display:flex;flex-direction:column;gap:4px;z-index:20;">
+    <button onclick="showRoomView()" style="padding:4px 8px;border:2px solid #5c4a3d;border-radius:4px;background:rgba(26,17,10,0.8);color:#ede0cf;font-size:9px;cursor:pointer;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:1px">Room View</button>
+  </div>
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span><span class="status-dot-live"></span><span id="statusRooms">7 rooms online</span> &middot; <span id="statusRoom">Situation Room</span></span>
+    <span>scroll to zoom &middot; drag to pan</span>
+  </div>
+</div>
+
+<script>
+/* ======================================================================
+   RAZZLE PIXEL AGENT LAB — OFFICE FLOOR PLAN
+   7 rooms sharing walls, doorways, A* pathfinding.
+   Canvas: 52x48 tile grid, 32px tiles = 1664x1536 world.
+   ====================================================================== */
+
+// -- CONSTANTS --
+const T = 32;
+const TILE = T;
+const COLS = 52;
+const ROWS = 48;
+const WORLD_W = COLS * T;
+const WORLD_H = ROWS * T;
+
+// New sprite sheets: 2x2 grid per animation type
+const NEW_SPRITE_FRAMES = 4;
+const NEW_SPRITE_COLS = 2;
+const SP_DRAW_W = 32;
+const SP_DRAW_H = 48;
+
+// Legacy sprite sheet dimensions (for old char_*.png fallback)
+const FR_W = 16, FR_H = 24, FR_COLS = 7, FR_ROWS = 4;
+const SP_SCALE = 2; // draw at 32x48
+
+const DIR = { DOWN: 0, LEFT: 1, RIGHT: 2, UP: 3 };
+
+const WALK_FRAMES = [0, 1, 2, 1];
+const IDLE_FRAME = 0;
+const ANIM_SPEED = 150; // ms per walk frame
+
+const now = () => performance.now();
+
+// -- ROOM DEFINITIONS --
+// Compact layout: top offices, SR, bottom offices — rooms share walls, no void gaps
+const ROOMS = {
+  scout:     { x: 2,  y: 0,  w: 15, h: 13, name: 'Scout Room',      accent: '#2ec4b6', state: 'idle' },
+  razzle:    { x: 18, y: 0,  w: 16, h: 13, name: "Razzle's Office",  accent: '#d97757', state: 'idle' },
+  medical:   { x: 35, y: 0,  w: 15, h: 13, name: 'Medical Bay',     accent: '#5b7fff', state: 'idle' },
+  situation: { x: 1,  y: 13, w: 50, h: 22, name: 'Situation Room',   accent: '#ffc857', state: 'idle' },
+  diplomat:  { x: 2,  y: 35, w: 15, h: 13, name: 'Diplomat Room',   accent: '#8b5cf6', state: 'idle' },
+  quant:     { x: 18, y: 35, w: 16, h: 13, name: 'Quant Room',      accent: '#e87422', state: 'idle' },
+  historian: { x: 35, y: 35, w: 15, h: 13, name: 'Historian Room',   accent: '#d44040', state: 'idle' },
+};
+
+// Corridors: none needed — rooms share walls directly
+const CORRIDORS = [];
+
+// Doorways: lateral connections + vertical connections through shared walls
+const DOORWAYS = [
+  // Top row lateral (between offices)
+  { x: 17, y: 5,  w: 1, h: 3 },   // Scout <-> Razzle (shifted -1)
+  { x: 34, y: 5,  w: 1, h: 3 },   // Razzle <-> Medical (shifted -1)
+  // Bottom row lateral (between offices)
+  { x: 17, y: 40, w: 1, h: 3 },   // Diplomat <-> Quant
+  { x: 34, y: 40, w: 1, h: 3 },   // Quant <-> Historian
+  // Top rooms to Situation Room (vertical, through shared wall at y:12-13)
+  { x: 8,  y: 12, w: 3, h: 2 },   // Scout -> SR
+  { x: 24, y: 12, w: 3, h: 2 },   // Razzle -> SR
+  { x: 41, y: 12, w: 3, h: 2 },   // Medical -> SR
+  // Situation Room to bottom rooms (through shared wall at y:34-35)
+  { x: 8,  y: 34, w: 3, h: 2 },   // SR -> Diplomat
+  { x: 24, y: 34, w: 3, h: 2 },   // SR -> Quant
+  { x: 41, y: 34, w: 3, h: 2 },   // SR -> Historian
+];
+
+// -- ROOM PALETTES --
+const PALETTE = {
+  void: '#0a0a12',
+  situation: {
+    wall: '#1a1a2e', wallLight: '#252545', trim: '#2e2e55',
+    floor1: '#5c2e1a', floor2: '#6b3420', floor3: '#4e2616',
+    felt1: '#1b6b2a', felt2: '#228833', feltBorder: '#0f4018',
+    brass: '#b8963e', monitorGlow: '#22cc55',
+  },
+  razzle: {
+    wall: '#3a1a0a', wallLight: '#4a2010', trim: '#5a2a14',
+    floor1: '#6b3420', floor2: '#7a3c26', floor3: '#5e2c1a',
+    brass: '#b8963e', lampGlow: '#ffd866',
+  },
+  scout: {
+    wall: '#2a3040', wallLight: '#344050', trim: '#3a4a5a',
+    floor1: '#8a7050', floor2: '#957a58', floor3: '#7e6648',
+    teal: '#2ec4b6', radarGreen: '#22cc55', windowBlue: '#1a3050',
+  },
+  medical: {
+    wall: '#1a2535', wallLight: '#203040', trim: '#2a3a4a',
+    floor1: '#b0bec5', floor2: '#c0ccd3', floor3: '#a0aeb5',
+    aquaGlow: '#00ccaa', sterile: '#d0dde8', tankBlue: '#0066aa',
+  },
+  diplomat: {
+    wall: '#1a1018', wallLight: '#201520', trim: '#2a1a24',
+    floor1: '#3a2820', floor2: '#443028', floor3: '#30201a',
+    purple: '#4a2040', redString: '#cc3030', darkWood: '#2a1a10',
+  },
+  quant: {
+    wall: '#0a0f0a', wallLight: '#101810', trim: '#182018',
+    floor1: '#0f150f', floor2: '#141c14', floor3: '#0c120c',
+    green: '#22cc55', brightGreen: '#00ff66', orange: '#ff8800',
+  },
+  historian: {
+    wall: '#2a1a0a', wallLight: '#3a2515', trim: '#4a3020',
+    floor1: '#6a4a28', floor2: '#7a5a34', floor3: '#5e4020',
+    paper: '#d4c4a0', trophyGold: '#d4aa40', dustyWood: '#6a4a28',
+  },
+};
+
+// -- CANVAS SETUP --
+const cvs = document.getElementById('warRoomCanvas');
+const ctx = cvs.getContext('2d');
+
+function resizeCanvas() {
+  const container = document.getElementById('canvasContainer');
+  if (!container) return;
+  const rect = container.getBoundingClientRect();
+  cvs.width = Math.floor(rect.width);
+  cvs.height = Math.floor(rect.height);
+}
+resizeCanvas();
+window.addEventListener('resize', () => { resizeCanvas(); clampCam(); });
+
+// -- CAMERA + ZOOM --
+const cam = { x: 0, y: 0, targetX: 0, targetY: 0, zoom: 1, targetZoom: 1 };
+function getZoomMin() { return Math.min(cvs.width / WORLD_W, cvs.height / WORLD_H); }
+const ZOOM_MAX = 3.0, ZOOM_STEP = 0.15;
+
+function updateCam() {
+  cam.x += (cam.targetX - cam.x) * 0.08;
+  cam.y += (cam.targetY - cam.y) * 0.08;
+  cam.zoom += (cam.targetZoom - cam.zoom) * 0.1;
+}
+
+function centerCamOn(wx, wy) {
+  cam.targetX = wx - (cvs.width / cam.targetZoom) / 2;
+  cam.targetY = wy - (cvs.height / cam.targetZoom) / 2;
+}
+
+function clampCam() {
+  const vw = cvs.width / cam.zoom;
+  const vh = cvs.height / cam.zoom;
+  const maxX = Math.max(0, WORLD_W - vw);
+  const maxY = Math.max(0, WORLD_H - vh);
+  cam.targetX = Math.max(0, Math.min(maxX, cam.targetX));
+  cam.targetY = Math.max(0, Math.min(maxY, cam.targetY));
+  cam.x = Math.max(0, Math.min(maxX, cam.x));
+  cam.y = Math.max(0, Math.min(maxY, cam.y));
+}
+
+function setZoom(newZoom, pivotX, pivotY) {
+  const oldZoom = cam.targetZoom;
+  cam.targetZoom = Math.max(getZoomMin(), Math.min(ZOOM_MAX, newZoom));
+  if (pivotX !== undefined) {
+    const ratio = cam.targetZoom / oldZoom;
+    cam.targetX = pivotX - (pivotX - cam.targetX) / ratio;
+    cam.targetY = pivotY - (pivotY - cam.targetY) / ratio;
+  }
+}
+
+function frameSituationRoom() {
+  const sr = ROOMS.situation;
+  const srCenterX = (sr.x + sr.w / 2) * T;
+  const srCenterY = (sr.y + sr.h / 2) * T;
+  const srZoom = Math.min(cvs.width / ((sr.w + 4) * T), cvs.height / ((sr.h + 4) * T));
+  cam.targetZoom = Math.max(getZoomMin(), Math.min(ZOOM_MAX, srZoom));
+  cam.targetX = srCenterX - (cvs.width / cam.targetZoom) / 2;
+  cam.targetY = srCenterY - (cvs.height / cam.targetZoom) / 2;
+}
+
+// -- SPRITE LOADING --
+const spriteImgs = {};
+const spriteSheets = {};
+let spritesLoaded = 0;
+const TOTAL_SPRITES_NEEDED = 24; // 6 agents x 4 sheets each
+
+const AGENT_SPRITES = {
+  razzle:    'razzle',
+  medical:   'drdolphin',
+  scout:     'scout',
+  diplomat:  'diplomat',
+  quant:     'quant',
+  historian: 'historian',
+};
+const ANIM_TYPES = ['walk', 'idle', 'attack', 'jump'];
+
+Object.entries(AGENT_SPRITES).forEach(([agentKey, prefix]) => {
+  spriteSheets[agentKey] = {};
+  ANIM_TYPES.forEach(anim => {
+    const img = new Image();
+    img.onload = () => { spritesLoaded++; };
+    img.onerror = () => { spritesLoaded++; }; // count errors too so we don't hang
+    img.src = `assets/characters/${prefix}-${anim}.png`;
+    spriteSheets[agentKey][anim] = img;
+  });
+});
+
+// Also load old sprites as fallback
+const CHAR_NAMES = ['char_0','char_1','char_2','char_3','char_4','char_5'];
+CHAR_NAMES.forEach(name => {
+  const img = new Image();
+  img.src = `assets/characters/${name}.png`;
+  spriteImgs[name] = img;
+});
+
+// -- WALKABLE MAP --
+// 0 = blocked (void), 1 = walkable
+const walkMap = [];
+for (let r = 0; r < ROWS; r++) {
+  walkMap[r] = new Uint8Array(COLS); // all 0 by default
+}
+
+// Mark rooms walkable (1-tile walls on sides/bottom, 2-tile wall on north for mounting furniture)
+function markRoomWalkable(room) {
+  const startR = room.y + 2;
+  const endR = room.y + room.h - 1;
+  const startC = room.x + 1;
+  const endC = room.x + room.w - 1;
+  for (let r = startR; r < endR; r++) {
+    for (let c = startC; c < endC; c++) {
+      if (r >= 0 && r < ROWS && c >= 0 && c < COLS) walkMap[r][c] = 1;
+    }
+  }
+}
+
+Object.values(ROOMS).forEach(markRoomWalkable);
+
+// Mark corridors walkable (full rectangle)
+CORRIDORS.forEach(corr => {
+  for (let r = corr.y; r < corr.y + corr.h; r++) {
+    for (let c = corr.x; c < corr.x + corr.w; c++) {
+      if (r >= 0 && r < ROWS && c >= 0 && c < COLS) walkMap[r][c] = 1;
+    }
+  }
+});
+
+// Bridge shared walls between top rooms and Situation Room (y:12-14)
+[[8,3],[24,3],[41,3]].forEach(([cx, cw]) => {
+  for (let c = cx; c < cx + cw; c++) {
+    if (c >= 0 && c < COLS) {
+      walkMap[12][c] = 1; // top room south wall
+      walkMap[13][c] = 1; // SR north wall row 1
+      walkMap[14][c] = 1; // SR north wall row 2
+    }
+  }
+});
+
+// Bridge shared walls between Situation Room and bottom rooms (y:34-36)
+[[8,3],[24,3],[41,3]].forEach(([cx, cw]) => {
+  for (let c = cx; c < cx + cw; c++) {
+    if (c >= 0 && c < COLS) {
+      walkMap[34][c] = 1; // SR south wall
+      walkMap[35][c] = 1; // bottom room north wall row 1
+      walkMap[36][c] = 1; // bottom room north wall row 2
+    }
+  }
+});
+
+// Mark doorways walkable (lateral connections between adjacent offices)
+DOORWAYS.forEach(door => {
+  for (let r = door.y; r < door.y + door.h; r++) {
+    for (let c = door.x; c < door.x + door.w; c++) {
+      if (r >= 0 && r < ROWS && c >= 0 && c < COLS) walkMap[r][c] = 1;
+    }
+  }
+  // For vertical doorways (w=1, h=3), bridge the wall columns left and right
+  if (door.w === 1) {
+    for (let r = door.y; r < door.y + door.h; r++) {
+      for (let offset = -1; offset <= 1; offset++) {
+        const c = door.x + offset;
+        if (r >= 0 && r < ROWS && c >= 0 && c < COLS) walkMap[r][c] = 1;
+      }
+    }
+  }
+});
+
+function isWalkable(tileX, tileY) {
+  if (tileX < 0 || tileX >= COLS || tileY < 0 || tileY >= ROWS) return false;
+  return walkMap[tileY][tileX] === 1;
+}
+
+// Block a rectangular region for furniture
+function blockRect(cx, cy, w, h) {
+  for (let r = cy; r < cy + h; r++)
+    for (let c = cx; c < cx + w; c++)
+      if (r >= 0 && r < ROWS && c >= 0 && c < COLS) walkMap[r][c] = 0;
+}
+
+
+// -- A* PATHFINDING --
+function findPath(sx, sy, ex, ey) {
+  // Clamp to grid
+  sx = Math.max(0, Math.min(COLS - 1, sx));
+  sy = Math.max(0, Math.min(ROWS - 1, sy));
+  ex = Math.max(0, Math.min(COLS - 1, ex));
+  ey = Math.max(0, Math.min(ROWS - 1, ey));
+
+  if (!walkMap[sy][sx] || !walkMap[ey][ex]) return [];
+  if (sx === ex && sy === ey) return [{ x: ex, y: ey }];
+
+  const key = (x, y) => y * COLS + x;
+  const openSet = [];
+  const gScore = new Map();
+  const fScore = new Map();
+  const cameFrom = new Map();
+  const closedSet = new Set();
+
+  const startKey = key(sx, sy);
+  gScore.set(startKey, 0);
+  fScore.set(startKey, Math.abs(ex - sx) + Math.abs(ey - sy));
+  openSet.push({ x: sx, y: sy, f: fScore.get(startKey) });
+
+  const neighbors = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+
+  while (openSet.length > 0) {
+    // Find lowest f in open set
+    let bestIdx = 0;
+    for (let i = 1; i < openSet.length; i++) {
+      if (openSet[i].f < openSet[bestIdx].f) bestIdx = i;
+    }
+    const current = openSet[bestIdx];
+    openSet.splice(bestIdx, 1);
+
+    const ck = key(current.x, current.y);
+
+    if (current.x === ex && current.y === ey) {
+      // Reconstruct path
+      const path = [];
+      let k = ck;
+      while (k !== undefined) {
+        const py = Math.floor(k / COLS);
+        const px = k % COLS;
+        path.unshift({ x: px, y: py });
+        k = cameFrom.get(k);
+      }
+      return path;
+    }
+
+    if (closedSet.has(ck)) continue;
+    closedSet.add(ck);
+
+    for (const [dx, dy] of neighbors) {
+      const nx = current.x + dx;
+      const ny = current.y + dy;
+      if (nx < 0 || nx >= COLS || ny < 0 || ny >= ROWS) continue;
+      if (!walkMap[ny][nx]) continue;
+      const nk = key(nx, ny);
+      if (closedSet.has(nk)) continue;
+
+      const tentativeG = gScore.get(ck) + 1;
+      const prevG = gScore.get(nk);
+      if (prevG !== undefined && tentativeG >= prevG) continue;
+
+      cameFrom.set(nk, ck);
+      gScore.set(nk, tentativeG);
+      const f = tentativeG + Math.abs(ex - nx) + Math.abs(ey - ny);
+      fScore.set(nk, f);
+      openSet.push({ x: nx, y: ny, f: f });
+    }
+  }
+
+  return []; // No path found
+}
+
+
+// -- DRAWING HELPERS --
+function px(x, y, w, h, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(Math.floor(x), Math.floor(y), w, h);
+}
+
+function drawPixelRect(x, y, w, h, fill, border) {
+  if (fill) { ctx.fillStyle = fill; ctx.fillRect(x, y, w, h); }
+  if (border) { ctx.strokeStyle = border; ctx.lineWidth = 1; ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1); }
+}
+
+// -- VIEWPORT CULLING --
+function isRectVisible(rx, ry, rw, rh) {
+  const vx = cam.x;
+  const vy = cam.y;
+  const vw = cvs.width / cam.zoom;
+  const vh = cvs.height / cam.zoom;
+  return rx + rw > vx && rx < vx + vw && ry + rh > vy && ry < vy + vh;
+}
+
+function isRoomVisible(room) {
+  return isRectVisible(room.x * T, room.y * T, room.w * T, room.h * T);
+}
+
+// -- FLOOR RENDERING --
+
+function drawWoodFloor(startC, startR, w, h, colors) {
+  const woodColors = colors || ['#5c2e1a', '#6b3420', '#4e2616', '#63301c', '#5a2b18'];
+  const plankWidths = [4, 5, 6, 5, 4, 6, 5];
+  for (let r = startR; r < startR + h; r++) {
+    let c = startC;
+    const rowOffset = (r % 2 === 0) ? 0 : 2;
+    let plankIdx = ((r * 3) % 5);
+    let pIdx = (r * 2) % plankWidths.length;
+    let px0 = startC - rowOffset;
+    while (c < startC + w) {
+      const pw = plankWidths[pIdx % plankWidths.length];
+      const plankEnd = px0 + pw;
+      const col = woodColors[plankIdx % woodColors.length];
+      const tx = c * T, ty = r * T;
+      px(tx, ty, T, T, col);
+      // Grain lines
+      px(tx, ty + 6, T, 1, 'rgba(0,0,0,0.05)');
+      px(tx, ty + 14, T, 1, 'rgba(0,0,0,0.04)');
+      px(tx, ty + 22, T, 1, 'rgba(0,0,0,0.03)');
+      px(tx, ty + 1, T, 1, 'rgba(255,255,255,0.03)');
+      if (c + 1 >= plankEnd) {
+        px(tx + T - 1, ty, 1, T, 'rgba(0,0,0,0.15)');
+        px0 = plankEnd;
+        pIdx++;
+        plankIdx++;
+      }
+      c++;
+    }
+    for (let cc = startC; cc < startC + w; cc++) {
+      px(cc * T, r * T, T, 1, 'rgba(0,0,0,0.10)');
+    }
+  }
+}
+
+function drawClinicalFloor(startC, startR, w, h) {
+  const colors = [PALETTE.medical.floor1, PALETTE.medical.floor2, PALETTE.medical.floor3];
+  for (let r = startR; r < startR + h; r++) {
+    for (let c = startC; c < startC + w; c++) {
+      const tx = c * T, ty = r * T;
+      const ci = (c + r) % 3;
+      px(tx, ty, T, T, colors[ci]);
+      px(tx, ty, T, 1, 'rgba(255,255,255,0.06)');
+      px(tx, ty, 1, T, 'rgba(255,255,255,0.06)');
+    }
+  }
+}
+
+function drawCircuitFloor(startC, startR, w, h) {
+  const colors = [PALETTE.quant.floor1, PALETTE.quant.floor2, PALETTE.quant.floor3];
+  for (let r = startR; r < startR + h; r++) {
+    for (let c = startC; c < startC + w; c++) {
+      const tx = c * T, ty = r * T;
+      const ci = (c + r * 3) % 3;
+      px(tx, ty, T, T, colors[ci]);
+      if ((c + r) % 4 === 0) {
+        px(tx + 4, ty + T/2, T - 8, 1, 'rgba(34,204,85,0.08)');
+      }
+      if ((c * 3 + r) % 5 === 0) {
+        px(tx + T/2, ty + 4, 1, T - 8, 'rgba(34,204,85,0.08)');
+      }
+    }
+  }
+}
+
+function drawStoneFloor(startC, startR, w, h) {
+  const colors = [PALETTE.diplomat.floor1, PALETTE.diplomat.floor2, PALETTE.diplomat.floor3];
+  for (let r = startR; r < startR + h; r++) {
+    for (let c = startC; c < startC + w; c++) {
+      const tx = c * T, ty = r * T;
+      const ci = ((c * 7 + r * 13) % 3);
+      px(tx, ty, T, T, colors[ci]);
+      px(tx, ty, T, 1, 'rgba(0,0,0,0.08)');
+      px(tx, ty, 1, T, 'rgba(0,0,0,0.08)');
+      if ((c + r) % 3 === 0) {
+        px(tx + 8, ty + 8, 3, 2, 'rgba(0,0,0,0.04)');
+      }
+    }
+  }
+}
+
+function drawFeltFloor(startC, startR, w, h) {
+  for (let r = startR; r < startR + h; r++) {
+    for (let c = startC; c < startC + w; c++) {
+      const tx = c * T, ty = r * T;
+      const variant = (c + r) % 2;
+      px(tx, ty, T, T, variant ? PALETTE.situation.felt1 : PALETTE.situation.felt2);
+    }
+  }
+  const feltX = startC * T, feltY = startR * T;
+  const feltW = w * T, feltH = h * T;
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 1;
+  const cx = feltX + feltW / 2;
+  ctx.beginPath(); ctx.moveTo(cx, feltY + 4); ctx.lineTo(cx, feltY + feltH - 4); ctx.stroke();
+  for (let i = 1; i < 5; i++) {
+    const lx = feltX + (feltW * i / 5);
+    ctx.beginPath();
+    ctx.moveTo(lx, feltY + feltH * 0.2);
+    ctx.lineTo(lx, feltY + feltH * 0.8);
+    ctx.stroke();
+  }
+  ctx.strokeStyle = PALETTE.situation.feltBorder;
+  ctx.lineWidth = 3;
+  ctx.strokeRect(feltX + 2, feltY + 2, feltW - 4, feltH - 4);
+}
+
+// Check if a tile is a doorway or corridor tile
+function isDoorwayTile(c, r) {
+  for (const d of DOORWAYS) {
+    if (c >= d.x && c < d.x + d.w && r >= d.y && r < d.y + d.h) return true;
+  }
+  return false;
+}
+
+// Draw walls for a room, respecting shared walls and doorways
+function drawRoomWalls(room, pal) {
+  const rx = room.x, ry = room.y, rw = room.w, rh = room.h;
+
+  // North wall (2 tiles thick)
+  for (let r = ry; r < ry + 2; r++) {
+    for (let c = rx; c < rx + rw; c++) {
+      if (isDoorwayTile(c, r)) continue;
+      const tx = c * T, ty = r * T;
+      px(tx, ty, T, T, pal.wall);
+      if ((c + r) % 4 === 0) px(tx + 2, ty + 2, T - 4, T - 4, pal.wallLight);
+    }
+  }
+  // Wall trim at bottom of north wall
+  for (let c = rx; c < rx + rw; c++) {
+    if (isDoorwayTile(c, ry + 1)) continue;
+    px(c * T, (ry + 2) * T - 4, T, 4, pal.trim);
+  }
+
+  // South wall (1 tile)
+  for (let c = rx; c < rx + rw; c++) {
+    if (isDoorwayTile(c, ry + rh - 1)) continue;
+    px(c * T, (ry + rh - 1) * T, T, T, pal.wall);
+    px(c * T, (ry + rh - 1) * T, T, 3, pal.trim);
+  }
+
+  // Left wall (1 tile)
+  for (let r = ry; r < ry + rh; r++) {
+    if (isDoorwayTile(rx, r)) continue;
+    px(rx * T, r * T, T, T, pal.wall);
+    if (r >= ry + 2 && r < ry + rh - 1) {
+      px((rx + 1) * T - 3, r * T, 3, T, pal.trim);
+    }
+  }
+
+  // Right wall (1 tile)
+  for (let r = ry; r < ry + rh; r++) {
+    if (isDoorwayTile(rx + rw - 1, r)) continue;
+    px((rx + rw - 1) * T, r * T, T, T, pal.wall);
+    if (r >= ry + 2 && r < ry + rh - 1) {
+      px((rx + rw - 1) * T, r * T, 3, T, pal.trim);
+    }
+  }
+}
+
+// -- ROOM FLOOR DRAWING --
+
+function drawRoomFloor(roomKey) {
+  const room = ROOMS[roomKey];
+  if (!isRoomVisible(room)) return;
+  const floorStartC = room.x + 1;
+  const floorStartR = room.y + 2;
+  const floorW = room.w - 2;
+  const floorH = room.h - 3;
+
+  switch (roomKey) {
+    case 'situation': {
+      drawWoodFloor(floorStartC, floorStartR, floorW, floorH,
+        [PALETTE.situation.floor1, PALETTE.situation.floor2, PALETTE.situation.floor3, '#63301c', '#5a2b18']);
+      // Green felt center zone — larger for bigger SR
+      const feltC = room.x + 10;
+      const feltR = room.y + 8;
+      const feltW = 30;
+      const feltH = 12;
+      drawFeltFloor(feltC, feltR, feltW, feltH);
+      break;
+    }
+    case 'razzle':
+      drawWoodFloor(floorStartC, floorStartR, floorW, floorH,
+        [PALETTE.razzle.floor1, PALETTE.razzle.floor2, PALETTE.razzle.floor3, '#7a3c26', '#6b3420']);
+      break;
+    case 'scout':
+      drawWoodFloor(floorStartC, floorStartR, floorW, floorH,
+        [PALETTE.scout.floor1, PALETTE.scout.floor2, PALETTE.scout.floor3, '#8a7050', '#957a58']);
+      break;
+    case 'medical':
+      drawClinicalFloor(floorStartC, floorStartR, floorW, floorH);
+      break;
+    case 'diplomat':
+      drawStoneFloor(floorStartC, floorStartR, floorW, floorH);
+      break;
+    case 'quant':
+      drawCircuitFloor(floorStartC, floorStartR, floorW, floorH);
+      break;
+    case 'historian':
+      drawWoodFloor(floorStartC, floorStartR, floorW, floorH,
+        [PALETTE.historian.floor1, PALETTE.historian.floor2, PALETTE.historian.floor3, '#7a5a34', '#6a4a28']);
+      break;
+  }
+
+  // Draw doorway floor tiles (matching room palette) so doorways have floor instead of void
+  for (const door of DOORWAYS) {
+    const roomRight = room.x + room.w;
+    const roomBottom = room.y + room.h;
+    const doorRight = door.x + door.w;
+    const doorBottom = door.y + door.h;
+    const touches = door.x < roomRight && doorRight > room.x && door.y < roomBottom && doorBottom > room.y;
+    if (!touches) continue;
+    for (let r = door.y; r < doorBottom; r++) {
+      for (let c = door.x; c < doorRight; c++) {
+        const tx = c * T, ty = r * T;
+        const pal = PALETTE[roomKey] || PALETTE.situation;
+        px(tx, ty, T, T, pal.floor1 || '#5c2e1a');
+      }
+    }
+  }
+}
+
+// Draw corridor floors
+function drawCorridorFloors() {
+  for (const corr of CORRIDORS) {
+    if (!isRectVisible(corr.x * T, corr.y * T, corr.w * T, corr.h * T)) continue;
+    for (let r = corr.y; r < corr.y + corr.h; r++) {
+      for (let c = corr.x; c < corr.x + corr.w; c++) {
+        const tx = c * T, ty = r * T;
+        // Dark void-ish floor for corridors
+        const variant = (c + r) % 2;
+        px(tx, ty, T, T, variant ? '#12121e' : '#0e0e18');
+      }
+    }
+  }
+  // Also draw the bridge tiles (shared wall rows that became walkable)
+  const bridgeRows = [12, 13, 14, 34, 35, 36];
+  const corrXRanges = [[8,3],[24,3],[41,3]];
+  for (const bRow of bridgeRows) {
+    for (const [cx, cw] of corrXRanges) {
+      for (let c = cx; c < cx + cw; c++) {
+        if (walkMap[bRow] && walkMap[bRow][c]) {
+          const tx = c * T, ty = bRow * T;
+          const variant = (c + bRow) % 2;
+          px(tx, ty, T, T, variant ? '#12121e' : '#0e0e18');
+        }
+      }
+    }
+  }
+}
+
+function drawAllFloors() {
+  // Fill void
+  px(0, 0, WORLD_W, WORLD_H, PALETTE.void);
+
+  // Draw corridor floors first (underneath room walls)
+  drawCorridorFloors();
+
+  // Draw room floors and walls
+  for (const key of Object.keys(ROOMS)) {
+    const room = ROOMS[key];
+    if (!isRoomVisible(room)) continue;
+    drawRoomFloor(key);
+    const palKey = key === 'situation' ? 'situation' : key;
+    const pal = PALETTE[palKey] || PALETTE.situation;
+    drawRoomWalls(room, pal);
+  }
+}
+
+
+// ====================================================================
+// -- FURNITURE --
+// ====================================================================
+
+// -- SHARED OFFICE FURNITURE HELPERS --
+// Standard pieces that appear in every room, drawn consistently.
+
+function drawOfficeDesk(x, y, w, hasMonitor, monitorContent, accent) {
+  // x, y in pixels. w in tiles. Draws desk surface, monitor, lamp, mug, papers.
+  const dw = w * T, dh = 1.5 * T;
+  // Desk surface
+  drawPixelRect(x, y, dw, dh, '#5c4a3d');
+  drawPixelRect(x + 2, y + 2, dw - 4, dh - 4, '#4a3a2a');
+  // Legs
+  px(x + 4, y + dh, 4, 6, '#3a2a1a');
+  px(x + dw - 8, y + dh, 4, 6, '#3a2a1a');
+  if (hasMonitor) {
+    // Monitor
+    const mw = T * 1.4, mh = T;
+    const mx = x + 12, my = y - mh + 4;
+    drawPixelRect(mx, my, mw, mh, '#1a1a2e');
+    px(mx + 3, my + 3, mw - 6, mh - 6, '#0a1a2a');
+    // Monitor stand
+    px(mx + mw/2 - 3, my + mh, 6, 4, '#1a1a2e');
+    px(mx + mw/2 - 8, my + mh + 4, 16, 3, '#1a1a2e');
+    // Screen content (caller provides a function or we draw default lines)
+    if (monitorContent) monitorContent(mx + 3, my + 3, mw - 6, mh - 6);
+  }
+  // Papers on desk
+  px(x + dw - 40, y + 6, 26, 18, '#e8e0cc');
+  px(x + dw - 38, y + 10, 18, 2, '#c4b5a5');
+  px(x + dw - 38, y + 14, 14, 2, '#c4b5a5');
+  // Coffee mug
+  const mugC = accent || '#8a7565';
+  px(x + dw - 56, y + 8, 10, 12, mugC);
+  px(x + dw - 46, y + 10, 4, 8, mugC);
+}
+
+function drawOfficeLamp(x, y) {
+  // Desk lamp at pixel coords. Pole + shade + glow.
+  px(x + 4, y + 2, 4, 16, '#b8963e');
+  px(x, y - 2, 12, 6, '#d4aa40');
+  px(x + 2, y + 18, 8, 3, '#b8963e');
+}
+
+function drawLampGlow(x, y, t) {
+  ctx.globalAlpha = 0.06 + Math.sin(t / 3000) * 0.02;
+  ctx.beginPath();
+  ctx.arc(x + 6, y + 2, 28, 0, Math.PI * 2);
+  ctx.fillStyle = '#ffd866';
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+function drawBookshelf(x, y, h, bookColors) {
+  // x, y in pixels. h in tiles (2 or 3). 1 tile wide.
+  const bh = h * T;
+  drawPixelRect(x, y, T, bh, '#6a4a28');
+  const shelves = h;
+  for (let s = 0; s < shelves; s++) {
+    const sy = y + 4 + s * (T - 2);
+    // Shelf plank
+    px(x, sy + T - 12, T, 2, '#553a1a');
+    // Books
+    for (let b = 0; b < 4; b++) {
+      const bkh = 10 + (b % 3) * 3;
+      px(x + 2 + b * 7, sy + T - 12 - bkh, 5, bkh, bookColors[(s * 4 + b) % bookColors.length]);
+    }
+  }
+}
+
+function drawFilingCabinet(x, y) {
+  // 1 tile wide, 1 tile tall filing cabinet at pixel coords.
+  drawPixelRect(x, y, T, T, '#4a4a5a', '#3a3a4a');
+  for (let d = 0; d < 2; d++) {
+    drawPixelRect(x + 4, y + 4 + d * 14, T - 8, 12, '#5a5a6a');
+    px(x + T/2 - 4, y + 8 + d * 14, 8, 3, '#8a8a9a');
+  }
+}
+
+function drawPlant(x, y) {
+  // Small potted plant at pixel coords.
+  // Pot
+  px(x + 4, y + 14, 14, 10, '#6a4a28');
+  px(x + 2, y + 12, 18, 4, '#6a4a28');
+  // Leaves (green circles)
+  ctx.fillStyle = '#2a8a3a';
+  ctx.beginPath(); ctx.arc(x + 11, y + 6, 7, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#3aaa4a';
+  ctx.beginPath(); ctx.arc(x + 7, y + 3, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x + 15, y + 4, 5, 0, Math.PI * 2); ctx.fill();
+  // Stem
+  px(x + 10, y + 8, 2, 8, '#2a6a2a');
+}
+
+function drawWastebasket(x, y) {
+  // Small wastebasket at pixel coords.
+  px(x + 2, y, 14, 18, '#4a4a5a');
+  px(x, y, 18, 3, '#5a5a6a');
+  // Crumpled paper inside
+  px(x + 5, y + 4, 8, 6, '#d4ccc4');
+}
+
+function drawRug(x, y, w, h, color) {
+  // Rug at pixel coords, w/h in pixels.
+  px(x, y, w, h, color);
+  drawPixelRect(x, y, w, h, null, 'rgba(0,0,0,0.15)');
+  // Subtle fringe on short edges
+  for (let i = 0; i < w; i += 6) {
+    px(x + i, y - 1, 3, 1, color);
+    px(x + i, y + h, 3, 1, color);
+  }
+}
+
+// -- SITUATION ROOM FURNITURE --
+// SR is now at y:13, h:22 (walkable area y:15 to y:34)
+
+function drawSituationRoomFurniture() {
+  const room = ROOMS.situation;
+  if (!isRoomVisible(room)) return;
+  const t = now();
+  const rx = room.x * T, ry = room.y * T;
+
+  // 1. "SITUATION ROOM" banner on north wall
+  const banX = (room.x + room.w/2 - 6) * T, banY = room.y * T + 4;
+  const banW = 12 * T, banH = 2 * T - 8;
+  drawPixelRect(banX, banY, banW, banH, '#d97757', '#ffc857');
+  ctx.fillStyle = '#ffc857';
+  ctx.font = 'bold 18px "Luckiest Guy", cursive';
+  ctx.textAlign = 'center';
+  ctx.fillText('SITUATION ROOM', banX + banW/2, banY + banH/2 + 6);
+  ctx.fillStyle = '#1a1a2e';
+  ctx.font = 'bold 10px "Space Mono", monospace';
+  ctx.fillText('RAZZLE INTELLIGENCE BUNKER', banX + banW/2, banY + banH - 6);
+  ctx.textAlign = 'left';
+
+  // 2. Central war table (10x7 tiles) on green felt zone — bigger for bigger SR
+  const wtX = (room.x + 20) * T, wtY = (room.y + 10) * T;
+  const wtW = 10 * T, wtH = 7 * T;
+  px(wtX + 5, wtY + 5, wtW - 2, wtH - 2, 'rgba(0,0,0,0.25)');
+  drawPixelRect(wtX, wtY + 4, wtW, wtH - 8, '#0f4018');
+  drawPixelRect(wtX + 6, wtY + 8, wtW - 12, wtH - 16, '#1b6b2a');
+  drawPixelRect(wtX + 10, wtY + 12, wtW - 20, wtH - 24, '#228833');
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 1;
+  for (let i = 1; i < 5; i++) {
+    const lx = wtX + 10 + (wtW - 20) * i / 5;
+    ctx.beginPath(); ctx.moveTo(lx, wtY + 14); ctx.lineTo(lx, wtY + wtH - 14); ctx.stroke();
+  }
+  const tcx = wtX + wtW/2, tcy = wtY + wtH/2;
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(tcx, tcy, 50, 28, 0, 0, Math.PI * 2);
+  ctx.fillStyle = '#0a2a1a';
+  ctx.fill();
+  ctx.strokeStyle = '#1a5a3a';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  ctx.restore();
+  ctx.fillStyle = '#d4aa40';
+  ctx.font = 'bold 16px "Luckiest Guy", cursive';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('RAZZLE', tcx, tcy - 2);
+  ctx.globalAlpha = 0.3;
+  ctx.fillStyle = '#ffc857';
+  ctx.fillText('RAZZLE', tcx, tcy - 2);
+  ctx.globalAlpha = 1;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  px(wtX + 14, wtY + 14, 14, 10, '#e8e0cc');
+  px(wtX + 15, wtY + 15, 10, 1, '#5c4a3d');
+  px(wtX + wtW - 28, wtY + wtH - 24, 12, 9, '#ddd8c8');
+  // Agent tokens on war table (colored dots for each agent)
+  const tokenColors = ['#d97757','#5b7fff','#2ec4b6','#8b5cf6','#e87422','#d44040'];
+  const tokenNames = ['R','D','H','F','O','A'];
+  for (let ti = 0; ti < 6; ti++) {
+    const tokX = wtX + 30 + (ti % 3) * 40 + Math.sin(t / 4000 + ti) * 4;
+    const tokY = wtY + wtH/2 - 12 + Math.floor(ti / 3) * 24 + Math.cos(t / 3500 + ti) * 3;
+    ctx.beginPath();
+    ctx.arc(tokX, tokY, 5, 0, Math.PI * 2);
+    ctx.fillStyle = tokenColors[ti];
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 5px "Space Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(tokenNames[ti], tokX, tokY);
+  }
+  ctx.textBaseline = 'alphabetic';
+
+  // 3. Wall-mounted screens (4 unique displays along north wall)
+  const screenPositions = [room.x + 3, room.x + 10, room.x + 37, room.x + 44];
+  const screenLabels = ['STANDINGS', 'LIVE SCORES', 'NEWS WIRE', 'MATCHUPS'];
+  for (let si = 0; si < screenPositions.length; si++) {
+    const sx = screenPositions[si] * T, sy = (room.y) * T + 6;
+    const sw = 5 * T, sh = 2 * T - 10;
+    drawPixelRect(sx + 2, sy, sw - 4, sh, '#2a2a3e');
+    px(sx + 5, sy + 3, sw - 10, sh - 6, '#0a1e2a');
+    // Label
+    ctx.fillStyle = '#33ccaa';
+    ctx.font = 'bold 5px "Space Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(screenLabels[si], sx + sw/2, sy + 10);
+
+    if (si === 0) {
+      // Standings: ranked bars
+      for (let i = 0; i < 5; i++) {
+        const bw = (sw - 20) * (1 - i * 0.12);
+        px(sx + 8, sy + 14 + i * 6, bw, 4, i === 0 ? '#d4aa40' : '#33ccaa');
+      }
+    } else if (si === 1) {
+      // Live scores: flashing numbers
+      for (let i = 0; i < 3; i++) {
+        const score = Math.floor(80 + Math.sin(t / 2000 + i * 3) * 40);
+        ctx.fillStyle = '#22cc55';
+        ctx.font = 'bold 8px "Space Mono", monospace';
+        ctx.fillText(score.toString(), sx + sw/2, sy + 20 + i * 12);
+      }
+    } else if (si === 2) {
+      // News ticker: scrolling text line
+      for (let i = 0; i < 4; i++) {
+        const lw = 10 + ((i * 7 + Math.floor(t / 1500)) % 20);
+        px(sx + 8, sy + 14 + i * 8, lw, 2, '#ffc857');
+      }
+      const scanY = sy + 3 + ((t / 25) % (sh - 6));
+      px(sx + 5, scanY, sw - 10, 1, 'rgba(255,200,87,0.15)');
+    } else {
+      // Matchups: vs brackets
+      for (let i = 0; i < 3; i++) {
+        px(sx + 8, sy + 14 + i * 10, 14, 6, '#5b7fff');
+        px(sx + sw - 22, sy + 14 + i * 10, 14, 6, '#d97757');
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 5px "Space Mono", monospace';
+        ctx.fillText('vs', sx + sw/2, sy + 20 + i * 10);
+      }
+    }
+  }
+  ctx.textAlign = 'left';
+
+  // 4. Urgency board on south wall
+  const ubX = (room.x + 20) * T, ubY = (room.y + room.h - 1) * T + 4;
+  const ubW = 8 * T, ubH = T - 8;
+  drawPixelRect(ubX, ubY, ubW, ubH, '#1a110a', '#5c4a3d');
+  ctx.font = 'bold 7px "Space Mono", monospace';
+  ctx.textAlign = 'left';
+  px(ubX + 4, ubY + 3, 8, 8, '#d44040');
+  ctx.fillStyle = '#d44040';
+  ctx.fillText('URGENT', ubX + 16, ubY + 10);
+  px(ubX + ubW/3 + 4, ubY + 3, 8, 8, '#ffc857');
+  ctx.fillStyle = '#ffc857';
+  ctx.fillText('MONITOR', ubX + ubW/3 + 16, ubY + 10);
+  px(ubX + ubW*2/3 + 4, ubY + 3, 8, 8, '#22cc55');
+  ctx.fillStyle = '#22cc55';
+  ctx.fillText('OPPTY', ubX + ubW*2/3 + 16, ubY + 10);
+
+  // 5. Perimeter desks with monitors (3 along west wall, compact for smaller SR)
+  for (let di = 0; di < 3; di++) {
+    const dx = (room.x + 1) * T + 4;
+    const dy = (room.y + 4 + di * 5) * T;
+    drawPixelRect(dx, dy + 6, 3 * T - 8, 2 * T - 16, '#4a2e14');
+    drawPixelRect(dx, dy + 2 * T - 10, 3 * T - 8, 10, '#3c2410');
+    const mx = dx + 8, my = dy + 2;
+    drawPixelRect(mx, my, 24, 16, '#0a1a0a');
+    px(mx + 2, my + 2, 20, 12, '#0c200c');
+    const cursorOn = Math.floor(t / 500 + di) % 2;
+    for (let line = 0; line < 3; line++) {
+      const lw = 6 + ((line * 7 + Math.floor(t / 3000)) % 8);
+      px(mx + 3, my + 3 + line * 3, lw, 2, '#22cc55');
+    }
+    if (cursorOn) px(mx + 18, my + 11, 2, 2, '#22cc55');
+  }
+
+  // 6. Agent status board (east wall) — sized for compact SR
+  const abX = (room.x + room.w - 4) * T, abY = (room.y + 4) * T;
+  const abW = 3 * T, abH = 8 * T;
+  drawPixelRect(abX, abY, abW, abH, '#1a110a', '#5c4a3d');
+  ctx.fillStyle = '#d97757';
+  ctx.font = 'bold 8px "Space Mono", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('AGENT STATUS', abX + abW/2, abY + 12);
+  const agentNames = ['Razzle', 'Dolphin', 'Hawkeye', 'Fox', 'Octopus', 'Atlas'];
+  const agentColors = ['#d97757', '#5b7fff', '#2ec4b6', '#8b5cf6', '#e87422', '#d44040'];
+  ctx.textAlign = 'left';
+  for (let i = 0; i < 6; i++) {
+    const ay = abY + 18 + i * 14;
+    px(abX + 6, ay, 8, 8, agentColors[i]);
+    ctx.fillStyle = '#c4b5a5';
+    ctx.font = '7px "Space Mono", monospace';
+    ctx.fillText(agentNames[i], abX + 18, ay + 7);
+    const blinkPhase = Math.sin(t / 1000 + i * 1.5) > 0;
+    px(abX + abW - 14, ay + 2, 6, 4, blinkPhase ? '#22cc55' : '#0a3012');
+  }
+
+  // 7. Briefing desks (east wall, lower — 2 clean desks with monitors)
+  for (let di = 0; di < 2; di++) {
+    const dx = (room.x + room.w - 4) * T;
+    const dy = (room.y + 14 + di * 5) * T;
+    drawPixelRect(dx, dy, 3 * T, 2 * T, '#4a2e14');
+    drawPixelRect(dx + 2, dy + 2, 3 * T - 4, 2 * T - 4, '#3c2410');
+    // Monitor
+    const mx = dx + 8, my = dy + 4;
+    drawPixelRect(mx, my, 28, 18, '#0a1a0a');
+    px(mx + 2, my + 2, 24, 14, '#0c200c');
+    for (let line = 0; line < 3; line++) {
+      const lw = 8 + ((line * 7 + Math.floor(t / 2500)) % 10);
+      px(mx + 4, my + 4 + line * 4, lw, 2, '#33ccaa');
+    }
+    const cursorOn = Math.floor(t / 500 + di) % 2;
+    if (cursorOn) px(mx + 22, my + 12, 2, 2, '#33ccaa');
+  }
+
+  ctx.textAlign = 'left';
+}
+
+// Block furniture zones for Situation Room (y:13 origin, h:22)
+blockRect(21, 23, 10, 7); // war table (room.x+20, room.y+10)
+
+// -- RAZZLE'S OFFICE FURNITURE --
+// Razzle's office: x:18, y:0, w:16, h:13 — The boss. Nicer desk, spacious.
+
+function drawRazzleOfficeFurniture() {
+  const room = ROOMS.razzle;
+  if (!isRoomVisible(room)) return;
+  const t = now();
+  const rx = room.x * T, ry = room.y * T;
+
+  // Wall: Whiteboard with strategy scribbles (north wall)
+  const wbX = (room.x + 3) * T, wbY = ry + 6;
+  const wbW = 10 * T, wbH = 2 * T - 10;
+  drawPixelRect(wbX, wbY, wbW, wbH, '#e8e8e8', '#8a8a9a');
+  ctx.strokeStyle = '#d44040'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(wbX + 20, wbY + 14); ctx.lineTo(wbX + 80, wbY + 20); ctx.lineTo(wbX + 140, wbY + 12); ctx.stroke();
+  ctx.strokeStyle = '#5b7fff';
+  ctx.beginPath(); ctx.moveTo(wbX + 50, wbY + 28); ctx.lineTo(wbX + 120, wbY + 34); ctx.stroke();
+  ctx.strokeStyle = '#22cc55';
+  ctx.beginPath(); ctx.moveTo(wbX + 160, wbY + 10); ctx.lineTo(wbX + 240, wbY + 18); ctx.lineTo(wbX + 280, wbY + 10); ctx.stroke();
+
+  // Desk: Executive, center, wide (5 tiles). Monitor + lamp + nameplate.
+  const dkX = (room.x + 5) * T, dkY = (room.y + 5) * T;
+  drawOfficeDesk(dkX, dkY, 5, true, function(sx, sy, sw, sh) {
+    // Monitor shows a dashboard
+    for (let i = 0; i < 4; i++) {
+      const bh = 4 + Math.abs(Math.sin(t / 800 + i)) * (sh * 0.5);
+      px(sx + 4 + i * 10, sy + sh - bh, 7, bh, i % 2 === 0 ? '#d97757' : '#ffc857');
+    }
+  }, '#d97757');
+  // Lamp on desk
+  drawOfficeLamp(dkX + 5 * T - 30, dkY - 6);
+  drawLampGlow(dkX + 5 * T - 30, dkY - 6, t);
+  // 10% quirk: Brass nameplate
+  px(dkX + 2 * T, dkY + 6, 44, 14, '#b8963e');
+  px(dkX + 2 * T + 2, dkY + 8, 40, 10, '#d4aa40');
+  ctx.fillStyle = '#1a110a'; ctx.font = 'bold 8px "Space Mono", monospace'; ctx.textAlign = 'center';
+  ctx.fillText('RAZZLE', dkX + 2 * T + 22, dkY + 16);
+
+  // Bookshelf (right wall)
+  drawBookshelf((room.x + room.w - 2) * T, (room.y + 3) * T, 3, ['#cc3030','#3060cc','#d97757','#30aa50','#ffc857','#5b7fff','#8b5cf6']);
+
+  // Filing cabinet (behind desk, right)
+  drawFilingCabinet((room.x + room.w - 2) * T, (room.y + room.h - 2) * T);
+
+  // Tiger-stripe rug (floor — the subtle personality touch)
+  const rugX = (room.x + 5) * T, rugY = (room.y + 8) * T;
+  const rugW = 5 * T, rugH = 2 * T;
+  for (let sy = 0; sy < rugH; sy += 6) {
+    px(rugX, rugY + sy, rugW, 6, Math.floor(sy / 6) % 2 ? '#d97757' : '#3a1a0a');
+  }
+  drawPixelRect(rugX - 1, rugY - 1, rugW + 2, rugH + 2, null, '#5a2a14');
+
+  // Plant (left corner)
+  drawPlant((room.x + 2) * T, (room.y + 9) * T);
+
+  ctx.textAlign = 'left';
+}
+blockRect(23, 5, 5, 2); // desk
+blockRect(32, 3, 1, 9); // bookshelf
+
+// -- SCOUT ROOM FURNITURE --
+// Scout room: x:2, y:0, w:15, h:13 — Organized field analyst.
+
+function drawScoutRoomFurniture() {
+  const room = ROOMS.scout;
+  if (!isRoomVisible(room)) return;
+  const t = now();
+
+  // Wall: Corkboard with position-colored index cards (north wall)
+  const cbX = (room.x + 3) * T, cbY = room.y * T + 6;
+  const cbW = 9 * T, cbH = 2 * T - 10;
+  drawPixelRect(cbX, cbY, cbW, cbH, '#8a6a3a', '#6a4a28');
+  const cardClrs = ['#5b7fff','#2ec4b6','#d97757','#8b5cf6','#d44040','#ffc857','#22cc55','#5b7fff'];
+  for (let i = 0; i < 8; i++) {
+    const cx = cbX + 10 + (i % 4) * 64;
+    const cy = cbY + 6 + Math.floor(i / 4) * 20;
+    px(cx, cy, 50, 14, cardClrs[i]);
+    px(cx + 2, cy + 2, 30, 2, 'rgba(255,255,255,0.3)');
+    px(cx + 24, cy - 2, 4, 4, '#d44040'); // push pin
+  }
+
+  // Desk: Left wall. Monitor + notepad + mug.
+  const dkX = (room.x + 2) * T, dkY = (room.y + 5) * T;
+  drawOfficeDesk(dkX, dkY, 4, true, function(sx, sy, sw, sh) {
+    // Monitor shows waveform lines
+    ctx.strokeStyle = '#2ec4b6'; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for (let i = 0; i < 15; i++) {
+      const lx = sx + 2 + i * (sw / 15);
+      const ly = sy + sh / 2 + Math.sin(i * 0.5 + t / 600) * (sh * 0.3);
+      if (i === 0) ctx.moveTo(lx, ly); else ctx.lineTo(lx, ly);
+    }
+    ctx.stroke();
+  }, '#2ec4b6');
+  // Lamp
+  drawOfficeLamp(dkX + 4 * T - 24, dkY - 6);
+  drawLampGlow(dkX + 4 * T - 24, dkY - 6, t);
+  // 10% quirk: Binoculars on desk
+  px(dkX + 64, dkY + 6, 10, 14, '#2a2a3e');
+  px(dkX + 78, dkY + 6, 10, 14, '#2a2a3e');
+  px(dkX + 72, dkY + 10, 8, 6, '#3a3a4a');
+
+  // Bookshelf (right wall)
+  drawBookshelf((room.x + room.w - 2) * T, (room.y + 3) * T, 3, ['#2ec4b6','#3060cc','#d97757','#ffc857','#30aa50','#cc3030','#8b5cf6']);
+
+  // Filing cabinet (right wall, below bookshelf)
+  drawFilingCabinet((room.x + room.w - 2) * T, (room.y + room.h - 2) * T);
+
+  // Rug (teal accent)
+  drawRug((room.x + 5) * T, (room.y + 8) * T, 4 * T, 2 * T, 'rgba(46,196,182,0.15)');
+
+  // Plant (bottom-left corner)
+  drawPlant((room.x + 2) * T, (room.y + 9) * T);
+
+  // Wastebasket (near desk)
+  drawWastebasket((room.x + 2) * T + 4, (room.y + 8) * T);
+
+  ctx.textAlign = 'left';
+}
+blockRect(4, 5, 4, 2); // desk
+blockRect(15, 3, 1, 9); // bookshelf
+
+// -- MEDICAL ROOM FURNITURE --
+// Medical room: x:35, y:0, w:15, h:13 — Clean, clinical. White/blue.
+
+function drawMedicalRoomFurniture() {
+  const room = ROOMS.medical;
+  if (!isRoomVisible(room)) return;
+  const t = now();
+
+  // Wall: Anatomy chart (north wall — the medical whiteboard)
+  const acX = (room.x + 3) * T, acY = room.y * T + 6;
+  const acW = 5 * T, acH = 2 * T - 10;
+  drawPixelRect(acX, acY, acW, acH, '#e8e8e8', '#5b7fff');
+  // Body outline
+  const bcx = acX + acW / 2, bcy = acY + acH / 2;
+  ctx.strokeStyle = 'rgba(40,60,100,0.5)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(bcx, bcy - 14, 6, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(bcx, bcy - 8); ctx.lineTo(bcx, bcy + 6);
+  ctx.moveTo(bcx - 10, bcy - 2); ctx.lineTo(bcx + 10, bcy - 2);
+  ctx.moveTo(bcx, bcy + 6); ctx.lineTo(bcx - 7, bcy + 18);
+  ctx.moveTo(bcx, bcy + 6); ctx.lineTo(bcx + 7, bcy + 18);
+  ctx.stroke();
+
+  // Desk: Right side. Monitor with heartbeat + clipboard.
+  const dkX = (room.x + 8) * T, dkY = (room.y + 5) * T;
+  drawOfficeDesk(dkX, dkY, 4, true, function(sx, sy, sw, sh) {
+    // Heartbeat line
+    ctx.strokeStyle = '#00cc66'; ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < 20; i++) {
+      const lx = sx + 2 + i * (sw / 20);
+      const ly = sy + sh / 2 + Math.sin((i + t / 80) * 0.4) * (sh * 0.3);
+      if (i === 0) ctx.moveTo(lx, ly); else ctx.lineTo(lx, ly);
+    }
+    ctx.stroke();
+    const bpm = 72 + Math.floor(Math.sin(t / 5000) * 5);
+    ctx.fillStyle = '#00cc66'; ctx.font = 'bold 9px "Space Mono", monospace';
+    ctx.textAlign = 'right'; ctx.fillText(bpm + '', sx + sw - 2, sy + 10); ctx.textAlign = 'left';
+  }, '#5b7fff');
+  // Lamp
+  drawOfficeLamp(dkX + 4 * T - 24, dkY - 6);
+  drawLampGlow(dkX + 4 * T - 24, dkY - 6, t);
+
+  // Bookshelf (left wall)
+  drawBookshelf((room.x + 1) * T, (room.y + 3) * T, 3, ['#5b7fff','#3a7aaa','#e8e0d8','#5b7fff','#d4ccc4','#3a7aaa','#e8e0d8']);
+
+  // Filing cabinet (next to desk)
+  drawFilingCabinet((room.x + room.w - 2) * T, (room.y + 5) * T);
+
+  // 10% quirk: Small fish tank on the bookshelf ledge
+  const ftX = (room.x + 1) * T, ftY = (room.y + 8) * T;
+  drawPixelRect(ftX, ftY, 2 * T, 1.5 * T, '#0055aa', '#3a7aaa');
+  px(ftX + 3, ftY + 3, 2 * T - 6, 1.5 * T - 6, '#003d77');
+  for (let i = 0; i < 3; i++) {
+    const bx = ftX + 8 + (i * 15) % (2 * T - 16);
+    const by = ftY + 1.5 * T - 8 - ((t / 700 + i * 30) % (1.5 * T - 14));
+    ctx.globalAlpha = 0.4; ctx.beginPath(); ctx.arc(bx, by, 2, 0, Math.PI * 2);
+    ctx.fillStyle = '#66ccff'; ctx.fill(); ctx.globalAlpha = 1;
+  }
+  // One little fish
+  const fishX = ftX + 6 + ((t / 500) % (2 * T - 16));
+  const fishY = ftY + 1.5 * T / 2 + Math.sin(t / 600) * 6;
+  ctx.fillStyle = '#ff8844'; ctx.beginPath();
+  ctx.moveTo(fishX + 6, fishY); ctx.lineTo(fishX, fishY - 3); ctx.lineTo(fishX, fishY + 3);
+  ctx.closePath(); ctx.fill();
+
+  // Plant (bottom right)
+  drawPlant((room.x + room.w - 3) * T, (room.y + 9) * T);
+
+  // Wastebasket
+  drawWastebasket((room.x + 8) * T, (room.y + 8) * T + 16);
+
+  ctx.textAlign = 'left';
+}
+blockRect(36, 3, 1, 9); // bookshelf
+blockRect(43, 5, 4, 2); // desk
+blockRect(36, 8, 2, 2); // fish tank
+
+// -- DIPLOMAT ROOM FURNITURE --
+// Diplomat room: x:2, y:35, w:15, h:13 — Polished, formal.
+
+function drawDiplomatRoomFurniture() {
+  const room = ROOMS.diplomat;
+  if (!isRoomVisible(room)) return;
+  const t = now();
+
+  // Wall: Corkboard with photos + a few red strings (north wall — subtle conspiracy)
+  const rbX = (room.x + 3) * T, rbY = room.y * T + 6;
+  const rbW = 9 * T, rbH = 2 * T - 10;
+  drawPixelRect(rbX, rbY, rbW, rbH, '#8a6a3a', '#6a4a28');
+  const photos = [{x:14,y:6},{x:70,y:8},{x:130,y:6},{x:190,y:8},{x:250,y:6}];
+  for (const p of photos) {
+    px(rbX + p.x, rbY + p.y, 24, 16, '#3a3040');
+    px(rbX + p.x + 2, rbY + p.y + 2, 20, 12, '#5a4a5a');
+    px(rbX + p.x + 11, rbY + p.y - 2, 4, 4, '#d44040');
+  }
+  ctx.strokeStyle = '#cc3030'; ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(rbX + 26, rbY + 14); ctx.lineTo(rbX + 82, rbY + 16);
+  ctx.lineTo(rbX + 142, rbY + 14); ctx.lineTo(rbX + 202, rbY + 16);
+  ctx.stroke();
+
+  // Desk: Center-left. Monitor + neat folders.
+  const dkX = (room.x + 3) * T, dkY = (room.y + 5) * T;
+  drawOfficeDesk(dkX, dkY, 4, true, function(sx, sy, sw, sh) {
+    // Spreadsheet-like grid
+    ctx.strokeStyle = 'rgba(139,92,246,0.4)'; ctx.lineWidth = 1;
+    for (let i = 1; i < 4; i++) {
+      ctx.beginPath(); ctx.moveTo(sx, sy + i * (sh / 4)); ctx.lineTo(sx + sw, sy + i * (sh / 4)); ctx.stroke();
+    }
+    for (let i = 1; i < 3; i++) {
+      ctx.beginPath(); ctx.moveTo(sx + i * (sw / 3), sy); ctx.lineTo(sx + i * (sw / 3), sy + sh); ctx.stroke();
+    }
+  }, '#8b5cf6');
+  drawOfficeLamp(dkX + 4 * T - 24, dkY - 6);
+  drawLampGlow(dkX + 4 * T - 24, dkY - 6, t);
+
+  // Bookshelf (right wall)
+  drawBookshelf((room.x + room.w - 2) * T, (room.y + 3) * T, 3, ['#8b5cf6','#5a4a5a','#3060cc','#d97757','#cc3030','#8b5cf6','#ffc857']);
+
+  // Filing cabinet (south wall)
+  drawFilingCabinet((room.x + 4) * T, (room.y + room.h - 2) * T);
+
+  // Purple rug (formal feel)
+  drawRug((room.x + 4) * T, (room.y + 8) * T, 5 * T, 2 * T, 'rgba(139,92,246,0.12)');
+
+  // 10% quirk: Small chess set on a side table
+  const csX = (room.x + 10) * T, csY = (room.y + 6) * T;
+  drawPixelRect(csX, csY, 2 * T, 2 * T, '#5c4a3d', '#4a3a2a');
+  // Chessboard (tiny)
+  const sq = 7;
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      px(csX + 4 + c * sq, csY + 4 + r * sq, sq - 1, sq - 1,
+         (r + c) % 2 === 0 ? '#e8e0cc' : '#3a2418');
+    }
+  }
+  // A few pieces
+  px(csX + 4 + 2 * sq, csY + 4 + 1 * sq, sq - 2, sq - 2, '#1a1018');
+  px(csX + 4 + 5 * sq, csY + 4 + 4 * sq, sq - 2, sq - 2, '#e8e0cc');
+  px(csX + 4 + 3 * sq, csY + 4 + 6 * sq, sq - 2, sq - 2, '#1a1018');
+
+  ctx.textAlign = 'left';
+}
+blockRect(5, 40, 4, 2); // desk
+blockRect(15, 38, 1, 9); // bookshelf
+blockRect(12, 41, 2, 2); // chess table
+
+// -- QUANT ROOM FURNITURE --
+// Quant room: x:18, y:35, w:16, h:13 — Techy, slightly messy. More screens.
+
+function drawQuantRoomFurniture() {
+  const room = ROOMS.quant;
+  if (!isRoomVisible(room)) return;
+  const t = now();
+
+  // Wall: Whiteboard with hand-drawn graph (north wall)
+  const wbX = (room.x + 3) * T, wbY = room.y * T + 6;
+  const wbW = 10 * T, wbH = 2 * T - 10;
+  drawPixelRect(wbX, wbY, wbW, wbH, '#e8e8e8', '#8a8a9a');
+  // Axes
+  ctx.strokeStyle = '#1a1a2e'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(wbX + 20, wbY + wbH - 8); ctx.lineTo(wbX + 20, wbY + 8);
+  ctx.moveTo(wbX + 20, wbY + wbH - 8); ctx.lineTo(wbX + wbW - 20, wbY + wbH - 8);
+  ctx.stroke();
+  // Hand-drawn curve
+  ctx.strokeStyle = '#e87422'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (let i = 0; i < 12; i++) {
+    const lx = wbX + 24 + i * ((wbW - 48) / 12);
+    const ly = wbY + wbH - 12 - Math.pow(i / 12, 0.6) * (wbH - 24);
+    if (i === 0) ctx.moveTo(lx, ly); else ctx.lineTo(lx, ly);
+  }
+  ctx.stroke();
+
+  // Desk: Wide, with DUAL monitors (the 10% quirk — more screens than anyone)
+  const dkX = (room.x + 4) * T, dkY = (room.y + 5) * T;
+  drawOfficeDesk(dkX, dkY, 6, false, null, '#e87422');
+  // Dual monitors (manually drawn since drawOfficeDesk only does one)
+  for (let mi = 0; mi < 2; mi++) {
+    const mw = T * 1.3, mh = T;
+    const mx = dkX + 10 + mi * (mw + 8), my = dkY - mh + 4;
+    drawPixelRect(mx, my, mw, mh, '#1a1a2e');
+    px(mx + 3, my + 3, mw - 6, mh - 6, '#0a1a2a');
+    px(mx + mw/2 - 3, my + mh, 6, 3, '#1a1a2e');
+    px(mx + mw/2 - 6, my + mh + 3, 12, 2, '#1a1a2e');
+    if (mi === 0) {
+      // Left: line chart
+      ctx.strokeStyle = '#22cc55'; ctx.lineWidth = 1.5; ctx.beginPath();
+      for (let i = 0; i < 10; i++) {
+        const lx = mx + 5 + i * ((mw - 10) / 10);
+        const ly = my + mh / 2 + Math.sin(i * 0.5 + t / 600) * (mh * 0.25);
+        if (i === 0) ctx.moveTo(lx, ly); else ctx.lineTo(lx, ly);
+      }
+      ctx.stroke();
+    } else {
+      // Right: scrolling numbers
+      ctx.fillStyle = '#22cc55'; ctx.font = '6px "Space Mono", monospace';
+      for (let row = 0; row < 3; row++) {
+        const val = (Math.floor(t / 100 + row * 37) % 999).toString().padStart(3, '0');
+        ctx.fillText(val, mx + 5, my + 10 + row * 8);
+      }
+    }
+  }
+  drawOfficeLamp(dkX + 6 * T - 28, dkY - 6);
+  drawLampGlow(dkX + 6 * T - 28, dkY - 6, t);
+
+  // Bookshelf (left wall)
+  drawBookshelf((room.x + 1) * T, (room.y + 3) * T, 3, ['#e87422','#22cc55','#3060cc','#ff8800','#2ec4b6','#d97757','#ffc857']);
+
+  // Filing cabinet (under desk right)
+  drawFilingCabinet((room.x + room.w - 2) * T, (room.y + room.h - 2) * T);
+
+  // Plant (right corner)
+  drawPlant((room.x + room.w - 3) * T, (room.y + 9) * T);
+
+  // Wastebasket (near desk — slightly overflowing for messy feel)
+  const wbkX = (room.x + 4) * T + 4, wbkY = (room.y + 8) * T;
+  drawWastebasket(wbkX, wbkY);
+  // Extra crumpled paper next to it (messy)
+  px(wbkX - 6, wbkY + 12, 6, 5, '#d4ccc4');
+  px(wbkX + 20, wbkY + 8, 5, 4, '#e8e0cc');
+
+  ctx.textAlign = 'left';
+}
+blockRect(22, 40, 6, 2); // desk
+blockRect(19, 38, 1, 9); // bookshelf
+
+// -- HISTORIAN ROOM FURNITURE --
+// Historian room: x:35, y:35, w:15, h:13 — Cozy, warm, academic. Books everywhere.
+
+function drawHistorianRoomFurniture() {
+  const room = ROOMS.historian;
+  if (!isRoomVisible(room)) return;
+  const t = now();
+
+  // Wall: Timeline pinboard (north wall — simple horizontal line with year markers)
+  const tlX = (room.x + 3) * T, tlY = room.y * T + 6;
+  const tlW = 9 * T, tlH = 2 * T - 10;
+  drawPixelRect(tlX, tlY, tlW, tlH, '#8a6a3a', '#6a4a28');
+  const lineY = tlY + tlH / 2;
+  ctx.strokeStyle = '#d4c4a0'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(tlX + 10, lineY); ctx.lineTo(tlX + tlW - 10, lineY); ctx.stroke();
+  const years = ["'20","'21","'22","'23","'24","'25"];
+  for (let i = 0; i < years.length; i++) {
+    const ex = tlX + 20 + i * ((tlW - 40) / 5);
+    px(ex - 2, lineY - 6, 4, 12, '#d44040');
+    ctx.fillStyle = '#d4c4a0'; ctx.font = 'bold 6px "Space Mono", monospace'; ctx.textAlign = 'center';
+    ctx.fillText(years[i], ex, tlY + 8);
+  }
+
+  // Desk: Center. Monitor + lamp + open book + tea cup.
+  const dkX = (room.x + 5) * T, dkY = (room.y + 6) * T;
+  drawOfficeDesk(dkX, dkY, 4, true, function(sx, sy, sw, sh) {
+    // Document/text display
+    ctx.fillStyle = '#d4c4a0'; ctx.font = '6px "Space Mono", monospace';
+    for (let i = 0; i < 4; i++) {
+      const lw = 8 + ((i * 7 + Math.floor(t / 5000)) % 14);
+      px(sx + 3, sy + 4 + i * 7, lw, 2, '#d4c4a0');
+    }
+  }, '#d44040');
+  drawOfficeLamp(dkX + 4 * T - 24, dkY - 6);
+  // Bigger glow for the historian's cozy lamp
+  ctx.globalAlpha = 0.1 + Math.sin(t / 2000) * 0.03;
+  ctx.beginPath(); ctx.arc(dkX + 4 * T - 18, dkY - 4, 40, 0, Math.PI * 2);
+  ctx.fillStyle = '#ffd866'; ctx.fill(); ctx.globalAlpha = 1;
+
+  // 10% quirk: Bookshelves on BOTH walls (way more books than anyone else)
+  const bkClrsL = ['#cc3030','#3060cc','#30aa50','#d97757','#8b5cf6','#2ec4b6','#ffc857'];
+  const bkClrsR = ['#d44040','#5b7fff','#ffc857','#8b5cf6','#cc3030','#2ec4b6','#30aa50'];
+  drawBookshelf((room.x + 1) * T, (room.y + 3) * T, 3, bkClrsL);
+  drawBookshelf((room.x + room.w - 2) * T, (room.y + 3) * T, 3, bkClrsR);
+
+  // Filing cabinets (south wall, 3 labeled by year)
+  for (let fi = 0; fi < 3; fi++) {
+    const fcX = (room.x + 4 + fi * 3) * T;
+    const fcY = (room.y + room.h - 2) * T;
+    drawFilingCabinet(fcX, fcY);
+    ctx.fillStyle = '#d4c4a0'; ctx.font = 'bold 6px "Space Mono", monospace'; ctx.textAlign = 'center';
+    ctx.fillText("'" + (23 + fi), fcX + T / 2, fcY - 3);
+  }
+
+  // Warm rug (red/brown)
+  drawRug((room.x + 4) * T, (room.y + 9) * T, 5 * T, 1.5 * T, 'rgba(212,64,64,0.12)');
+
+  ctx.textAlign = 'left';
+}
+blockRect(36, 38, 1, 9); // left bookshelves
+blockRect(48, 38, 1, 9); // right bookshelves
+blockRect(40, 41, 4, 2); // desk
+
+// -- MASTER FURNITURE DRAW --
+
+function drawAllFurniture() {
+  drawSituationRoomFurniture();
+  drawRazzleOfficeFurniture();
+  drawScoutRoomFurniture();
+  drawMedicalRoomFurniture();
+  drawDiplomatRoomFurniture();
+  drawQuantRoomFurniture();
+  drawHistorianRoomFurniture();
+}
+
+
+// ====================================================================
+// -- AGENT DEFINITIONS & AI --
+// ====================================================================
+
+// Agent AI states
+const AI_STATE = {
+  HOME_IDLE: 'home_idle',
+  HOME_WORK: 'home_work',
+  WALK_TO_SR: 'walk_to_sr',
+  SR_IDLE: 'sr_idle',
+  SR_WORK: 'sr_work',
+  WALK_HOME: 'walk_home',
+  WALK_TO_ROOM: 'walk_to_room',
+  VISIT_WORK: 'visit_work',
+  VISIT_IDLE: 'visit_idle',
+  WALKING: 'walking',
+  CELEBRATE: 'celebrate',
+};
+
+// All room keys agents can visit (excluding 'situation' which has its own flow)
+const AGENT_ROOMS = ['scout', 'razzle', 'medical', 'diplomat', 'quant', 'historian'];
+
+// Visit stations: where an agent goes when visiting another agent's room
+// Top rooms at y:0, bottom rooms at y:35
+const VISIT_STATIONS = {
+  scout:    [{ x: 9*T, y: 6*T, activity: 'reviewing scouting notes' }, { x: 13*T, y: 4*T, activity: 'checking film' }],
+  razzle:   [{ x: 25*T, y: 6*T, activity: 'getting briefed' }, { x: 27*T, y: 4*T, activity: 'reviewing ops board' }],
+  medical:  [{ x: 42*T, y: 6*T, activity: 'checking injury report' }, { x: 44*T, y: 4*T, activity: 'reviewing scans' }],
+  diplomat: [{ x: 9*T, y: 41*T, activity: 'discussing trade' }, { x: 11*T, y: 39*T, activity: 'reading dossiers' }],
+  quant:    [{ x: 25*T, y: 41*T, activity: 'reviewing projections' }, { x: 27*T, y: 39*T, activity: 'checking models' }],
+  historian:[{ x: 42*T, y: 41*T, activity: 'searching archives' }, { x: 44*T, y: 39*T, activity: 'comparing records' }],
+};
+
+// Agent definitions with updated coordinates for compact layout
+// SR walkable area: ~y:15 to y:34 (room.y+2 to room.y+h-1 = 15 to 34)
+// Top rooms walkable area: ~y:2 to y:12
+// Bottom rooms walkable area: ~y:37 to y:47
+const AGENT_DEFS = [
+  {
+    id: 0, name: 'Razzle', role: 'Chief of Staff', color: '#d97757',
+    spriteKey: 'razzle', sprite: 'char_0',
+    homeRoom: 'razzle', speed: 1.4,
+    homeStations: [
+      { x: 25*T, y: 5*T, activity: 'at desk' },
+      { x: 27*T, y: 3*T, activity: 'checking board' },
+      { x: 23*T, y: 8*T, activity: 'reviewing files' },
+    ],
+    srStations: [
+      { x: 24*T, y: 26*T, activity: 'at war table' },
+      { x: 20*T, y: 20*T, activity: 'checking screens' },
+      { x: 30*T, y: 32*T, activity: 'reviewing status board' },
+    ],
+  },
+  {
+    id: 1, name: 'Dr. Dolphin', role: 'Medical Intel', color: '#5b7fff',
+    spriteKey: 'medical', sprite: 'char_1',
+    homeRoom: 'medical', speed: 1.2,
+    homeStations: [
+      { x: 42*T, y: 5*T, activity: 'reviewing scans' },
+      { x: 46*T, y: 3*T, activity: 'checking status' },
+      { x: 40*T, y: 8*T, activity: 'at analysis table' },
+    ],
+    srStations: [
+      { x: 32*T, y: 26*T, activity: 'at war table' },
+      { x: 38*T, y: 20*T, activity: 'checking reports' },
+    ],
+  },
+  {
+    id: 2, name: 'Hawkeye', role: 'Scout', color: '#2ec4b6',
+    spriteKey: 'scout', sprite: 'char_2',
+    homeRoom: 'scout', speed: 1.6,
+    homeStations: [
+      { x: 9*T, y: 3*T, activity: 'at observation post' },
+      { x: 11*T, y: 5*T, activity: 'studying film' },
+      { x: 7*T, y: 8*T, activity: 'reviewing cards' },
+    ],
+    srStations: [
+      { x: 18*T, y: 26*T, activity: 'at war table' },
+      { x: 10*T, y: 20*T, activity: 'checking perimeter desks' },
+    ],
+  },
+  {
+    id: 3, name: 'The Fox', role: 'Diplomat', color: '#8b5cf6',
+    spriteKey: 'diplomat', sprite: 'char_3',
+    homeRoom: 'diplomat', speed: 1.3,
+    homeStations: [
+      { x: 9*T, y: 41*T, activity: 'reading dossiers' },
+      { x: 11*T, y: 39*T, activity: 'at string board' },
+      { x: 7*T, y: 43*T, activity: 'on the phone' },
+    ],
+    srStations: [
+      { x: 18*T, y: 30*T, activity: 'at war table' },
+      { x: 12*T, y: 32*T, activity: 'reviewing intel' },
+    ],
+  },
+  {
+    id: 4, name: 'The Octopus', role: 'Quant', color: '#e87422',
+    spriteKey: 'quant', sprite: 'char_4',
+    homeRoom: 'quant', speed: 1.5,
+    homeStations: [
+      { x: 25*T, y: 41*T, activity: 'running models' },
+      { x: 27*T, y: 39*T, activity: 'checking odds' },
+      { x: 25*T, y: 43*T, activity: 'printing report' },
+    ],
+    srStations: [
+      { x: 30*T, y: 30*T, activity: 'at war table' },
+      { x: 36*T, y: 32*T, activity: 'running projections' },
+    ],
+  },
+  {
+    id: 5, name: 'Atlas', role: 'Historian', color: '#d44040',
+    spriteKey: 'historian', sprite: 'char_5',
+    homeRoom: 'historian', speed: 1.1,
+    homeStations: [
+      { x: 42*T, y: 41*T, activity: 'searching archives' },
+      { x: 44*T, y: 39*T, activity: 'reading ledger' },
+      { x: 40*T, y: 43*T, activity: 'comparing records' },
+    ],
+    srStations: [
+      { x: 40*T, y: 26*T, activity: 'at war table' },
+      { x: 44*T, y: 32*T, activity: 'cross-referencing history' },
+    ],
+  },
+];
+
+// -- VALIDATE STATIONS (BUG 2 FIX) --
+// After all furniture blockRect calls, validate that all agent stations
+// are on walkable tiles. If not, nudge to nearest walkable.
+function validateStations() {
+  // Helper: find nearest walkable with radius 10
+  function nearWalkable(tx, ty) {
+    if (tx >= 0 && tx < COLS && ty >= 0 && ty < ROWS && walkMap[ty][tx]) return { x: tx, y: ty };
+    for (let r = 1; r < 10; r++) {
+      for (let dx = -r; dx <= r; dx++) {
+        for (let dy = -r; dy <= r; dy++) {
+          if (Math.abs(dx) !== r && Math.abs(dy) !== r) continue;
+          const nx = tx + dx, ny = ty + dy;
+          if (nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS && walkMap[ny][nx]) return { x: nx, y: ny };
+        }
+      }
+    }
+    return { x: tx, y: ty };
+  }
+
+  AGENT_DEFS.forEach(def => {
+    def.homeStations.forEach(s => {
+      const tx = Math.floor(s.x / T), ty = Math.floor(s.y / T);
+      if (!walkMap[ty] || !walkMap[ty][tx]) {
+        const near = nearWalkable(tx, ty);
+        s.x = near.x * T + T/2;
+        s.y = near.y * T + T/2;
+      }
+    });
+    def.srStations.forEach(s => {
+      const tx = Math.floor(s.x / T), ty = Math.floor(s.y / T);
+      if (!walkMap[ty] || !walkMap[ty][tx]) {
+        const near = nearWalkable(tx, ty);
+        s.x = near.x * T + T/2;
+        s.y = near.y * T + T/2;
+      }
+    });
+  });
+
+  // Also validate visit stations
+  Object.values(VISIT_STATIONS).forEach(stationList => {
+    stationList.forEach(s => {
+      const tx = Math.floor(s.x / T), ty = Math.floor(s.y / T);
+      if (!walkMap[ty] || !walkMap[ty][tx]) {
+        const near = nearWalkable(tx, ty);
+        s.x = near.x * T + T/2;
+        s.y = near.y * T + T/2;
+      }
+    });
+  });
+}
+validateStations();
+
+// -- AGENT CLASS --
+class Agent {
+  constructor(def) {
+    Object.assign(this, def);
+    const startStation = def.homeStations[0];
+    this.x = startStation.x;
+    this.y = startStation.y;
+    this.dir = DIR.DOWN;
+    this.aiState = AI_STATE.HOME_WORK;
+    this.activity = startStation.activity;
+    this.frame = 0;
+    this.animTimer = 0;
+    this.stateTimer = 0;
+    this.selected = false;
+    this.controlled = false;
+    this.bobOffset = Math.random() * Math.PI * 2;
+    this.celebrateTimer = 0;
+
+    // Path following
+    this.path = [];
+    this.pathIndex = 0;
+
+    // Station cycling
+    this.stationIndex = 0;
+    this.homeCycles = 0;
+    this.srCycles = 0;
+    this.visitingRoom = null;
+    this.visitCycles = 0;
+
+    // Timers
+    this.workDuration = 4000 + Math.random() * 4000;
+    this.idleDuration = 1500 + Math.random() * 2000;
+
+    // Validate starting position (BUG 2 FIX)
+    const startTX = Math.floor(this.x / T);
+    const startTY = Math.floor(this.y / T);
+    if (!walkMap[startTY] || !walkMap[startTY][startTX]) {
+      const near = this._nearestWalkable(startTX, startTY);
+      this.x = near.x * T + T/2;
+      this.y = near.y * T + T/2;
+    }
+  }
+
+  get tileX() { return Math.floor(this.x / T); }
+  get tileY() { return Math.floor(this.y / T); }
+
+  get isWalking() {
+    return this.aiState === AI_STATE.WALKING ||
+           this.aiState === AI_STATE.WALK_TO_SR ||
+           this.aiState === AI_STATE.WALK_HOME ||
+           this.aiState === AI_STATE.WALK_TO_ROOM;
+  }
+
+  get currentRoom() {
+    for (const [key, room] of Object.entries(ROOMS)) {
+      if (this.x >= room.x * T && this.x < (room.x + room.w) * T &&
+          this.y >= room.y * T && this.y < (room.y + room.h) * T) {
+        return key;
+      }
+    }
+    return 'corridor';
+  }
+
+  // Find nearest walkable tile to a given tile coordinate (BUG 2 FIX: radius increased to 10)
+  _nearestWalkable(tx, ty) {
+    if (tx >= 0 && tx < COLS && ty >= 0 && ty < ROWS && walkMap[ty][tx]) return { x: tx, y: ty };
+    // Spiral outward to find nearest walkable
+    for (let r = 1; r < 10; r++) {
+      for (let dx = -r; dx <= r; dx++) {
+        for (let dy = -r; dy <= r; dy++) {
+          if (Math.abs(dx) !== r && Math.abs(dy) !== r) continue; // only check perimeter
+          const nx = tx + dx, ny = ty + dy;
+          if (nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS && walkMap[ny][nx]) return { x: nx, y: ny };
+        }
+      }
+    }
+    return { x: tx, y: ty }; // give up
+  }
+
+  // Build a pixel-path to a target pixel coordinate using A*
+  buildPathTo(targetX, targetY) {
+    const rawStartX = Math.max(0, Math.min(COLS - 1, Math.floor(this.x / T)));
+    const rawStartY = Math.max(0, Math.min(ROWS - 1, Math.floor(this.y / T)));
+    const rawEndX = Math.max(0, Math.min(COLS - 1, Math.floor(targetX / T)));
+    const rawEndY = Math.max(0, Math.min(ROWS - 1, Math.floor(targetY / T)));
+    // Snap to nearest walkable tiles if start/end are blocked
+    const start = this._nearestWalkable(rawStartX, rawStartY);
+    const end = this._nearestWalkable(rawEndX, rawEndY);
+    const tilePath = findPath(start.x, start.y, end.x, end.y);
+    if (tilePath.length === 0) {
+      // No path — just stay put
+      this.path = [];
+    } else {
+      this.path = tilePath.map(p => ({ x: p.x * T + T / 2, y: p.y * T + T / 2 }));
+    }
+    this.pathIndex = 0;
+  }
+
+  buildPathToSR() {
+    const sr = ROOMS.situation;
+    const station = this.srStations[Math.floor(Math.random() * this.srStations.length)];
+    this.buildPathTo(station.x, station.y);
+    this.aiState = AI_STATE.WALK_TO_SR;
+  }
+
+  buildPathHome() {
+    const station = this.homeStations[this.stationIndex % this.homeStations.length];
+    this.buildPathTo(station.x, station.y);
+    this.aiState = AI_STATE.WALK_HOME;
+  }
+
+  buildPathToRoom(targetRoom) {
+    if (targetRoom === this.homeRoom) { this.buildPathHome(); return; }
+    if (targetRoom === 'situation') { this.buildPathToSR(); return; }
+    const stations = VISIT_STATIONS[targetRoom];
+    const station = stations[Math.floor(Math.random() * stations.length)];
+    this.buildPathTo(station.x, station.y);
+    this.visitingRoom = targetRoom;
+    this.aiState = AI_STATE.WALK_TO_ROOM;
+  }
+
+  moveToward(tx, ty, dt) {
+    const dx = tx - this.x;
+    const dy = ty - this.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < 3) {
+      this.x = tx;
+      this.y = ty;
+      return true;
+    }
+    const step = this.speed * dt * 0.06;
+    const mx = (dx / dist) * Math.min(step, dist);
+    const my = (dy / dist) * Math.min(step, dist);
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+      this.dir = dx > 0 ? DIR.RIGHT : DIR.LEFT;
+    } else {
+      this.dir = dy > 0 ? DIR.DOWN : DIR.UP;
+    }
+
+    const nx = this.x + mx;
+    const ny = this.y + my;
+    const ntx = Math.floor(nx / T);
+    const nty = Math.floor(ny / T);
+
+    if (ntx >= 0 && ntx < COLS && nty >= 0 && nty < ROWS && walkMap[nty][ntx] === 1) {
+      this.x = nx;
+      this.y = ny;
+    } else {
+      const sntx = Math.floor((this.x + mx) / T);
+      if (sntx >= 0 && sntx < COLS && walkMap[this.tileY][sntx] === 1) {
+        this.x += mx;
+      } else {
+        const snty = Math.floor((this.y + my) / T);
+        if (snty >= 0 && snty < ROWS && walkMap[snty][this.tileX] === 1) {
+          this.y += my;
+        }
+      }
+      return false;
+    }
+    return false;
+  }
+
+  followPath(dt) {
+    if (this.pathIndex >= this.path.length) return true;
+    const target = this.path[this.pathIndex];
+    const arrived = this.moveToward(target.x, target.y, dt);
+    if (arrived) {
+      this.pathIndex++;
+      if (this.pathIndex >= this.path.length) return true;
+    }
+    return false;
+  }
+
+  updateAnimation(dt) {
+    this.animTimer += dt;
+    if (this.isWalking) {
+      if (this.animTimer >= ANIM_SPEED) {
+        this.animTimer = 0;
+        this.frame = (this.frame + 1) % WALK_FRAMES.length;
+      }
+    } else {
+      this.frame = 0;
+      this.animTimer = 0;
+    }
+  }
+
+  updateAI(dt) {
+    if (this.controlled) return;
+    this.stateTimer += dt;
+
+    switch (this.aiState) {
+      case AI_STATE.HOME_IDLE:
+        if (this.stateTimer > this.idleDuration) {
+          this.stateTimer = 0;
+          this.stationIndex = (this.stationIndex + 1) % this.homeStations.length;
+          const station = this.homeStations[this.stationIndex];
+          this.buildPathTo(station.x, station.y);
+          this.aiState = AI_STATE.WALKING;
+          this._nextState = AI_STATE.HOME_WORK;
+          this.homeCycles++;
+          if (this.homeCycles >= 3 + Math.floor(Math.random() * 3)) {
+            this.homeCycles = 0;
+            const roll = Math.random();
+            if (roll < 0.55) {
+              this.buildPathToSR();
+            } else {
+              const otherRooms = AGENT_ROOMS.filter(r => r !== this.homeRoom);
+              const target = otherRooms[Math.floor(Math.random() * otherRooms.length)];
+              this.buildPathToRoom(target);
+            }
+          }
+        }
+        break;
+
+      case AI_STATE.HOME_WORK:
+        this.activity = this.homeStations[this.stationIndex % this.homeStations.length].activity;
+        if (this.stateTimer > this.workDuration) {
+          this.stateTimer = 0;
+          this.aiState = AI_STATE.HOME_IDLE;
+          this.idleDuration = 1500 + Math.random() * 2000;
+          if (Math.random() < 0.06) {
+            this.aiState = AI_STATE.CELEBRATE;
+            this.celebrateTimer = 0;
+            this.activity = 'eureka!';
+          }
+        }
+        break;
+
+      case AI_STATE.WALKING: {
+        const done = this.followPath(dt);
+        this.activity = 'walking';
+        if (done) {
+          this.stateTimer = 0;
+          this.workDuration = 3000 + Math.random() * 5000;
+          this.aiState = this._nextState || AI_STATE.HOME_WORK;
+          if (this.aiState === AI_STATE.HOME_WORK) {
+            this.activity = this.homeStations[this.stationIndex % this.homeStations.length].activity;
+          }
+        }
+        break;
+      }
+
+      case AI_STATE.WALK_TO_SR: {
+        const done = this.followPath(dt);
+        this.activity = 'heading to Situation Room';
+        if (done) {
+          this.stateTimer = 0;
+          this.workDuration = 3000 + Math.random() * 5000;
+          this.aiState = AI_STATE.SR_WORK;
+          this.srCycles = 0;
+        }
+        break;
+      }
+
+      case AI_STATE.SR_IDLE:
+        if (this.stateTimer > this.idleDuration) {
+          this.stateTimer = 0;
+          this.srCycles++;
+          if (this.srCycles >= 2 + Math.floor(Math.random() * 2)) {
+            // Only leave if at least 2 others will remain in SR
+            if (!canLeaveSR(this)) {
+              // Can't leave — stay and do more SR work
+              this.srCycles = 0;
+              const srStation = this.srStations[Math.floor(Math.random() * this.srStations.length)];
+              this.buildPathTo(srStation.x, srStation.y);
+              this.aiState = AI_STATE.WALKING;
+              this._nextState = AI_STATE.SR_WORK;
+            } else if (Math.random() < 0.3) {
+              const otherRooms = AGENT_ROOMS.filter(r => r !== this.homeRoom);
+              const target = otherRooms[Math.floor(Math.random() * otherRooms.length)];
+              this.buildPathToRoom(target);
+            } else {
+              this.buildPathHome();
+            }
+          } else {
+            const srStation = this.srStations[Math.floor(Math.random() * this.srStations.length)];
+            this.buildPathTo(srStation.x, srStation.y);
+            this.aiState = AI_STATE.WALKING;
+            this._nextState = AI_STATE.SR_WORK;
+          }
+        }
+        break;
+
+      case AI_STATE.SR_WORK:
+        this.activity = this.srStations[0].activity;
+        if (this.stateTimer > this.workDuration) {
+          this.stateTimer = 0;
+          this.aiState = AI_STATE.SR_IDLE;
+          this.idleDuration = 1500 + Math.random() * 2000;
+        }
+        break;
+
+      case AI_STATE.WALK_HOME: {
+        const done = this.followPath(dt);
+        this.activity = 'returning to office';
+        if (done) {
+          this.stateTimer = 0;
+          this.workDuration = 4000 + Math.random() * 4000;
+          this.aiState = AI_STATE.HOME_WORK;
+          this.activity = this.homeStations[this.stationIndex % this.homeStations.length].activity;
+        }
+        break;
+      }
+
+      case AI_STATE.WALK_TO_ROOM: {
+        const done = this.followPath(dt);
+        const roomName = this.visitingRoom ? ROOMS[this.visitingRoom]?.name : 'another room';
+        this.activity = `heading to ${roomName}`;
+        if (done) {
+          this.stateTimer = 0;
+          this.workDuration = 3000 + Math.random() * 4000;
+          this.visitCycles = 0;
+          this.aiState = AI_STATE.VISIT_WORK;
+          const stations = VISIT_STATIONS[this.visitingRoom];
+          if (stations) this.activity = stations[0].activity;
+        }
+        break;
+      }
+
+      case AI_STATE.VISIT_WORK: {
+        const stations = VISIT_STATIONS[this.visitingRoom];
+        if (stations) this.activity = stations[this.visitCycles % stations.length].activity;
+        if (this.stateTimer > this.workDuration) {
+          this.stateTimer = 0;
+          this.aiState = AI_STATE.VISIT_IDLE;
+          this.idleDuration = 1000 + Math.random() * 1500;
+        }
+        break;
+      }
+
+      case AI_STATE.VISIT_IDLE:
+        if (this.stateTimer > this.idleDuration) {
+          this.stateTimer = 0;
+          this.visitCycles++;
+          if (this.visitCycles >= 1 + Math.floor(Math.random() * 2)) {
+            this.visitingRoom = null;
+            this.buildPathHome();
+          } else {
+            const stations = VISIT_STATIONS[this.visitingRoom];
+            if (stations) {
+              const station = stations[this.visitCycles % stations.length];
+              this.buildPathTo(station.x, station.y);
+              this.aiState = AI_STATE.WALKING;
+              this._nextState = AI_STATE.VISIT_WORK;
+            }
+          }
+        }
+        break;
+
+      case AI_STATE.CELEBRATE:
+        this.celebrateTimer += dt;
+        if (this.celebrateTimer > 1800) {
+          this.aiState = AI_STATE.HOME_IDLE;
+          this.stateTimer = 0;
+          this.activity = 'idle';
+        } else {
+          if (Math.random() < 0.3) {
+            spawnParticle(this.x - 4 + Math.random() * 8, this.y - 20, 'confetti');
+          }
+        }
+        break;
+    }
+  }
+
+  draw() {
+    let animType = 'idle';
+    if (this.isWalking) animType = 'walk';
+    else if (this.aiState === AI_STATE.CELEBRATE) animType = 'attack';
+
+    const sheets = spriteSheets[this.spriteKey];
+    const newImg = sheets && sheets[animType];
+    const useNewSprites = newImg && newImg.complete && newImg.naturalWidth > 0;
+
+    let drawX, drawY;
+
+    if (useNewSprites) {
+      const frameIdx = this.isWalking ? WALK_FRAMES[this.frame] : (this.frame % NEW_SPRITE_FRAMES);
+      const col = frameIdx % NEW_SPRITE_COLS;
+      const row = Math.floor(frameIdx / NEW_SPRITE_COLS);
+      const frameW = newImg.naturalWidth / NEW_SPRITE_COLS;
+      const frameH = newImg.naturalHeight / NEW_SPRITE_COLS;
+      const sx = col * frameW;
+      const sy = row * frameH;
+
+      drawX = Math.floor(this.x - SP_DRAW_W / 2);
+      drawY = Math.floor(this.y - SP_DRAW_H + 8);
+
+      if (this.aiState === AI_STATE.CELEBRATE) {
+        const bounce = Math.abs(Math.sin(this.celebrateTimer / 150 * Math.PI)) * 12;
+        drawY -= bounce;
+      }
+      if (!this.isWalking && this.aiState !== AI_STATE.CELEBRATE) {
+        const bob = Math.sin(now() / 800 + this.bobOffset) * 1.5;
+        drawY += bob;
+      }
+
+      ctx.globalAlpha = 0.25;
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.ellipse(this.x, this.y + 10, 10, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      if (this.selected) {
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.ellipse(this.x, this.y + 10, 14, 6, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      const facingLeft = this.dir === DIR.LEFT;
+      ctx.save();
+      if (facingLeft) {
+        ctx.translate(drawX + SP_DRAW_W, drawY);
+        ctx.scale(-1, 1);
+        ctx.drawImage(newImg, sx, sy, frameW, frameH, 0, 0, SP_DRAW_W, SP_DRAW_H);
+      } else {
+        ctx.drawImage(newImg, sx, sy, frameW, frameH, drawX, drawY, SP_DRAW_W, SP_DRAW_H);
+      }
+      ctx.restore();
+
+    } else {
+      const img = spriteImgs[this.sprite];
+      if (!img || !img.complete) return;
+
+      const frameCol = this.isWalking ? WALK_FRAMES[this.frame] : IDLE_FRAME;
+      const frameRow = this.dir;
+      const sx = frameCol * FR_W;
+      const sy = frameRow * FR_H;
+
+      drawX = Math.floor(this.x - (FR_W * SP_SCALE) / 2);
+      drawY = Math.floor(this.y - (FR_H * SP_SCALE) + 8);
+
+      if (this.aiState === AI_STATE.CELEBRATE) {
+        const bounce = Math.abs(Math.sin(this.celebrateTimer / 150 * Math.PI)) * 12;
+        drawY -= bounce;
+      }
+      if (!this.isWalking && this.aiState !== AI_STATE.CELEBRATE) {
+        const bob = Math.sin(now() / 800 + this.bobOffset) * 1.5;
+        drawY += bob;
+      }
+
+      ctx.globalAlpha = 0.25;
+      ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.ellipse(this.x, this.y + 10, 10, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      if (this.selected) {
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.ellipse(this.x, this.y + 10, 14, 6, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      ctx.drawImage(img, sx, sy, FR_W, FR_H, drawX, drawY, FR_W * SP_SCALE, FR_H * SP_SCALE);
+    }
+
+    // Name tag
+    ctx.font = 'bold 8px "Space Mono", monospace';
+    ctx.textAlign = 'center';
+    const nameW = ctx.measureText(this.name).width + 8;
+    const nameX = this.x - nameW / 2;
+    const nameY = drawY - 10;
+    drawPixelRect(nameX, nameY, nameW, 11, 'rgba(0,0,0,0.7)');
+    ctx.fillStyle = this.color;
+    ctx.fillText(this.name, this.x, nameY + 9);
+    ctx.textAlign = 'left';
+
+    // Activity bubble
+    if (this.activity && !this.isWalking && this.aiState !== AI_STATE.HOME_IDLE && this.aiState !== AI_STATE.SR_IDLE && this.aiState !== AI_STATE.VISIT_IDLE) {
+      this.drawBubble(this.x, drawY - 14);
+    }
+  }
+
+  drawBubble(bx, by) {
+    const t = now();
+    const bubW = 28, bubH = 20;
+    const x = bx - bubW / 2, y = by - bubH;
+
+    drawPixelRect(x, y, bubW, bubH, '#f7efe5', '#2d1f14');
+    px(bx - 2, y + bubH, 2, 3, '#f7efe5');
+    px(bx, y + bubH, 1, 2, '#2d1f14');
+
+    const phase = Math.floor(t / 400) % 4;
+
+    if (this.aiState === AI_STATE.CELEBRATE) {
+      ctx.fillStyle = '#d97757';
+      ctx.font = 'bold 12px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('!', x + bubW / 2, y + 15);
+      ctx.textAlign = 'left';
+    } else if (this.activity.includes('desk') || this.activity.includes('typing') || this.activity.includes('models')) {
+      for (let i = 0; i < 3; i++) {
+        const dotOn = (phase + i) % 4 !== 3;
+        if (dotOn) px(x + 6 + i * 6, y + 8, 4, 4, '#2d1f14');
+        else px(x + 6 + i * 6, y + 9, 4, 3, '#8a7565');
+      }
+    } else if (this.activity.includes('board') || this.activity.includes('checking') || this.activity.includes('scanning')) {
+      ctx.strokeStyle = '#5b7fff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x + bubW/2 - 2, y + 8, 5, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x + bubW/2 + 2, y + 12);
+      ctx.lineTo(x + bubW/2 + 6, y + 16);
+      ctx.stroke();
+    } else if (this.activity.includes('table') || this.activity.includes('war')) {
+      for (let i = 0; i < 3; i++) {
+        const lw = 8 + ((phase + i) % 3) * 4;
+        px(x + 4, y + 4 + i * 5, Math.min(lw, bubW - 8), 2, '#5c4a3d');
+      }
+    } else if (this.activity.includes('phone')) {
+      px(x + 8, y + 4, 12, 10, '#2d1f14');
+      px(x + 10, y + 6, 8, 6, '#5c4a3d');
+      const blink2 = phase % 2;
+      px(x + 13, y + 8, 4, 2, blink2 ? '#22cc55' : '#5c4a3d');
+    } else {
+      ctx.fillStyle = phase % 2 === 0 ? '#ffc857' : '#c9a040';
+      ctx.beginPath();
+      ctx.arc(x + bubW / 2, y + 8, 5, 0, Math.PI * 2);
+      ctx.fill();
+      px(x + bubW / 2 - 1, y + 13, 3, 3, '#8a7565');
+    }
+  }
+}
+
+
+// -- INSTANTIATE AGENTS --
+const agents = AGENT_DEFS.map(def => new Agent(def));
+let selectedAgent = agents[0];
+let cameraFollowAgent = false; // BUG 3 FIX: starts false, only true on user interaction
+selectedAgent.selected = true;
+
+// Stagger initial AI states so agents don't all move at once
+agents.forEach((a, i) => {
+  a.stateTimer = i * 1200;
+  a.homeCycles = Math.floor(Math.random() * 3);
+});
+
+// Place Razzle (0) and Hawkeye (2) in the Situation Room to start
+[0, 2].forEach(idx => {
+  const a = agents[idx];
+  const station = a.srStations[0];
+  a.x = station.x;
+  a.y = station.y;
+  a.aiState = AI_STATE.SR_WORK;
+  a.activity = station.activity;
+  a.srCycles = 0;
+});
+
+// Helper: count how many agents are currently in or heading to the Situation Room
+function agentsInSR() {
+  return agents.filter(a =>
+    a.aiState === AI_STATE.SR_WORK ||
+    a.aiState === AI_STATE.SR_IDLE ||
+    a.aiState === AI_STATE.WALK_TO_SR ||
+    a.currentRoom === 'situation'
+  ).length;
+}
+
+// Ensure at least 2 agents are always in/heading to the Situation Room
+// Called when an agent tries to leave the SR
+function canLeaveSR(agent) {
+  const inSR = agents.filter(a =>
+    a !== agent && (
+      a.aiState === AI_STATE.SR_WORK ||
+      a.aiState === AI_STATE.SR_IDLE ||
+      a.aiState === AI_STATE.WALK_TO_SR
+    )
+  ).length;
+  return inSR >= 2; // at least 2 others staying
+}
+
+
+// -- PARTICLE SYSTEM --
+const particles = [];
+
+function spawnParticle(x, y, type) {
+  if (particles.length >= 300) return;
+  particles.push({
+    x, y,
+    vx: (Math.random() - 0.5) * 2,
+    vy: type === 'steam' ? -Math.random() * 1.5 - 0.5 : -Math.random() * 2 - 1,
+    life: 1,
+    decay: 0.015 + Math.random() * 0.01,
+    type,
+    size: 2 + Math.random() * 2,
+    color: type === 'confetti'
+      ? ['#d97757','#5b7fff','#2ec4b6','#ffc857','#8b5cf6'][Math.floor(Math.random()*5)]
+      : type === 'dust' ? '#a09070'
+      : type === 'bubble' ? '#66ccff'
+      : '#c4b5a5',
+  });
+}
+
+function updateParticles() {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    if (p.type === 'confetti') p.vy += 0.05;
+    else if (p.type === 'steam') p.vy -= 0.01;
+    else if (p.type === 'bubble') p.vy = -0.5;
+    p.life -= p.decay;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+}
+
+function drawParticles() {
+  for (const p of particles) {
+    ctx.globalAlpha = p.life;
+    px(p.x, p.y, p.size, p.size, p.color);
+  }
+  ctx.globalAlpha = 1;
+}
+
+
+// -- AMBIENT EFFECTS PER ROOM --
+
+function ambientEffects() {
+  const t = now();
+
+  // Situation Room: coffee steam, dust motes
+  if (Math.random() < 0.02) {
+    const srRoom = ROOMS.situation;
+    spawnParticle((srRoom.x + 4) * T + 16, (srRoom.y + 4) * T, 'steam');
+  }
+  if (Math.random() < 0.005) {
+    const srRoom = ROOMS.situation;
+    const rx = (srRoom.x + 2 + Math.random() * (srRoom.w - 4)) * T;
+    const ry = (srRoom.y + 3 + Math.random() * (srRoom.h - 5)) * T;
+    spawnParticle(rx, ry, 'dust');
+  }
+
+  // Razzle's Office: lamp flicker, coffee steam
+  if (Math.random() < 0.015) {
+    const rRoom = ROOMS.razzle;
+    spawnParticle((rRoom.x + 5) * T, (rRoom.y + 4) * T, 'steam');
+  }
+
+  // Scout's Room: dust
+  if (Math.random() < 0.004) {
+    const sRoom = ROOMS.scout;
+    spawnParticle((sRoom.x + 3 + Math.random() * 8) * T, (sRoom.y + 4 + Math.random() * 5) * T, 'dust');
+  }
+
+  // Medical's Room: bubbles in tank
+  if (Math.random() < 0.03) {
+    const mRoom = ROOMS.medical;
+    spawnParticle((mRoom.x + 9) * T + Math.random() * T * 2, (mRoom.y + 6) * T, 'bubble');
+  }
+
+  // Diplomat's Room: dust
+  if (Math.random() < 0.003) {
+    const dRoom = ROOMS.diplomat;
+    spawnParticle((dRoom.x + 3 + Math.random() * 8) * T, (dRoom.y + 4 + Math.random() * 5) * T, 'dust');
+  }
+
+  // Quant's Room: dust
+  if (Math.random() < 0.004) {
+    const qRoom = ROOMS.quant;
+    spawnParticle((qRoom.x + 3 + Math.random() * 8) * T, (qRoom.y + 4 + Math.random() * 5) * T, 'dust');
+  }
+
+  // Historian's Room: dust in lamp light
+  if (Math.random() < 0.01) {
+    const hRoom = ROOMS.historian;
+    spawnParticle((hRoom.x + 10) * T + Math.random() * T, (hRoom.y + 6) * T + Math.random() * T * 2, 'dust');
+  }
+}
+
+
+// -- ROOM STATE EFFECTS --
+
+function drawRoomStateEffects() {
+  const t = now();
+  for (const [key, room] of Object.entries(ROOMS)) {
+    if (!isRoomVisible(room)) continue;
+    const rx = room.x * T, ry = room.y * T, rw = room.w * T, rh = room.h * T;
+
+    if (room.state === 'active') {
+      ctx.globalAlpha = 0.05;
+      px(rx, ry, rw, rh, '#ffffff');
+      ctx.globalAlpha = 1;
+      const pulse = 0.3 + Math.sin(t / 500) * 0.2;
+      ctx.globalAlpha = pulse;
+      ctx.strokeStyle = room.accent;
+      ctx.lineWidth = 3;
+      ctx.strokeRect(rx + 1, ry + 1, rw - 2, rh - 2);
+      ctx.globalAlpha = 1;
+    }
+
+    if (room.state === 'completed') {
+      const doorX = rx + rw / 2;
+      const doorY = key === 'situation' ? ry : (ry + rh);
+      ctx.fillStyle = '#22cc55';
+      ctx.font = 'bold 16px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('\u2713', doorX, doorY);
+      ctx.textAlign = 'left';
+    }
+  }
+}
+
+
+// -- ROOM NAME LABELS --
+
+function drawRoomLabels() {
+  for (const [key, room] of Object.entries(ROOMS)) {
+    if (!isRoomVisible(room)) continue;
+    const rx = room.x * T, ry = room.y * T, rw = room.w * T, rh = room.h * T;
+
+    const labelX = rx + rw / 2;
+    const labelY = ry + 2 * T + 12;
+
+    ctx.font = '14px "Luckiest Guy", cursive';
+    const textW = ctx.measureText(room.name).width;
+    const pillW = textW + 16;
+    const pillH = 20;
+
+    ctx.globalAlpha = 0.7;
+    drawPixelRect(labelX - pillW / 2, labelY - pillH / 2, pillW, pillH, 'rgba(0,0,0,0.6)');
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = room.accent;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(room.name, labelX, labelY);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+  }
+}
+
+
+// -- MINIMAP --
+// World is now taller than wide (52 cols x 68 rows), adjust minimap proportions
+const MINIMAP_W = 140;
+const MINIMAP_H = Math.round(140 * (ROWS / COLS));
+const MINIMAP_SCALE_X = MINIMAP_W / WORLD_W;
+const MINIMAP_SCALE_Y = MINIMAP_H / WORLD_H;
+
+function drawMinimap() {
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+  const mmX = 10;
+  const mmY = cvs.height - MINIMAP_H - 10;
+
+  ctx.globalAlpha = 0.8;
+  drawPixelRect(mmX - 2, mmY - 2, MINIMAP_W + 4, MINIMAP_H + 4, 'rgba(10,10,18,0.9)', '#5c4a3d');
+  ctx.globalAlpha = 1;
+
+  // Draw rooms as colored rectangles
+  for (const [key, room] of Object.entries(ROOMS)) {
+    const rx = mmX + room.x * T * MINIMAP_SCALE_X;
+    const ry = mmY + room.y * T * MINIMAP_SCALE_Y;
+    const rw = room.w * T * MINIMAP_SCALE_X;
+    const rh = room.h * T * MINIMAP_SCALE_Y;
+    ctx.globalAlpha = 0.6;
+    ctx.fillStyle = room.accent;
+    ctx.fillRect(rx, ry, rw, rh);
+    ctx.globalAlpha = 1;
+
+    ctx.fillStyle = '#f7efe5';
+    ctx.font = '7px "Space Mono", monospace';
+    ctx.textAlign = 'center';
+    const shortName = key === 'situation' ? 'SIT RM' :
+                      key === 'razzle' ? 'RAZZLE' :
+                      key === 'scout' ? 'SCOUT' :
+                      key === 'medical' ? 'MED' :
+                      key === 'diplomat' ? 'DIPLO' :
+                      key === 'quant' ? 'QUANT' : 'HIST';
+    ctx.fillText(shortName, rx + rw / 2, ry + rh / 2 + 3);
+  }
+
+  // Draw corridors as small lines
+  ctx.globalAlpha = 0.4;
+  for (const corr of CORRIDORS) {
+    const dx = mmX + corr.x * T * MINIMAP_SCALE_X;
+    const dy = mmY + corr.y * T * MINIMAP_SCALE_Y;
+    const dw = corr.w * T * MINIMAP_SCALE_X;
+    const dh = corr.h * T * MINIMAP_SCALE_Y;
+    ctx.fillStyle = '#888';
+    ctx.fillRect(dx, dy, Math.max(dw, 2), Math.max(dh, 2));
+  }
+
+  // Draw doorways as small lines
+  ctx.globalAlpha = 0.5;
+  for (const door of DOORWAYS) {
+    const dx = mmX + door.x * T * MINIMAP_SCALE_X;
+    const dy = mmY + door.y * T * MINIMAP_SCALE_Y;
+    const dw = door.w * T * MINIMAP_SCALE_X;
+    const dh = door.h * T * MINIMAP_SCALE_Y;
+    ctx.fillStyle = '#ffc857';
+    ctx.fillRect(dx, dy, Math.max(dw, 2), Math.max(dh, 2));
+  }
+  ctx.globalAlpha = 1;
+
+  // Agent dots
+  for (const a of agents) {
+    const ax = mmX + a.x * MINIMAP_SCALE_X;
+    const ay = mmY + a.y * MINIMAP_SCALE_Y;
+    ctx.fillStyle = a.color;
+    ctx.fillRect(ax - 2, ay - 2, 4, 4);
+    if (a.selected) {
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(ax - 3, ay - 3, 6, 6);
+    }
+  }
+
+  // Camera viewport rectangle
+  const vpX = mmX + cam.x * MINIMAP_SCALE_X;
+  const vpY = mmY + cam.y * MINIMAP_SCALE_Y;
+  const vpW = (cvs.width / cam.zoom) * MINIMAP_SCALE_X;
+  const vpH = (cvs.height / cam.zoom) * MINIMAP_SCALE_Y;
+  ctx.globalAlpha = 0.4;
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(vpX, vpY, vpW, vpH);
+  ctx.globalAlpha = 1;
+
+  ctx.textAlign = 'left';
+  ctx.restore();
+}
+
+// Click on minimap to jump camera
+function handleMinimapClick(clientX, clientY) {
+  const rect = cvs.getBoundingClientRect();
+  const screenX = (clientX - rect.left) * (cvs.width / rect.width);
+  const screenY = (clientY - rect.top) * (cvs.height / rect.height);
+
+  const mmX = 10;
+  const mmY = cvs.height - MINIMAP_H - 10;
+
+  if (screenX >= mmX && screenX <= mmX + MINIMAP_W &&
+      screenY >= mmY && screenY <= mmY + MINIMAP_H) {
+    const worldX = (screenX - mmX) / MINIMAP_SCALE_X;
+    const worldY = (screenY - mmY) / MINIMAP_SCALE_Y;
+    centerCamOn(worldX, worldY);
+    return true;
+  }
+  return false;
+}
+
+
+// -- HUD OVERLAY --
+
+function drawHUD() {
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+  const hudX = 8, hudY = 8;
+  const chipH = 18, chipGap = 4;
+
+  for (let i = 0; i < agents.length; i++) {
+    const a = agents[i];
+    const cy = hudY + i * (chipH + chipGap);
+    const label = `${i + 1} ${a.name}`;
+    ctx.font = 'bold 9px "Space Mono", monospace';
+    const tw = ctx.measureText(label).width + 12;
+
+    ctx.globalAlpha = a.selected ? 0.9 : 0.55;
+    drawPixelRect(hudX, cy, tw, chipH, a.selected ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.5)');
+    if (a.selected) {
+      ctx.strokeStyle = a.color;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(hudX + 0.5, cy + 0.5, tw - 1, chipH - 1);
+    }
+
+    let dotColor = '#5c4a3d';
+    if (a.isWalking) dotColor = '#33cc55';
+    else if (a.aiState === AI_STATE.HOME_WORK || a.aiState === AI_STATE.SR_WORK) dotColor = '#3388cc';
+    else if (a.aiState === AI_STATE.VISIT_WORK) dotColor = '#cc6633';
+    else if (a.aiState === AI_STATE.CELEBRATE) dotColor = '#cc3333';
+    else dotColor = '#5c4a3d';
+    px(hudX + 3, cy + chipH / 2 - 2, 4, 4, dotColor);
+
+    ctx.fillStyle = a.selected ? a.color : '#c4b5a5';
+    ctx.globalAlpha = 1;
+    ctx.fillText(label, hudX + 10, cy + 13);
+  }
+
+  ctx.restore();
+}
+
+
+// -- STATE LABELS / COLORS --
+
+function getStateLabel(agent) {
+  if (agent.controlled) return 'player controlled';
+  switch (agent.aiState) {
+    case AI_STATE.HOME_IDLE: return 'idle';
+    case AI_STATE.HOME_WORK: return agent.activity || 'working';
+    case AI_STATE.WALKING:
+    case AI_STATE.WALK_TO_SR:
+    case AI_STATE.WALK_HOME:
+    case AI_STATE.WALK_TO_ROOM: return agent.activity || 'walking';
+    case AI_STATE.SR_IDLE: return 'idle (Sit Room)';
+    case AI_STATE.SR_WORK: return agent.activity || 'briefing';
+    case AI_STATE.VISIT_IDLE: {
+      const rn = agent.visitingRoom ? ROOMS[agent.visitingRoom]?.name : 'visiting';
+      return `idle (${rn})`;
+    }
+    case AI_STATE.VISIT_WORK: return agent.activity || 'visiting';
+    case AI_STATE.CELEBRATE: return 'eureka!';
+    default: return 'idle';
+  }
+}
+
+function getStateColor(agent) {
+  if (agent.isWalking) return '#33cc55';
+  if (agent.aiState === AI_STATE.HOME_WORK || agent.aiState === AI_STATE.SR_WORK) return '#3388cc';
+  if (agent.aiState === AI_STATE.VISIT_WORK) return '#cc6633';
+  if (agent.aiState === AI_STATE.CELEBRATE) return '#cc3333';
+  return '#5c4a3d';
+}
+
+
+// -- INPUT HANDLING --
+const keys = {};
+
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT' || e.target.isContentEditable) return;
+  keys[e.key] = true;
+  if (e.key >= '1' && e.key <= '6') {
+    selectAgent(parseInt(e.key) - 1);
+  }
+  if (e.key === '=' || e.key === '+') { setZoom(cam.targetZoom + ZOOM_STEP); e.preventDefault(); }
+  if (e.key === '-' || e.key === '_') { setZoom(cam.targetZoom - ZOOM_STEP); e.preventDefault(); }
+  if (e.key === '0') { cam.targetZoom = 1; e.preventDefault(); }
+});
+
+document.addEventListener('keyup', e => {
+  keys[e.key] = false;
+});
+
+function selectAgent(idx) {
+  if (idx >= 0 && idx < agents.length) {
+    agents.forEach(a => { a.selected = false; a.controlled = false; });
+    selectedAgent = agents[idx];
+    selectedAgent.selected = true;
+    cameraFollowAgent = true; // BUG 3 FIX: enable follow on user selection
+    // Zoom to frame the room the agent is currently in
+    zoomToAgent(selectedAgent);
+    updateRosterSelection();
+    updateSelectedInfoBar();
+  }
+}
+
+// Zoom camera to frame the room an agent is in, centered on the agent
+// Always zoom to office-room scale (15×13), centered on agent.
+// In the SR, this shows a section of the room around the agent, not the whole SR.
+const AGENT_ZOOM = Math.min(
+  cvs.width / ((15 + 4) * T),
+  cvs.height / ((13 + 4) * T)
+);
+
+function zoomToAgent(agent) {
+  cam.targetZoom = Math.max(getZoomMin(), Math.min(ZOOM_MAX, AGENT_ZOOM));
+  centerCamOn(agent.x, agent.y);
+}
+
+function handleInput(dt) {
+  const a = selectedAgent;
+  let dx = 0, dy = 0;
+
+  if (keys['ArrowLeft']  || keys['a'] || keys['A']) dx -= 1;
+  if (keys['ArrowRight'] || keys['d'] || keys['D']) dx += 1;
+  if (keys['ArrowUp']    || keys['w'] || keys['W']) dy -= 1;
+  if (keys['ArrowDown']  || keys['s'] || keys['S']) dy += 1;
+
+  if (dx !== 0 || dy !== 0) {
+    a.controlled = true;
+    a.aiState = AI_STATE.WALKING;
+    a.path = [];
+    a.activity = 'exploring';
+    cameraFollowAgent = true; // BUG 3 FIX: enable follow on WASD/arrows
+
+    if (Math.abs(dx) >= Math.abs(dy)) {
+      a.dir = dx > 0 ? DIR.RIGHT : DIR.LEFT;
+    } else {
+      a.dir = dy > 0 ? DIR.DOWN : DIR.UP;
+    }
+
+    const step = a.speed * dt * 0.06;
+    const nx = a.x + dx * step;
+    const ny = a.y + dy * step;
+
+    if (dx !== 0 && isWalkable(Math.floor(nx / T), a.tileY)) {
+      a.x = nx;
+    }
+    if (dy !== 0 && isWalkable(a.tileX, Math.floor(ny / T))) {
+      a.y = ny;
+    }
+
+    if (Math.random() < 0.06) spawnParticle(a.x, a.y + 10, 'dust');
+  } else if (a.controlled) {
+    a.controlled = false;
+    a.aiState = AI_STATE.HOME_IDLE;
+    a.stateTimer = 0;
+    a.activity = 'idle';
+  }
+}
+
+// Mouse/touch for panning and agent selection
+let dragging = false, dragStartX = 0, dragStartY = 0, dragCamX = 0, dragCamY = 0;
+let mouseDownTime = 0;
+
+cvs.addEventListener('mousedown', e => {
+  if (handleMinimapClick(e.clientX, e.clientY)) {
+    e.preventDefault();
+    return;
+  }
+  dragging = true;
+  dragStartX = e.clientX;
+  dragStartY = e.clientY;
+  dragCamX = cam.targetX;
+  dragCamY = cam.targetY;
+  mouseDownTime = now();
+});
+
+function screenToWorld(clientX, clientY) {
+  const rect = cvs.getBoundingClientRect();
+  const sx = (clientX - rect.left) * (cvs.width / rect.width);
+  const sy = (clientY - rect.top) * (cvs.height / rect.height);
+  return { x: sx / cam.zoom + cam.x, y: sy / cam.zoom + cam.y };
+}
+
+cvs.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  const scaleX = cvs.clientWidth ? cvs.width / cvs.clientWidth : 1;
+  const scaleY = cvs.clientHeight ? cvs.height / cvs.clientHeight : 1;
+  cam.targetX = dragCamX - (e.clientX - dragStartX) * scaleX / cam.zoom;
+  cam.targetY = dragCamY - (e.clientY - dragStartY) * scaleY / cam.zoom;
+});
+
+cvs.addEventListener('mouseup', e => {
+  const wasDrag = Math.abs(e.clientX - dragStartX) > 5 || Math.abs(e.clientY - dragStartY) > 5;
+  dragging = false;
+  if (!wasDrag && now() - mouseDownTime < 300) {
+    const w = screenToWorld(e.clientX, e.clientY);
+    let closest = null, closestDist = 40;
+    for (const a of agents) {
+      const d = Math.sqrt((a.x - w.x) ** 2 + (a.y - w.y) ** 2);
+      if (d < closestDist) { closest = a; closestDist = d; }
+    }
+    if (closest) selectAgent(closest.id);
+  }
+});
+
+// Scroll to zoom
+cvs.addEventListener('wheel', e => {
+  e.preventDefault();
+  const w = screenToWorld(e.clientX, e.clientY);
+  const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+  const oldZoom = cam.targetZoom;
+  cam.targetZoom = Math.max(getZoomMin(), Math.min(ZOOM_MAX, cam.targetZoom + delta));
+  const ratio = cam.targetZoom / oldZoom;
+  cam.targetX = w.x - (w.x - cam.targetX) / ratio;
+  cam.targetY = w.y - (w.y - cam.targetY) / ratio;
+}, { passive: false });
+
+// Touch support
+cvs.addEventListener('touchstart', e => {
+  const t = e.touches[0];
+  if (handleMinimapClick(t.clientX, t.clientY)) {
+    e.preventDefault();
+    return;
+  }
+  dragging = true;
+  dragStartX = t.clientX;
+  dragStartY = t.clientY;
+  dragCamX = cam.targetX;
+  dragCamY = cam.targetY;
+  mouseDownTime = now();
+}, { passive: false });
+
+cvs.addEventListener('touchmove', e => {
+  if (!dragging) return;
+  const t = e.touches[0];
+  const scaleX = cvs.clientWidth ? cvs.width / cvs.clientWidth : 1;
+  const scaleY = cvs.clientHeight ? cvs.height / cvs.clientHeight : 1;
+  cam.targetX = dragCamX - (t.clientX - dragStartX) * scaleX / cam.zoom;
+  cam.targetY = dragCamY - (t.clientY - dragStartY) * scaleY / cam.zoom;
+}, { passive: true });
+
+cvs.addEventListener('touchend', () => {
+  dragging = false;
+}, { passive: true });
+
+
+// -- ROSTER SIDEBAR (DOM) --
+
+function buildRoster() {
+  const list = document.getElementById('rosterList');
+  if (!list) return;
+  list.innerHTML = '';
+
+  for (const a of agents) {
+    const row = document.createElement('div');
+    row.className = 'roster-agent' + (a.selected ? ' selected' : '');
+    row.dataset.agentId = a.id;
+
+    const miniCvs = document.createElement('canvas');
+    miniCvs.width = 32;
+    miniCvs.height = 32;
+    miniCvs.className = 'roster-avatar';
+    const miniCtx = miniCvs.getContext('2d');
+    const sheets = spriteSheets[a.spriteKey];
+    const idleImg = sheets && sheets.idle;
+    if (idleImg && idleImg.complete && idleImg.naturalWidth > 0) {
+      const fw = idleImg.naturalWidth / 2;
+      const fh = idleImg.naturalHeight / 2;
+      miniCtx.drawImage(idleImg, 0, 0, fw, fh, 0, 0, 32, 32);
+    } else {
+      const img = spriteImgs[a.sprite];
+      if (img && img.complete) {
+        miniCtx.drawImage(img, 0, 0, FR_W, FR_H, 0, 0, 32, 32);
+      }
+    }
+
+    const info = document.createElement('div');
+    info.className = 'roster-info';
+    info.innerHTML = `
+      <div class="roster-name" style="color:${a.color}">${a.name}</div>
+      <div class="roster-role">${a.role}</div>
+      <div class="roster-status">
+        <span class="roster-dot" style="background:${getStateColor(a)}"></span>
+        <span class="roster-status-text">${getStateLabel(a)}</span>
+      </div>
+    `;
+
+    const hint = document.createElement('span');
+    hint.className = 'roster-key-hint';
+    hint.textContent = String(a.id + 1);
+
+    row.appendChild(miniCvs);
+    row.appendChild(info);
+    row.appendChild(hint);
+    row.addEventListener('click', () => {
+      selectAgent(a.id);
+      centerCamOn(agents[a.id].x, agents[a.id].y);
+    });
+    list.appendChild(row);
+  }
+}
+
+function updateRosterSelection() {
+  const rows = document.querySelectorAll('.roster-agent');
+  rows.forEach(row => {
+    const id = parseInt(row.dataset.agentId);
+    if (agents[id]) row.classList.toggle('selected', agents[id].selected);
+  });
+}
+
+function updateRosterStatus() {
+  const rows = document.querySelectorAll('.roster-agent');
+  rows.forEach(row => {
+    const id = parseInt(row.dataset.agentId);
+    const a = agents[id]; if (!a) return;
+    const dot = row.querySelector('.roster-dot');
+    const text = row.querySelector('.roster-status-text');
+    if (dot) dot.style.background = getStateColor(a);
+    if (text) text.textContent = getStateLabel(a);
+  });
+}
+
+
+// -- SELECTED AGENT INFO BAR --
+
+function updateSelectedInfoBar() {
+  const nameEl = document.getElementById('selName');
+  const roleEl = document.getElementById('selRole');
+  const stateEl = document.getElementById('selState');
+  const dotEl = document.getElementById('selDot');
+  if (!nameEl) return;
+
+  const a = selectedAgent;
+  nameEl.textContent = a.name;
+  nameEl.style.color = a.color;
+  roleEl.textContent = a.role;
+  stateEl.textContent = getStateLabel(a);
+  dotEl.style.background = getStateColor(a);
+}
+
+
+// -- STATUS BAR ROOM NAME --
+
+function updateStatusBar() {
+  const roomEl = document.getElementById('statusRoom');
+  if (!roomEl) return;
+  const room = selectedAgent.currentRoom;
+  if (room === 'corridor') {
+    roomEl.textContent = 'Corridor';
+  } else if (ROOMS[room]) {
+    roomEl.textContent = ROOMS[room].name;
+  }
+}
+
+
+// -- GAME LOOP --
+let lastTime = now();
+let _rafId = null;
+
+function gameLoop() {
+  if (!cvs || !cvs.isConnected) { _rafId = null; return; }
+  const t = now();
+  const dt = Math.min(t - lastTime, 50);
+  lastTime = t;
+
+  handleInput(dt);
+  for (const a of agents) {
+    a.updateAI(dt);
+    a.updateAnimation(dt);
+  }
+  updateParticles();
+  ambientEffects();
+
+  // BUG 3 FIX: only follow agent when cameraFollowAgent is true and not dragging
+  if (!dragging && cameraFollowAgent) {
+    centerCamOn(selectedAgent.x, selectedAgent.y);
+  }
+  updateCam();
+  clampCam();
+
+  ctx.clearRect(0, 0, cvs.width, cvs.height);
+  ctx.save();
+  ctx.scale(cam.zoom, cam.zoom);
+  ctx.translate(-Math.floor(cam.x), -Math.floor(cam.y));
+
+  drawAllFloors();
+  drawAllFurniture();
+  drawRoomStateEffects();
+  drawRoomLabels();
+
+  const sortedAgents = [...agents].sort((a, b) => a.y - b.y);
+  for (const a of sortedAgents) {
+    a.draw();
+  }
+
+  drawParticles();
+  ctx.restore();
+
+  drawHUD();
+  drawMinimap();
+
+  _rafId = requestAnimationFrame(gameLoop);
+}
+
+// Update roster status every second
+let _rosterInterval = setInterval(() => {
+  updateRosterStatus();
+  updateSelectedInfoBar();
+  updateStatusBar();
+}, 1000);
+
+// Pause game loop and intervals when page is hidden
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    if (_rafId) { cancelAnimationFrame(_rafId); _rafId = null; }
+    if (_rosterInterval) { clearInterval(_rosterInterval); _rosterInterval = null; }
+  } else {
+    lastTime = now();
+    if (!_rafId) _rafId = requestAnimationFrame(gameLoop);
+    if (!_rosterInterval) {
+      _rosterInterval = setInterval(() => {
+        updateRosterStatus();
+        updateSelectedInfoBar();
+        updateStatusBar();
+      }, 1000);
+    }
+  }
+});
+
+// Clean up on page unload
+window.addEventListener('beforeunload', () => {
+  if (_rafId) { cancelAnimationFrame(_rafId); _rafId = null; }
+  if (_rosterInterval) { clearInterval(_rosterInterval); _rosterInterval = null; }
+});
+
+// -- START --
+function waitAndStart() {
+  if (spritesLoaded >= TOTAL_SPRITES_NEEDED) {
+    const placeholder = document.getElementById('canvasPlaceholder');
+    if (placeholder) placeholder.style.display = 'none';
+
+    // BUG 3 FIX: Start framed on the Situation Room, cameraFollowAgent stays false
+    const sr = ROOMS.situation;
+    const srCenterX = (sr.x + sr.w / 2) * T;
+    const srCenterY = (sr.y + sr.h / 2) * T;
+    const srZoom = Math.min(cvs.width / ((sr.w + 4) * T), cvs.height / ((sr.h + 4) * T));
+    cam.zoom = cam.targetZoom = Math.max(getZoomMin(), Math.min(ZOOM_MAX, srZoom));
+    cam.x = cam.targetX = srCenterX - (cvs.width / cam.zoom) / 2;
+    cam.y = cam.targetY = srCenterY - (cvs.height / cam.zoom) / 2;
+    clampCam();
+
+    buildRoster();
+    updateSelectedInfoBar();
+    updateStatusBar();
+
+    gameLoop();
+  } else {
+    ctx.fillStyle = '#2d1f14';
+    ctx.fillRect(0, 0, cvs.width, cvs.height);
+    ctx.fillStyle = '#d97757';
+    ctx.font = 'bold 14px "Space Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('pulling film...', cvs.width / 2, cvs.height / 2);
+    const dots = '.'.repeat(Math.floor(now() / 500) % 4);
+    ctx.fillText(dots, cvs.width / 2, cvs.height / 2 + 20);
+    ctx.textAlign = 'left';
+    _rafId = requestAnimationFrame(waitAndStart);
+  }
+}
+waitAndStart();
+
+// ===== IN-GAME DIALOG (Crystal style) =====
+// Anchored inside the canvas frame. Speaker name + typewriter text + ASK input.
+// Hooks: opens when an agent is selected (selectedAgent changes via click/keys 1-6).
+(function() {
+  const dialog   = document.getElementById('rzDialog');
+  const nameEl   = document.getElementById('rzDialogName');
+  const roleEl   = document.getElementById('rzDialogRole');
+  const textEl   = document.getElementById('rzDialogText');
+  const caretEl  = document.getElementById('rzDialogCaret');
+  const form     = document.getElementById('rzDialogForm');
+  const input    = document.getElementById('rzDialogInput');
+  const closeBtn = document.getElementById('rzDialogClose');
+  const reopen   = document.getElementById('rzDialogReopen');
+  if (!dialog || !nameEl || !textEl || !form || !input || !closeBtn || !reopen) return;
+
+  // Per-agent flavor lines, keyed by the live agent names in the roster
+  // (Razzle / Dr. Dolphin / Hawkeye / The Fox / The Octopus / Atlas).
+  // Stubbed until the LLM backend is wired.
+  const AGENT_QUIPS = {
+    'Razzle':      ["Let's go over the scoreboard. Starters are healthy, bench thin at RB.",
+                    "I pulled Week 8 snap counts — three of your guys are trending boom-bust.",
+                    "Plan's ready. Scout's got the tape, Octopus has the model. Ask me anything."],
+    'Hawkeye':     ["Target share up 12% on your WR2 after the bye. Route tree expanded.",
+                    "Tape says he's getting open; the QB isn't finding him. Progression issue.",
+                    "Opposing CB1 just went to IR. Matchup tilts your way this week."],
+    'The Octopus': ["Championship probability: 34.2%. Trading RB3 for a WR2 → 41.8%. Do it.",
+                    "Monte Carlo: 5,000 sims, median 9-5, top-decile 11-3. Hold the line.",
+                    "Stacking your QB with either WR is +EV. Don't split them."],
+    'Dr. Dolphin': ["High ankle sprain on your TE. Recovery ≥3 weeks. Do NOT start him.",
+                    "Hamstring — limited Wednesday, full Thursday. Start with confidence.",
+                    "Beat writers > official report. He looked spry in walkthroughs."],
+    'The Fox':     ["Your league-mate is tilted after Monday. Offer the trade — emotion is a tailwind.",
+                    "I read the DM — he wants your WR2 but won't admit it. Ask for his RB2.",
+                    "Commish vetoes 60% of rookie trades. Structure around that."],
+    'Atlas':       ["14 prior seasons, teams with your record at W8 won the title 22% of the time.",
+                    "This QB vs this defense: top-8 finish on 78% of historical splits.",
+                    "League history: champion holds a top-3 pick 3 years running. Plan accordingly."]
+  };
+  const quipIdx = {};
+
+  function currentAgent() {
+    try { return (typeof selectedAgent !== 'undefined' && selectedAgent) ? selectedAgent : null; }
+    catch (e) { return null; }
+  }
+  function agentName() { const a = currentAgent(); return a ? a.name : 'Razzle'; }
+  function agentColor() { const a = currentAgent(); return (a && a.color) || '#d97757'; }
+  function agentRole() { const a = currentAgent(); return (a && a.role) || 'Chief of Staff'; }
+
+  function isOpen() { return dialog.getAttribute('data-open') === 'true'; }
+
+  function setOpen(open) {
+    dialog.setAttribute('data-open', open ? 'true' : 'false');
+    if (open) { syncSpeaker(); setTimeout(function() { input.focus({ preventScroll: true }); }, 200); }
+  }
+
+  function syncSpeaker() {
+    nameEl.textContent = agentName();
+    nameEl.style.color = agentColor();
+    roleEl.textContent = agentRole();
+    input.placeholder = 'ask ' + agentName() + '…';
+  }
+
+  // Typewriter
+  let twTimer = null;
+  let twFullText = '';
+  function typewrite(text) {
+    twFullText = text;
+    if (twTimer) { clearInterval(twTimer); twTimer = null; }
+    textEl.textContent = '';
+    caretEl.style.visibility = 'hidden';
+    let i = 0;
+    twTimer = setInterval(function() {
+      textEl.textContent += text.charAt(i);
+      i++;
+      if (i >= text.length) {
+        clearInterval(twTimer); twTimer = null;
+        caretEl.style.visibility = 'visible';
+      }
+    }, 16);
+  }
+  textEl.addEventListener('click', function() {
+    if (twTimer) { clearInterval(twTimer); twTimer = null; textEl.textContent = twFullText; caretEl.style.visibility = 'visible'; }
+  });
+
+  function nextQuip() {
+    const name = agentName();
+    const pool = AGENT_QUIPS[name] || AGENT_QUIPS['Razzle'];
+    const i = quipIdx[name] || 0;
+    quipIdx[name] = (i + 1) % pool.length;
+    typewrite(pool[i]);
+  }
+
+  // Close / re-open
+  closeBtn.addEventListener('click', function(e) { e.stopPropagation(); setOpen(false); });
+  reopen.addEventListener('click', function(e) { e.stopPropagation(); setOpen(true); nextQuip(); });
+
+  // Per-agent conversation history so each agent remembers what you've asked.
+  const historyByAgent = {};
+
+  async function askAgent(question) {
+    const a = currentAgent();
+    const agentId = (a && a.spriteKey) ? a.spriteKey : 'razzle';
+    const history = historyByAgent[agentId] || [];
+    typewrite('…thinking');
+    input.disabled = true;
+    try {
+      const resp = await fetch('/api/agents/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agent_id: agentId, message: question, history: history })
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        typewrite('⚠ ' + (data.error || ('request failed: ' + resp.status)));
+        return;
+      }
+      const reply = data.reply || '(empty reply)';
+      history.push({ role: 'user', content: question });
+      history.push({ role: 'assistant', content: reply });
+      historyByAgent[agentId] = history.slice(-12);
+      typewrite(reply);
+    } catch (err) {
+      typewrite('⚠ network error: ' + err.message + ' (is the backend running? try: uvicorn backend.server:app --port 8000)');
+    } finally {
+      input.disabled = false;
+    }
+  }
+
+  // Submit
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const q = input.value.trim();
+    if (!q) return;
+    input.value = '';
+    askAgent(q);
+  });
+
+  // Preset quick-reply chips
+  dialog.querySelectorAll('[data-rz-preset]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      input.value = btn.getAttribute('data-rz-preset');
+      form.dispatchEvent(new Event('submit'));
+    });
+  });
+
+  // Space advances to the next agent line when dialog is open and input isn't focused
+  document.addEventListener('keydown', function(e) {
+    if (!isOpen()) return;
+    if (e.key === ' ' && document.activeElement !== input) {
+      e.preventDefault();
+      nextQuip();
+    } else if (e.key === 'Escape' && isOpen()) {
+      setOpen(false);
+    }
+  });
+
+  // Auto-open & speak when selectedAgent CHANGES.
+  // Guard: updateSelectedInfoBar() reassigns selName.textContent on a 1s
+  // interval even when the value is identical, which fires MutationObserver
+  // every tick. We only react when the resolved agent name actually changes.
+  let lastAgentName = null;
+  function maybeReactToAgentChange() {
+    const a = currentAgent();
+    if (!a) return;
+    if (a.name === lastAgentName) return; // same agent, do nothing
+    lastAgentName = a.name;
+    // Don't auto-open on the initial boot value (Situation Room placeholder)
+    if (selNameEl.textContent === 'Situation Room') return;
+    setOpen(true);
+    nextQuip();
+  }
+  const selNameEl = document.getElementById('selName');
+  if (selNameEl && typeof MutationObserver !== 'undefined') {
+    new MutationObserver(maybeReactToAgentChange)
+      .observe(selNameEl, { childList: true, characterData: true, subtree: true });
+  }
+})();
+</script>
+<script src="app.js" defer></script>
+</body>
+</html>

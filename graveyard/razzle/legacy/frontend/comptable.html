@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Comparison Table — Razzle</title>
+<meta property="og:title" content="Comparison Table — Razzle">
+<meta property="og:description" content="Stack up to 8 players in a sortable stat grid. The fastest way to settle a draft debate or evaluate a trade package.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Comparison Table — Razzle">
+<meta name="twitter:description" content="Stack up to 8 players in a sortable stat grid. The fastest way to settle a draft debate or evaluate a trade.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Multi-player comparison table on razzle.lol. Add 3-8 players and compare stats in a sortable grid for draft debates and trade evaluations.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=comptable">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=comptable">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .ct-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  .ct-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .ct-header h1 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    color: var(--ink);
+    margin: 0 0 4px;
+  }
+  .ct-header .ct-subtitle {
+    font-family: var(--font-hand);
+    font-size: 20px;
+    color: var(--ink-light);
+  }
+
+  /* Search + selected players */
+  .ct-search-area {
+    max-width: 500px;
+    margin: 0 auto 20px;
+  }
+  .ct-search-wrap {
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .ct-search {
+    width: 100%;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    padding: 10px 14px;
+    border: 3px solid var(--ink);
+    border-radius: 8px;
+    background: var(--bg-card);
+    box-sizing: border-box;
+  }
+  .ct-search::placeholder { color: var(--ink-medium); }
+  .ct-ac-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: var(--radius-sm);
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 100;
+    display: none;
+  }
+  .ct-ac-item {
+    padding: 8px 12px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+  }
+  .ct-ac-item:hover, .ct-ac-item.highlighted {
+    background: var(--bg);
+  }
+
+  .ct-selected {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .ct-chip {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 4px 10px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ct-chip-x {
+    cursor: pointer;
+    font-weight: 700;
+    color: var(--ink-light);
+    font-size: 14px;
+  }
+  .ct-chip-x:hover { color: var(--semantic-red); }
+
+  /* Controls */
+  .ct-controls {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .ct-controls select {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 6px 10px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+  }
+  .ct-btn {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 5px 14px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .ct-btn:hover { background: var(--ink); color: var(--bg); }
+  .ct-btn.primary { background: var(--orange); color: var(--bg-card); border-color: var(--ink); }
+  .ct-btn.primary:hover { background: var(--ink); color: var(--bg); }
+
+  .ct-loading {
+    text-align: center;
+    font-family: var(--font-hand);
+    font-size: 18px;
+    color: var(--ink-light);
+    padding: 60px 0;
+  }
+
+  /* Table */
+  .ct-table-wrap {
+    overflow-x: auto;
+    border: 3px solid var(--ink);
+    border-radius: var(--radius-sm);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .ct-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+  .ct-table th {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 8px 10px;
+    text-align: right;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .ct-table th:first-child { text-align: left; }
+  .ct-table th:hover { background: var(--ink); }
+  .ct-table td {
+    padding: 7px 10px;
+    text-align: right;
+    border-bottom: 2px dashed var(--border-dashed);
+  }
+  .ct-table td:first-child { text-align: left; font-weight: 700; }
+  .ct-table tr:last-child td { border-bottom: none; }
+  .ct-table tbody tr:hover { background: var(--orange-hover); }
+
+  /* Best value highlighting */
+  .ct-best { color: var(--semantic-green); font-weight: 700; }
+
+  .ct-pos-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: var(--radius-sm);
+    color: var(--text-on-accent);
+    margin-left: 4px;
+  }
+
+  @media (max-width: 768px) {
+    .ct-header h1 { font-size: 24px; }
+    .ct-table { font-size: 11px; }
+  }
+  @media (max-width: 480px) {
+    .ct-page { padding: 16px 8px 40px; }
+    .ct-header h1 { font-size: 20px; }
+    .ct-header .ct-subtitle { font-size: 16px; }
+    .ct-controls { gap: 8px; }
+    .ct-table { font-size: 11px; }
+    .ct-table th, .ct-table td { padding: 5px 6px; }
+    .ct-chip { font-size: 11px; padding: 3px 8px; }
+    .ct-search { font-size: 13px; padding: 8px 10px; }
+  }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div id="site-header" data-page="comptable"></div>
+
+<main class="ct-page" id="main-content">
+  <div class="ct-header">
+    <h1>Comparison Table</h1>
+    <div class="ct-subtitle">stack em up, see who wins</div>
+  </div>
+
+  <div class="ct-search-area">
+    <div class="ct-search-wrap">
+      <input type="text" class="ct-search" id="ctSearch" placeholder="add players to compare (2-8)..." autocomplete="off" aria-label="Add player" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="ctAcList">
+      <div class="ct-ac-list" id="ctAcList" role="listbox"></div>
+    </div>
+    <div class="ct-selected" id="ctSelected"></div>
+  </div>
+
+  <div class="ct-controls" id="ctControls" style="display:none;">
+    <select id="ctSeason" aria-label="Season"></select>
+    <button class="ct-btn primary" id="ctCompare">Compare</button>
+    <button class="ct-btn" id="ctClear">Clear All</button>
+    <button class="ct-btn" id="ctExport">Export PNG</button>
+  </div>
+
+  <div id="ctContent" role="status" aria-live="polite">
+    <div class="ct-loading">add 2+ players above, then hit compare</div>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  'use strict';
+
+
+  var _cs = getComputedStyle(document.documentElement);
+  var POS_COLORS = {
+    QB: _cs.getPropertyValue('--pos-qb').trim() || '#5b7fff',
+    RB: _cs.getPropertyValue('--pos-rb').trim() || '#2ec4b6',
+    WR: _cs.getPropertyValue('--pos-wr').trim() || '#d97757',
+    TE: _cs.getPropertyValue('--pos-te').trim() || '#8b5cf6'
+  };
+  var INVERSE_STATS = { ints: true };
+
+  var selectedPlayers = []; // [{id, name, position, team}]
+  var currentData = null;
+  var sortCol = 'ppg';
+  var sortDir = -1;
+  var acIdx = -1;
+
+  /* ---- URL state ---- */
+  function writeURL() {
+    var playerIds = selectedPlayers.length ? selectedPlayers.map(function(s) { return s.id; }).join(',') : '';
+    var sel = document.getElementById('ctSeason');
+    savePageState({ players: playerIds, season: sel.value || '' });
+  }
+
+  /* ---- Selected players chips ---- */
+  function renderChips() {
+    var html = '';
+    for (var i = 0; i < selectedPlayers.length; i++) {
+      var p = selectedPlayers[i];
+      var pc = POS_COLORS[p.position] || '#8a7565';
+      html += '<div class="ct-chip"><span class="ct-pos-badge" style="background:' + pc + '">' +
+        escapeHtml(p.position) + '</span> ' + escapeHtml(p.name) +
+        ' <span class="ct-chip-x" data-idx="' + i + '">x</span></div>';
+    }
+    document.getElementById('ctSelected').innerHTML = html;
+    document.getElementById('ctControls').style.display = selectedPlayers.length >= 2 ? 'flex' : 'none';
+
+    document.querySelectorAll('.ct-chip-x').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        selectedPlayers.splice(parseInt(btn.getAttribute('data-idx')) || 0, 1);
+        renderChips();
+        writeURL();
+      });
+    });
+  }
+
+  /* ---- Autocomplete ---- */
+  var searchInput = document.getElementById('ctSearch');
+  var acList = document.getElementById('ctAcList');
+  var acTimer = null;
+
+  searchInput.addEventListener('input', function() {
+    clearTimeout(acTimer);
+    var q = searchInput.value.trim();
+    if (q.length < 2) { acList.style.display = 'none'; searchInput.setAttribute('aria-expanded', 'false'); return; }
+    acTimer = setTimeout(function() {
+      apiFetch('/api/players/quick-search?q=' + encodeURIComponent(q) + '&limit=8')
+        .then(function(data) {
+          var players = Array.isArray(data) ? data : (data.players || []);
+          if (!players.length) { acList.style.display = 'none'; searchInput.setAttribute('aria-expanded', 'false'); return; }
+          acIdx = -1;
+          acList.innerHTML = players.map(function(p, i) {
+            var pc = POS_COLORS[p.position] || '#8a7565';
+            var already = selectedPlayers.some(function(s) { return s.id === p.player_id; });
+            return '<div class="ct-ac-item" role="option"' + (already ? ' style="opacity:0.4"' : '') +
+              ' data-id="' + escapeHtml(p.player_id) + '" data-name="' + escapeHtml(p.full_name) +
+              '" data-pos="' + escapeHtml(p.position) + '" data-team="' + escapeHtml(p.team) +
+              '" data-idx="' + i + '">' +
+              '<span>' + escapeHtml(p.full_name) + ' <span style="color:' + pc + ';font-weight:700;font-size:11px">' +
+              escapeHtml(p.position) + '</span></span>' +
+              '<span style="color:var(--ink-light)">' + escapeHtml(p.team) + '</span></div>';
+          }).join('');
+          acList.style.display = 'block';
+          searchInput.setAttribute('aria-expanded', 'true');
+
+          acList.querySelectorAll('.ct-ac-item').forEach(function(item) {
+            item.addEventListener('click', function() { addPlayer(item); });
+          });
+        }).catch(function() { acList.style.display = 'none'; searchInput.setAttribute('aria-expanded', 'false'); });
+    }, 200);
+  });
+
+  searchInput.addEventListener('keydown', function(e) {
+    var items = acList.querySelectorAll('.ct-ac-item');
+    if (!items.length || acList.style.display === 'none') return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      acIdx = Math.min(acIdx + 1, items.length - 1);
+      items.forEach(function(it, i) { it.classList.toggle('highlighted', i === acIdx); });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      acIdx = Math.max(acIdx - 1, 0);
+      items.forEach(function(it, i) { it.classList.toggle('highlighted', i === acIdx); });
+    } else if (e.key === 'Enter' && acIdx >= 0) {
+      e.preventDefault();
+      addPlayer(items[acIdx]);
+      acList.style.display = 'none';
+      searchInput.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.ct-search-wrap')) { acList.style.display = 'none'; searchInput.setAttribute('aria-expanded', 'false'); }
+  });
+
+  function addPlayer(el) {
+    var id = el.getAttribute('data-id');
+    if (selectedPlayers.length >= 8) return;
+    if (selectedPlayers.some(function(s) { return s.id === id; })) return;
+    selectedPlayers.push({
+      id: id,
+      name: el.getAttribute('data-name'),
+      position: el.getAttribute('data-pos'),
+      team: el.getAttribute('data-team'),
+    });
+    searchInput.value = '';
+    acList.style.display = 'none';
+    searchInput.setAttribute('aria-expanded', 'false');
+    renderChips();
+    writeURL();
+  }
+
+  /* ---- Compare ---- */
+  function doCompare() {
+    if (selectedPlayers.length < 2) return;
+    var ids = selectedPlayers.map(function(s) { return s.id; }).join(',');
+    var sel = document.getElementById('ctSeason');
+    var season = sel.value || '';
+    writeURL();
+
+    var url = '/api/compare-table?players=' + encodeURIComponent(ids);
+    if (season) url += '&season=' + encodeURIComponent(season);
+
+    document.getElementById('ctContent').innerHTML = '<div class="ct-loading">' + razzleLoading() + '</div>';
+
+    fetch(url).then(function(r) {
+      if (!r.ok) throw new Error('API error');
+      return r.json();
+    }).then(function(data) {
+      if (data.error) {
+        document.getElementById('ctContent').innerHTML = '<div class="ct-loading">' + escapeHtml(data.error) + '</div>';
+        return;
+      }
+      currentData = data;
+      populateSeasons(data.available_seasons, data.season);
+      render(data);
+    }).catch(function() {
+      document.getElementById('ctContent').innerHTML = '<div class="ct-loading">film room's dark right now — give it another shot</div>';
+    });
+  }
+
+  function populateSeasons(seasons, current) {
+    var sel = document.getElementById('ctSeason');
+    if (sel.options.length <= 1) {
+      sel.innerHTML = '';
+      (seasons || []).forEach(function(s) {
+        var opt = document.createElement('option');
+        opt.value = s;
+        opt.textContent = s;
+        if (s === current) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    }
+  }
+
+  /* ---- Render table ---- */
+  function render(data) {
+    var players = (data.players || []).slice();
+
+    players.sort(function(a, b) {
+      var av = a[sortCol] || 0, bv = b[sortCol] || 0;
+      return (av - bv) * sortDir;
+    });
+
+    // Determine columns (show all relevant stats)
+    var cols = [
+      { key: 'name', label: 'Player', type: 'text' },
+      { key: 'games', label: 'G' },
+      { key: 'total_fpts', label: 'Total' },
+      { key: 'ppg', label: 'PPG' },
+      { key: 'pass_yd', label: 'Pass Yd' },
+      { key: 'pass_td', label: 'Pass TD' },
+      { key: 'ints', label: 'INT' },
+      { key: 'rush_yd', label: 'Rush Yd' },
+      { key: 'rush_td', label: 'Rush TD' },
+      { key: 'car', label: 'Car' },
+      { key: 'rec', label: 'Rec' },
+      { key: 'rec_yd', label: 'Rec Yd' },
+      { key: 'rec_td', label: 'Rec TD' },
+      { key: 'tgt', label: 'Tgt' },
+      { key: 'yd_per_car', label: 'Y/Car' },
+      { key: 'yd_per_rec', label: 'Y/Rec' },
+      { key: 'catch_rate', label: 'Catch%' },
+    ];
+
+    // Find best value per column for highlighting
+    var best = {};
+    cols.forEach(function(c) {
+      if (c.type === 'text') return;
+      var vals = players.map(function(p) { return p[c.key] || 0; });
+      best[c.key] = INVERSE_STATS[c.key] ? Math.min.apply(null, vals.concat([0])) : Math.max.apply(null, vals.concat([0]));
+    });
+
+    var html = '<div class="ct-table-wrap"><table class="ct-table"><caption class="sr-only">Player comparison statistics</caption><thead><tr>';
+    for (var ci = 0; ci < cols.length; ci++) {
+      var arrow = sortCol === cols[ci].key ? (sortDir === 1 ? ' ▲' : ' ▼') : '';
+      html += '<th data-col="' + cols[ci].key + '">' + escapeHtml(cols[ci].label) + arrow + '</th>';
+    }
+    html += '</tr></thead><tbody>';
+
+    for (var i = 0; i < players.length; i++) {
+      var p = players[i];
+      var pc = POS_COLORS[p.position] || '#8a7565';
+      html += '<tr>';
+      for (var j = 0; j < cols.length; j++) {
+        var c = cols[j];
+        if (c.type === 'text') {
+          html += '<td>' + escapeHtml(p.name) + ' <span class="ct-pos-badge" style="background:' + pc + '">' +
+            escapeHtml(p.position) + '</span> <span style="color:var(--ink-light);font-size:11px">' +
+            escapeHtml(p.team) + '</span></td>';
+        } else {
+          var val = p[c.key] || 0;
+          var isBest = players.length > 1 && val === best[c.key] && val > 0;
+          html += '<td class="' + (isBest ? 'ct-best' : '') + '">' + escapeHtml(String(val)) + '</td>';
+        }
+      }
+      html += '</tr>';
+    }
+
+    html += '</tbody></table></div>';
+    document.getElementById('ctContent').innerHTML = html;
+
+    // Sort events
+    document.querySelectorAll('.ct-table th').forEach(function(th) {
+      th.addEventListener('click', function() {
+        var col = th.getAttribute('data-col');
+        if (col === 'name') return;
+        if (sortCol === col) {
+          sortDir *= -1;
+        } else {
+          sortCol = col;
+          sortDir = -1;
+        }
+        render(currentData);
+      });
+    });
+  }
+
+  /* ---- Events ---- */
+  document.getElementById('ctCompare').addEventListener('click', doCompare);
+  document.getElementById('ctSeason').addEventListener('change', function() {
+    if (currentData) doCompare();
+  });
+  document.getElementById('ctClear').addEventListener('click', function() {
+    selectedPlayers = [];
+    currentData = null;
+    renderChips();
+    document.getElementById('ctContent').innerHTML = '<div class="ct-loading">add 2+ players above, then hit compare</div>';
+    writeURL();
+  });
+
+  document.getElementById('ctExport').addEventListener('click', function() {
+    var btn = this; btn.disabled = true; btn.textContent = 'Exporting...';
+    var root = document.getElementById('main-content');
+    loadHtml2Canvas().then(function(h2c) { return h2c(root, { backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf', scale: 2 }); }).then(function(canvas) {
+      var ctx = canvas.getContext('2d');
+      ctx.font = "600 24px Caveat, cursive";
+      ctx.fillStyle = document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.15)' : 'rgba(45,31,20,0.12)';
+      ctx.fillText('razzle.lol', canvas.width - 130, canvas.height - 16);
+      var link = document.createElement('a');
+      link.download = 'razzle-compare.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }).finally(function() { btn.disabled = false; btn.textContent = 'Export PNG'; });
+  });
+
+  /* ---- Analytics ---- */
+  apiFetch('/api/analytics/pageview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: '/comptable.html', referrer: document.referrer || '' })
+  }).catch(function() {});
+
+  /* ---- Init from URL ---- */
+  var init = restorePageState({ players: '', season: '' });
+  if (init.season) {
+    var sel = document.getElementById('ctSeason');
+    var opt = document.createElement('option');
+    opt.value = init.season;
+    opt.textContent = init.season;
+    opt.selected = true;
+    sel.appendChild(opt);
+  }
+  if (init.players) {
+    var pids = init.players.split(',');
+    // Fetch names for these IDs
+    var loaded = 0;
+    pids.forEach(function(pid) {
+      apiFetch('/api/players/quick-search?q=' + encodeURIComponent(pid) + '&limit=1')
+        .then(function(data) {
+          var arr = Array.isArray(data) ? data : (data.players || []);
+          var p = arr[0];
+          if (p) {
+            selectedPlayers.push({ id: p.player_id, name: p.full_name, position: p.position, team: p.team });
+          }
+          loaded++;
+          if (loaded === pids.length) {
+            renderChips();
+            if (selectedPlayers.length >= 2) doCompare();
+          }
+        }).catch(function() {
+          loaded++;
+          if (loaded === pids.length) {
+            renderChips();
+            if (selectedPlayers.length >= 2) doCompare();
+          }
+        });
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Scoring Breakdown — Razzle</title>
+<meta property="og:title" content="Scoring Breakdown — Razzle">
+<meta property="og:description" content="Stacked bar visualization of PPR point sources. See exactly how much of a player's scoring comes from rushing, receiving, passing, receptions, and TDs.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Scoring Breakdown — Razzle">
+<meta name="twitter:description" content="Stacked bar visualization of PPR point sources. See exactly how each player's scoring breaks down by category.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Fantasy scoring breakdown on razzle.lol. Stacked bar visualization showing where each player's PPR points come from — rushing, receiving, passing, receptions, TDs.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=fptsbreakdown">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=fptsbreakdown">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .fb-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  .fb-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .fb-header h1 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    color: var(--ink);
+    margin: 0 0 4px;
+  }
+  .fb-header .fb-subtitle {
+    font-family: var(--font-hand);
+    font-size: 20px;
+    color: var(--ink-light);
+  }
+
+  .fb-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .fb-controls select {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 6px 10px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+  }
+  .fb-controls .pos-tabs {
+    display: flex;
+    gap: 4px;
+  }
+  .fb-controls .pos-tab {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 5px 12px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .fb-controls .pos-tab.active {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .fb-export {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 5px 14px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .fb-export:hover { background: var(--ink); color: var(--bg); }
+
+  .fb-loading {
+    text-align: center;
+    font-family: var(--font-hand);
+    font-size: 18px;
+    color: var(--ink-light);
+    padding: 60px 0;
+  }
+
+  .fb-card {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: var(--radius-sm);
+    box-shadow: 4px 4px 0 var(--ink);
+    overflow: hidden;
+  }
+  .fb-card-header {
+    font-family: var(--font-display);
+    font-size: 18px;
+    padding: 10px 16px;
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .fb-legend {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .fb-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+  .fb-legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--ink-faint);
+  }
+
+  /* Player row */
+  .fb-row {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-bottom: 2px dashed var(--border-dashed);
+    gap: 8px;
+  }
+  .fb-row:hover { background: var(--bg-warm); }
+
+  .fb-rank {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink-light);
+    width: 24px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .fb-name {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    width: 160px;
+    flex-shrink: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .fb-pos-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: var(--radius-sm);
+    color: var(--text-on-accent);
+    flex-shrink: 0;
+  }
+  .fb-ppg {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    width: 40px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .fb-bar-container {
+    flex: 1;
+    height: 20px;
+    display: flex;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 2px solid var(--ink-faint);
+    min-width: 200px;
+  }
+  .fb-bar-segment {
+    height: 100%;
+    position: relative;
+    transition: width 0.3s ease;
+  }
+  .fb-bar-segment:hover {
+    opacity: 0.85;
+  }
+  .fb-bar-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-on-accent);
+    white-space: nowrap;
+    pointer-events: none;
+    text-shadow: 0 0 2px var(--shadow-text);
+  }
+
+  .fb-empty {
+    text-align: center;
+    font-family: var(--font-hand);
+    font-size: 14px;
+    color: var(--ink-light);
+    padding: 30px 16px;
+  }
+
+  @media (max-width: 768px) {
+    .fb-name { width: 100px; font-size: 11px; }
+    .fb-bar-container { min-width: 120px; }
+  }
+  @media (max-width: 480px) {
+    .fb-page { padding: 16px 8px 40px; }
+    .fb-header h1 { font-size: 20px; }
+    .fb-header .fb-subtitle { font-size: 16px; }
+    .fb-controls { gap: 8px; }
+    .fb-controls .pos-tab { padding: 4px 8px; font-size: 11px; }
+    .fb-name { width: 80px; font-size: 11px; }
+    .fb-bar-container { min-width: 80px; }
+    .fb-row { padding: 4px 8px; gap: 4px; }
+    .fb-legend { gap: 8px; }
+    .fb-card-header { font-size: 14px; padding: 8px 12px; }
+  }
+
+  /* Dark mode */
+  [data-theme="dark"] .fb-bar-label { text-shadow: none; }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div id="site-header" data-page="fptsbreakdown"></div>
+
+<main class="fb-page" id="main-content">
+  <div class="fb-header">
+    <h1>Scoring Breakdown</h1>
+    <div class="fb-subtitle">where do the fantasy points come from</div>
+  </div>
+
+  <div class="fb-controls">
+    <select id="fbSeason" aria-label="Season"></select>
+    <div class="pos-tabs" role="tablist" aria-label="Position filter">
+      <button class="pos-tab active" data-pos="">ALL</button>
+      <button class="pos-tab" data-pos="QB">QB</button>
+      <button class="pos-tab" data-pos="RB">RB</button>
+      <button class="pos-tab" data-pos="WR">WR</button>
+      <button class="pos-tab" data-pos="TE">TE</button>
+    </div>
+    <button class="fb-export" id="fbExport">Export PNG</button>
+  </div>
+
+  <div class="fb-legend">
+    <div class="fb-legend-item"><div class="fb-legend-swatch" style="background:var(--blue)"></div>Pass Yds</div>
+    <div class="fb-legend-item"><div class="fb-legend-swatch" style="background:var(--green)"></div>Rush Yds</div>
+    <div class="fb-legend-item"><div class="fb-legend-swatch" style="background:var(--orange)"></div>Rec Yds</div>
+    <div class="fb-legend-item"><div class="fb-legend-swatch" style="background:var(--purple)"></div>Receptions</div>
+    <div class="fb-legend-item"><div class="fb-legend-swatch" style="background:var(--red)"></div>TDs</div>
+  </div>
+
+  <div id="fbContent" style="overflow-x:auto">
+    <div class="fb-loading">breaking down the box score...</div>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  'use strict';
+
+
+  function fmt(v, dec) {
+    if (v === null || v === undefined) return '-';
+    return Number(v).toFixed(dec === undefined ? 1 : dec);
+  }
+
+  var _cs = getComputedStyle(document.documentElement);
+  var POS_COLORS = {
+    QB: _cs.getPropertyValue('--pos-qb').trim() || '#5b7fff',
+    RB: _cs.getPropertyValue('--pos-rb').trim() || '#2ec4b6',
+    WR: _cs.getPropertyValue('--pos-wr').trim() || '#d97757',
+    TE: _cs.getPropertyValue('--pos-te').trim() || '#8b5cf6'
+  };
+  var COMP_COLORS = {
+    pass_yd: _cs.getPropertyValue('--blue').trim() || '#5b7fff',
+    rush_yd: _cs.getPropertyValue('--green').trim() || '#2ec4b6',
+    rec_yd: _cs.getPropertyValue('--orange').trim() || '#d97757',
+    rec: _cs.getPropertyValue('--purple').trim() || '#8b5cf6',
+    td: _cs.getPropertyValue('--red').trim() || '#e63946'
+  };
+
+  var currentPosition = '';
+
+  /* ---- URL state ---- */
+
+  /* ---- Fetch ---- */
+  function load() {
+    var selSeason = document.getElementById('fbSeason');
+    var season = selSeason.value || '';
+    var pos = currentPosition;
+    savePageState({ season: season, pos: pos });
+
+    var url = '/api/fpts-breakdown?';
+    if (season) url += 'season=' + encodeURIComponent(season) + '&';
+    if (pos) url += 'position=' + encodeURIComponent(pos) + '&';
+
+    document.getElementById('fbContent').innerHTML = '<div class="fb-loading">' + razzleLoading() + '</div>';
+
+    fetch(url).then(function(r) {
+      if (!r.ok) throw new Error('API error');
+      return r.json();
+    }).then(function(data) {
+      populateSeasons(data.season);
+      render(data);
+    }).catch(function() {
+      document.getElementById('fbContent').innerHTML = '<div class="fb-loading">the tape machine jammed — give it another shot</div>';
+    });
+  }
+
+  function populateSeasons(current) {
+    var sel = document.getElementById('fbSeason');
+    if (sel.options.length <= 1) {
+      sel.innerHTML = '';
+      var now = new Date();
+      var latestSeason = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+      for (var y = latestSeason; y >= 2015; y--) {
+        var opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        if (y === current) opt.selected = true;
+        sel.appendChild(opt);
+      }
+    }
+  }
+
+  /* ---- Render ---- */
+  function render(data) {
+    var players = data.players || [];
+
+    if (!players.length) {
+      document.getElementById('fbContent').innerHTML = '<div class="fb-card"><div class="fb-card-header">Scoring Breakdown</div><div class="fb-empty">' + razzleEmpty() + '</div></div>';
+      return;
+    }
+
+    var html = '<div class="fb-card">';
+    html += '<div class="fb-card-header">PPR Scoring Components (' + escapeHtml(String(data.count)) + ' players)</div>';
+
+    for (var i = 0; i < players.length; i++) {
+      var p = players[i];
+      var posColor = POS_COLORS[p.position] || (_cs.getPropertyValue('--ink-light').trim() || '#8a7565');
+
+      html += '<div class="fb-row">';
+      html += '<div class="fb-rank">' + (i + 1) + '</div>';
+      html += '<div class="fb-name">' + escapeHtml(p.name) + ' <span style="font-size:11px;color:var(--ink-light)">' + escapeHtml(p.team) + '</span></div>';
+      html += '<div class="fb-pos-badge" style="background:' + posColor + '">' + escapeHtml(p.position) + '</div>';
+      html += '<div class="fb-ppg">' + escapeHtml(String(fmt(p.ppg))) + '</div>';
+
+      // Stacked bar
+      html += '<div class="fb-bar-container">';
+
+      var segments = [
+        { pct: p.pass_yd_pct, color: COMP_COLORS.pass_yd, label: 'Pass ' + escapeHtml(String(fmt(p.pass_yd_pct, 0))) + '%', title: 'Pass Yds: ' + escapeHtml(String(fmt(p.pass_yd_pts))) + ' pts' },
+        { pct: p.rush_yd_pct, color: COMP_COLORS.rush_yd, label: 'Rush ' + escapeHtml(String(fmt(p.rush_yd_pct, 0))) + '%', title: 'Rush Yds: ' + escapeHtml(String(fmt(p.rush_yd_pts))) + ' pts' },
+        { pct: p.rec_yd_pct, color: COMP_COLORS.rec_yd, label: 'Rec ' + escapeHtml(String(fmt(p.rec_yd_pct, 0))) + '%', title: 'Rec Yds: ' + escapeHtml(String(fmt(p.rec_yd_pts))) + ' pts' },
+        { pct: p.rec_pct, color: COMP_COLORS.rec, label: 'PPR ' + escapeHtml(String(fmt(p.rec_pct, 0))) + '%', title: 'Receptions: ' + escapeHtml(String(fmt(p.rec_pts))) + ' pts' },
+        { pct: p.td_pct, color: COMP_COLORS.td, label: 'TD ' + escapeHtml(String(fmt(p.td_pct, 0))) + '%', title: 'TDs: ' + escapeHtml(String(fmt(p.td_pts))) + ' pts' }
+      ];
+
+      for (var j = 0; j < segments.length; j++) {
+        var seg = segments[j];
+        if (seg.pct <= 0) continue;
+        html += '<div class="fb-bar-segment" style="width:' + seg.pct + '%;background:' + seg.color + '" title="' + seg.title + '">';
+        if (seg.pct >= 10) {
+          html += '<span class="fb-bar-label">' + seg.label + '</span>';
+        }
+        html += '</div>';
+      }
+
+      html += '</div>';
+      html += '</div>';
+    }
+
+    html += '</div>';
+    document.getElementById('fbContent').innerHTML = html;
+  }
+
+  /* ---- Position tabs ---- */
+  document.querySelectorAll('.pos-tab').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.pos-tab').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentPosition = btn.getAttribute('data-pos') || '';
+      load();
+    });
+  });
+
+  document.getElementById('fbSeason').addEventListener('change', load);
+
+  /* ---- PNG export ---- */
+  document.getElementById('fbExport').addEventListener('click', function() {
+    var btn = this; btn.disabled = true; btn.textContent = 'Exporting...';
+    var root = document.getElementById('main-content');
+    loadHtml2Canvas().then(function(h2c) { return h2c(root, { backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf', scale: 2 }); }).then(function(canvas) {
+      var ctx = canvas.getContext('2d');
+      ctx.font = "600 24px Caveat, cursive";
+      ctx.fillStyle = document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.15)' : 'rgba(45,31,20,0.12)';
+      ctx.fillText('razzle.lol', canvas.width - 130, canvas.height - 16);
+      var link = document.createElement('a');
+      link.download = 'razzle-fpts-breakdown.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }).finally(function() { btn.disabled = false; btn.textContent = 'Export PNG'; });
+  });
+
+  /* ---- Analytics ---- */
+  fetch('/api/analytics/pageview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: '/fptsbreakdown.html', referrer: document.referrer || '' })
+  }).catch(function() {});
+
+  /* ---- Init from URL ---- */
+  var init = restorePageState({ pos: '', season: '' });
+  if (init.pos) {
+    currentPosition = init.pos;
+    document.querySelectorAll('.pos-tab').forEach(function(b) {
+      b.classList.toggle('active', (b.getAttribute('data-pos') || '') === init.pos);
+    });
+  }
+  if (init.season) {
+    var sel = document.getElementById('fbSeason');
+    var opt = document.createElement('option');
+    opt.value = init.season;
+    opt.textContent = init.season;
+    opt.selected = true;
+    sel.appendChild(opt);
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,2283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Razzle Lab — 100+ Stats, Custom Formulas, Forever Free</title>
+<meta property="og:title" content="Razzle Lab — 100+ Stats, Custom Formulas, Forever Free">
+<meta property="og:description" content="The Screener: filter 1,200+ NFL players and 9,800+ college players across 100+ stat columns. Custom formulas, heat maps, radar charts. Forever free.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://razzle.lol/lab.html">
+<meta property="og:image" content="https://razzle.lol/assets/og-image-lab.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Razzle Lab — 100+ Stats, Custom Formulas, Forever Free">
+<meta name="twitter:description" content="The Screener: filter 1,200+ NFL players and 9,800+ college players across 100+ stat columns. Custom formulas, heat maps, radar charts. Forever free.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image-lab.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Razzle's Screener: the fantasy football research lab. Filter 1,200+ NFL players, 9,800+ college players, 329 scored prospects across 100+ stats. Custom formulas, radar charts, scatter plots, heat maps.">
+<link rel="canonical" href="https://razzle.lol/lab.html">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="lab-panels.css">
+<link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- NAV -->
+<div id="site-header" data-page="lab"><button type="button" class="lab-menu-toggle btn-chunky" aria-label="Toggle sidebar" aria-expanded="false" style="font-size:18px; padding:4px 10px; line-height:1;">&#9776;</button></div>
+
+<main id="main-content">
+<noscript>
+  <div style="text-align:center; padding:48px 24px; font-family:var(--font-mono); color:var(--ink-medium);">
+    <p style="font-family:var(--font-display); font-size:24px; margin-bottom:12px;">JavaScript required</p>
+    <p>The Lab needs JavaScript to run. Please enable it or check your ad blocker.</p>
+    <p style="font-family:var(--font-hand); font-size:18px; margin-top:16px; color:var(--ink-light);">pulling film requires electricity...</p>
+  </div>
+</noscript>
+<h1 class="sr-only">Razzle Screener — Fantasy Football Research Lab</h1>
+<!-- SIDEBAR -->
+<aside class="lab-sidebar" id="labSidebar" role="navigation" aria-label="Screener panels">
+  <div class="lab-sidebar-inner">
+
+    <!-- First-visit onboarding card (hidden after dismiss) -->
+    <div class="sidebar-onboard" id="sidebarOnboard" style="display:none;padding:8px 10px;margin:0 8px 8px;background:var(--orange-light,#fff3eb);border:2px solid var(--orange);border-radius:6px;font-family:var(--font-mono);font-size:11px;line-height:1.5;">
+      <div style="font-weight:700;margin-bottom:4px;">New here? Start with these:</div>
+      <div style="margin-bottom:2px;"><a href="#" data-panel="screener" style="color:var(--orange);text-decoration:underline;">The Screener</a> — filter any stat</div>
+      <div style="margin-bottom:2px;"><a href="#" data-panel="weekly" style="color:var(--orange);text-decoration:underline;">Weekly Heatmap</a> — spot trends fast</div>
+      <div style="margin-bottom:2px;"><a href="#" data-panel="leaders" style="color:var(--orange);text-decoration:underline;">Stat Leaders</a> — who's on top</div>
+      <div style="margin-top:4px;"><a href="#" onclick="event.preventDefault();document.getElementById('sidebarOnboard').style.display='none';try{localStorage.setItem('razzle_lab_visited','1')}catch(e){}" style="color:var(--ink-light);font-size:10px;">dismiss</a></div>
+    </div>
+
+    <div class="sidebar-search-wrap">
+      <input type="text" class="sidebar-search" id="sidebarSearch" placeholder="Search tools..." autocomplete="off" spellcheck="false" aria-label="Search tools">
+      <span class="sidebar-tool-count" id="sidebarToolCount"></span>
+    </div>
+
+    <div class="sidebar-favorites" id="sidebarFavorites">
+      <div class="sidebar-recent-label">Favorites</div>
+      <div class="sidebar-recent-chips" id="sidebarFavChips"></div>
+    </div>
+
+    <!-- QUICK-START PATHS — for first-time visitors (CEO-021) -->
+    <div class="sidebar-start-here" id="sidebarStartHere" style="display:none;">
+      <!-- Phase 1: Path chooser (shown when no user type set) -->
+      <div id="quickStartChooser">
+        <div style="font-family:var(--font-mono); font-size:11px; font-weight:700; color:var(--orange); padding:0 12px 4px; letter-spacing:0.5px; text-transform:uppercase;">WHAT DO YOU PLAY?</div>
+        <button type="button" class="quick-start-btn" data-path="dynasty">Dynasty<span class="start-here-hint">rankings, trade values, aging curves</span></button>
+        <button type="button" class="quick-start-btn" data-path="redraft">Redraft<span class="start-here-hint">matchups, trending players, weekly heatmap</span></button>
+        <button type="button" class="quick-start-btn" data-path="prospects">Prospect Scouting<span class="start-here-hint">big board, draft class, percentiles</span></button>
+        <button type="button" class="quick-start-btn quick-start-dismiss" data-path="all">Show me everything</button>
+      </div>
+      <!-- Phase 2: Curated panel list (shown after choosing a path) -->
+      <div id="quickStartPanels" style="display:none;">
+        <div style="font-family:var(--font-mono); font-size:11px; font-weight:700; color:var(--orange); padding:0 12px 4px; letter-spacing:0.5px; text-transform:uppercase;">YOUR PATH <a href="#" id="quickStartSwitch" style="font-weight:400; color:var(--ink-light); text-decoration:underline; margin-left:6px; font-size:10px;">switch</a></div>
+        <div id="quickStartPanelList"></div>
+      </div>
+      <div style="border-bottom:2px dashed var(--border-dashed); margin:8px 12px;"></div>
+    </div>
+
+    <div class="sidebar-recent" id="sidebarRecent">
+      <div class="sidebar-recent-label">Recent</div>
+      <div class="sidebar-recent-chips" id="sidebarRecentChips"></div>
+    </div>
+
+    <!-- THE SCREENER — Forever Free -->
+    <div class="lab-sidebar-category sidebar-cat-forever-free" style="color:var(--orange); cursor:default;"><span class="cat-icon" style="display:none">&#x2605;</span><span class="cat-text">FOREVER FREE</span></div>
+    <a href="#" class="lab-sidebar-item active" data-panel="screener" data-icon="&#x25C9;">The Screener<span class="sidebar-tooltip">The Screener</span></a>
+
+    <!-- FREE PANELS -->
+    <div class="lab-sidebar-category sidebar-cat-free-panels" style="color:var(--ink-light); cursor:default; font-size:11px;"><span class="cat-icon" style="display:none">&#x2606;</span><span class="cat-text">FREE PANELS</span></div>
+    <a href="#" class="lab-sidebar-item staff-pick" data-panel="weekly" data-icon="&#x25A6;">Weekly Heatmap<span class="sidebar-tooltip">Weekly Heatmap</span></a>
+    <a href="#" class="lab-sidebar-item staff-pick" data-panel="prospects" data-icon="&#x2606;">Big Board<span class="sidebar-tooltip">Big Board</span></a>
+    <a href="#" class="lab-sidebar-item" data-panel="dashboard" data-icon="&#x25A3;">Dashboard<span class="sidebar-tooltip">Dashboard</span></a>
+    <a href="#" class="lab-sidebar-item staff-pick" data-panel="leaders" data-icon="&#x1F451;">Stat Leaders<span class="sidebar-tooltip">Stat Leaders</span></a>
+
+    <a href="#" class="sidebar-browse-all" id="sidebarBrowseAll" style="display:none;">Browse all 80+ panels</a>
+
+    <!-- PRO PANELS -->
+    <div class="lab-sidebar-category lab-sidebar-pro-divider sidebar-cat-pro-parent" style="color:var(--orange); cursor:default;"><span class="cat-icon" style="display:none">&#x1F512;</span><span class="cat-text">PRO</span></div>
+
+    <div class="lab-sidebar-category"><span class="cat-icon"><img src="/assets/agents/bones.svg" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;opacity:0.6" alt="Bones" loading="lazy"></span><span class="cat-text">Dynasty Essentials</span><span class="cat-chevron">&#x25B8;</span></div>
+    <a href="#" class="lab-sidebar-item pro-locked staff-pick" data-panel="rankings" data-icon="&#x2660;">Dynasty Rankings<span class="sidebar-tooltip">Dynasty Rankings</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="tiers" data-icon="&#x25B2;">Tiers<span class="sidebar-tooltip">Tiers</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked staff-pick" data-panel="tradevalues" data-icon="&#x2194;">Trade Values<span class="sidebar-tooltip">Trade Values</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="cheatsheet" data-icon="&#x2611;">Cheat Sheet<span class="sidebar-tooltip">Cheat Sheet</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="breakouts" data-icon="&#x2605;">Breakouts<span class="sidebar-tooltip">Breakouts</span></a>
+
+    <div class="lab-sidebar-category"><span class="cat-icon"><img src="/assets/agents/bones.svg" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;opacity:0.6" alt="Bones" loading="lazy"></span><span class="cat-text">Rankings &amp; Values</span><span class="cat-chevron">&#x25B8;</span></div>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="vorp" data-icon="&#x2191;">VORP<span class="sidebar-tooltip">Value Over Replacement Player</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="advantage" data-icon="&#x25C6;">Positional Advantage<span class="sidebar-tooltip">Scoring edge over position average</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="auction" data-icon="$">Auction Values<span class="sidebar-tooltip">Auction Values</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="buysell" data-icon="&#x21C5;">Buy / Sell<span class="sidebar-tooltip">Buy / Sell</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="stocks" data-icon="&#x2197;">Stock Watch<span class="sidebar-tooltip">Stock Watch</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="waivers" data-icon="&#x2295;">Rising Players<span class="sidebar-tooltip">Rising Players</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="faab" data-icon="&#x1F4B0;">FAAB Strategy<span class="sidebar-tooltip">FAAB Strategy</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="scarcity" data-icon="&#x25EF;">Scarcity<span class="sidebar-tooltip">Scarcity</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="handcuffs" data-icon="&#x26D3;">Handcuffs<span class="sidebar-tooltip">Handcuffs</span></a>
+
+    <div class="lab-sidebar-category"><span class="cat-icon"><img src="/assets/agents/octo.svg" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;opacity:0.6" alt="Octo" loading="lazy"></span><span class="cat-text">Performance</span></div>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="efficiency" data-icon="&#x26A1;">Efficiency<span class="sidebar-tooltip">Efficiency</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked staff-pick" data-panel="consistency" data-icon="&#x2261;">Consistency<span class="sidebar-tooltip">Consistency</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="snapefficiency" data-icon="&#x23F1;">Snap Efficiency<span class="sidebar-tooltip">Fantasy points per snap</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="workload" data-icon="&#x2699;">Workload Monitor<span class="sidebar-tooltip">Workload Monitor</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="dualthreat" data-icon="&#x21CB;">Dual-Threat<span class="sidebar-tooltip">Rush + receiving versatility index</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="targetpremium" data-icon="&#x25CE;">Target Premium<span class="sidebar-tooltip">Target quality: YPT + catch% + YAC + aDOT</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="drops" data-icon="&#x2193;">Drop Rate<span class="sidebar-tooltip">Pass drops per target by receiver</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="garbagetime" data-icon="&#x267B;">Garbage Time<span class="sidebar-tooltip">Stat padders vs clean producers</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="successrate" data-icon="&#x2713;">Success Rate<span class="sidebar-tooltip">Positive play rate (EPA-based)</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="correlations" data-icon="&#x2234;">Correlations<span class="sidebar-tooltip">Which stats predict fantasy PPG?</span></a>
+
+    <div class="lab-sidebar-category"><span class="cat-icon"><img src="/assets/agents/hawkeye.svg" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;opacity:0.6" alt="Hawkeye" loading="lazy"></span><span class="cat-text">Game Analysis</span></div>
+    <a href="#" class="lab-sidebar-item pro-locked staff-pick" data-panel="matchups" data-icon="&#x2694;">Matchups<span class="sidebar-tooltip">Matchups</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="stacks" data-icon="&#x25A4;">Stacks<span class="sidebar-tooltip">QB + pass catcher correlations</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="redzone" data-icon="&#x25A0;">Red Zone<span class="sidebar-tooltip">Red Zone</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="streaks" data-icon="&#x1F525;">Streaks<span class="sidebar-tooltip">Streaks</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="weeklyleaders" data-icon="&#x265B;">Weekly Leaders<span class="sidebar-tooltip">Weekly Leaders</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="weeklymvp" data-icon="&#x2655;">Weekly MVP Grid<span class="sidebar-tooltip">Weekly MVP Grid</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="playoffs" data-icon="&#x1F3C6;">Playoffs<span class="sidebar-tooltip">Playoffs</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="gamescript" data-icon="&#x1F3AC;">Game Script<span class="sidebar-tooltip">Fantasy production in winning vs losing scripts</span></a>
+
+    <div class="lab-sidebar-category"><span class="cat-icon"><img src="/assets/agents/dolphin.svg" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;opacity:0.6" alt="Dr. Dolphin" loading="lazy"></span><span class="cat-text">Trends &amp; Projections</span></div>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="usage" data-icon="&#x2935;">Usage Trends<span class="sidebar-tooltip">Usage Trends</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="yoy" data-icon="&#x21C4;">Year-over-Year<span class="sidebar-tooltip">Year-over-Year</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="aging" data-icon="&#x231B;">Aging Curves<span class="sidebar-tooltip">Aging Curves</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="pace" data-icon="&#x23F3;">Player Pace<span class="sidebar-tooltip">Projected season totals per player</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="seasonpace" data-icon="&#x23ED;">Season Pace<span class="sidebar-tooltip">Milestone watch: 1000yd, 10TD pace</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="tdregression" data-icon="&#x2248;">TD Regression<span class="sidebar-tooltip">Expected vs actual touchdowns</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="airyards" data-icon="&#x2708;">Air Yards<span class="sidebar-tooltip">Target depth and air yard share</span></a>
+
+    <div class="lab-sidebar-category"><span class="cat-icon"><img src="/assets/agents/hawkeye.svg" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;opacity:0.6" alt="Hawkeye" loading="lazy"></span><span class="cat-text">College</span></div>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="draftclass" data-icon="&#x1F4CB;">Draft Class Analytics<span class="sidebar-tooltip">Draft Class Analytics</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="percentiles" data-icon="%">Percentiles<span class="sidebar-tooltip">Percentiles</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="drafttracker" data-icon="&#x1F4C5;">Draft Class Tracker<span class="sidebar-tooltip">How each draft class performed in fantasy</span></a>
+
+    <div class="lab-sidebar-category"><span class="cat-icon"><img src="/assets/agents/atlas.svg" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;opacity:0.6" alt="Atlas" loading="lazy"></span><span class="cat-text">Player Tools</span></div>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="career" data-icon="&#x1F4C4;">Career Stats<span class="sidebar-tooltip">Career Stats</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="career-compare" data-icon="&#x2B0C;">Career Compare<span class="sidebar-tooltip">Career Compare</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="comptable" data-icon="&#x2263;">Compare Table<span class="sidebar-tooltip">Compare Table</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="strengths" data-icon="&#x1F4AA;">Strengths<span class="sidebar-tooltip">Strengths</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="reportcard" data-icon="&#x1F4DD;">Report Card<span class="sidebar-tooltip">Report Card</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="fptsbreakdown" data-icon="&#x2211;">Points Breakdown<span class="sidebar-tooltip">Fantasy points by scoring category</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="gamelog" data-icon="&#x1F4D3;">Game Log<span class="sidebar-tooltip">Game Log</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="archetypes" data-icon="&#x2726;">Archetypes<span class="sidebar-tooltip">Archetypes</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="breakdown" data-icon="&#x25E9;">Scoring Breakdown<span class="sidebar-tooltip">Donut chart: scoring category %</span></a>
+
+    <div class="lab-sidebar-category"><span class="cat-icon"><img src="/assets/agents/bones.svg" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;opacity:0.6" alt="Bones" loading="lazy"></span><span class="cat-text">League Tools</span></div>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="rosterbuilder" data-icon="&#x1F4CB;">Roster Builder<span class="sidebar-tooltip">Roster Builder</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="tradefinder" data-icon="&#x21C6;">Trade Finder<span class="sidebar-tooltip">Trade Finder</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="scoring" data-icon="&#x2116;">Scoring Comparison<span class="sidebar-tooltip">Scoring Comparison</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="schedule" data-icon="&#x1F4C5;">Schedule / SOS<span class="sidebar-tooltip">Schedule / SOS</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="opportunity" data-icon="&#x25CE;">Opportunity Share<span class="sidebar-tooltip">Opportunity Share</span></a>
+
+    <div class="lab-sidebar-category"><span class="cat-icon"><img src="/assets/agents/atlas.svg" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;opacity:0.6" alt="Atlas" loading="lazy"></span><span class="cat-text">Records &amp; History</span></div>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="records" data-icon="&#x1F4D6;">Records<span class="sidebar-tooltip">Records</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="recap" data-icon="&#x1F4F0;">Season Recap<span class="sidebar-tooltip">Season Recap</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="awards" data-icon="&#x1F3C5;">Awards<span class="sidebar-tooltip">Awards</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="explorer" data-icon="&#x1F9ED;">Explorer<span class="sidebar-tooltip">Explorer</span></a>
+
+    <div class="lab-sidebar-category"><span class="cat-icon"><img src="/assets/agents/hawkeye.svg" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;opacity:0.6" alt="Hawkeye" loading="lazy"></span><span class="cat-text">Teams</span></div>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="targets" data-icon="&#x25CE;">Target Distribution<span class="sidebar-tooltip">Target Distribution</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="team" data-icon="&#x1F465;">Team Rosters<span class="sidebar-tooltip">Team Rosters</span></a>
+    <a href="#" class="lab-sidebar-item pro-locked" data-panel="powerrankings" data-icon="&#x1F3C6;">Power Rankings<span class="sidebar-tooltip">Which teams have the most dynasty value?</span></a>
+
+  </div>
+
+  <button type="button" class="lab-sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Toggle sidebar">
+    <span id="sidebarToggleIcon">&raquo;</span>
+  </button>
+</aside>
+
+<!-- LAB MAIN -->
+<div class="lab-main" id="labMain">
+
+<!-- PERSISTENT UNIVERSE TOGGLE BAR -->
+<div class="universe-bar" id="universeBar">
+  <div class="universe-bar-inner">
+    <button type="button" class="btn-chunky universe-toggle active" id="universeNFL" onclick="setUniverse('nfl')">NFL</button>
+    <button type="button" class="btn-chunky universe-toggle" id="universeCollege" onclick="setUniverse('college')">College</button>
+  </div>
+  <div class="college-sub-toggle" id="collegeSubToggle" style="display:none;">
+    <button type="button" class="btn-chunky college-view-btn active" id="collegeViewStats" onclick="setCollegeView('stats')">Season Stats</button>
+    <button type="button" class="btn-chunky college-view-btn" id="collegeViewProspects" onclick="setCollegeView('prospects')">Draft Prospects</button>
+  </div>
+  <span class="universe-bar-label" id="universeLabel" style="font-family:var(--font-hand); font-size:16px; color:var(--ink-light);">NFL universe</span>
+</div>
+
+<!-- PANEL: SCREENER (default) -->
+<div class="lab-panel" id="panel-screener">
+<div id="lab-nudge-container"></div>
+
+<!-- TOOLBAR -->
+<div class="lab-container">
+  <div class="toolbar" id="mainToolbar">
+    <!-- Position chips -->
+    <div class="toolbar-section">
+      <span class="chip active" data-pos="ALL" role="button" tabindex="0" onclick="togglePosition('ALL')">All</span>
+      <span class="chip" data-pos="QB" role="button" tabindex="0" onclick="togglePosition('QB')">QB</span>
+      <span class="chip" data-pos="RB" role="button" tabindex="0" onclick="togglePosition('RB')">RB</span>
+      <span class="chip" data-pos="WR" role="button" tabindex="0" onclick="togglePosition('WR')">WR</span>
+      <span class="chip" data-pos="TE" role="button" tabindex="0" onclick="togglePosition('TE')">TE</span>
+    </div>
+
+    <div class="toolbar-divider"></div>
+
+    <input type="search" class="input-chunky search-box" id="searchInput" placeholder="search players..." autocomplete="off" aria-label="Search players">
+
+    <div class="toolbar-divider hide-mobile"></div>
+
+    <div class="toolbar-section">
+      <select class="select-chunky" id="seasonSelect" aria-label="Season"></select>
+      <select class="select-chunky" id="weekSelect" style="display:none;" title="Filter by week" aria-label="Filter by week"></select>
+      <select class="select-chunky" id="presetSelect" onchange="applyPresetFromToolbar(this.value)" title="Quick column preset" aria-label="Column preset">
+        <option value="">Preset...</option>
+      </select>
+    </div>
+
+    <div class="toolbar-divider hide-mobile"></div>
+
+    <div class="toolbar-section">
+      <button type="button" class="btn-chunky" onclick="openColumnPicker()">Columns</button>
+      <button type="button" class="btn-chunky" id="formulaBtn" onclick="openFormulaBuilder()">Formulas</button>
+      <button type="button" class="btn-chunky" onclick="openFilterModal()">+ Filter</button>
+    </div>
+
+    <div class="toolbar-divider hide-mobile"></div>
+
+    <!-- Undo/Redo — only visible when enabled -->
+    <button type="button" class="btn-chunky undo-redo-btn" id="undoBtn" onclick="undoState()" title="Undo (Ctrl+Z)" aria-label="Undo" disabled>&#8630;</button>
+    <button type="button" class="btn-chunky undo-redo-btn" id="redoBtn" onclick="redoState()" title="Redo (Ctrl+Y)" aria-label="Redo" disabled>&#8631;</button>
+
+    <!-- Tools dropdown -->
+    <div class="tools-dropdown-wrap">
+      <button type="button" class="btn-chunky tools-dropdown-btn" id="toolsDropdownBtn" onclick="toggleToolsDropdown()" aria-expanded="false" aria-haspopup="true">Tools &#9662;</button>
+      <div class="tools-dropdown" id="toolsDropdown">
+        <!-- VIEW -->
+        <div class="tools-dropdown-section">
+          <div class="tools-dropdown-label">View</div>
+          <div class="tools-dropdown-grid">
+            <button type="button" class="btn-chunky" onclick="openChartPanel(); closeToolsDropdown();">Charts</button>
+            <button type="button" class="btn-chunky" onclick="openCompare(); closeToolsDropdown();" id="compareBtn" title="Select 2+ players with checkboxes first">Compare</button>
+            <button type="button" class="btn-chunky" id="watchlistBtn" onclick="openWatchlistPanel(); closeToolsDropdown();" style="border-color:var(--orange);">Watchlist</button>
+            <button type="button" class="btn-chunky" onclick="openMyRoster(); closeToolsDropdown();" style="border-color:var(--green);">My Roster</button>
+            <select class="select-chunky" id="savedViewSelect" onchange="loadSavedView(this.value); closeToolsDropdown();" title="Saved views" aria-label="Saved views" style="max-width:140px;">
+              <option value="">Views...</option>
+            </select>
+            <button type="button" class="btn-chunky" onclick="saveCurrentView(); closeToolsDropdown();" style="font-size:12px;">Save View</button>
+            <button type="button" class="btn-chunky" onclick="openSavedViews(); closeToolsDropdown();">Manage Views</button>
+          </div>
+        </div>
+        <!-- EXPORT -->
+        <div class="tools-dropdown-section">
+          <div class="tools-dropdown-label">Export</div>
+          <div class="tools-dropdown-grid">
+            <button type="button" class="btn-chunky btn-csv-export" onclick="exportCSV(); closeToolsDropdown();" title="Export CSV" aria-label="Export CSV">CSV</button>
+            <button type="button" class="btn-chunky" onclick="openShareModal(); closeToolsDropdown();" style="border-color:var(--orange);">Share</button>
+            <button type="button" class="btn-chunky" id="exportRankingsBtn" onclick="openRankingsExport(); closeToolsDropdown();" style="display:none;">Export Rankings</button>
+          </div>
+        </div>
+        <!-- DISPLAY -->
+        <div class="tools-dropdown-section">
+          <div class="tools-dropdown-label">Display</div>
+          <div class="tools-dropdown-grid">
+            <button type="button" class="btn-chunky settings-btn" id="relevanceToggle" onclick="toggleRelevance()">Fantasy Relevant</button>
+            <button type="button" class="btn-chunky settings-btn" id="heatColorsBtn" onclick="toggleHeatColors()" title="Percentile coloring (H)">Heat</button>
+            <button type="button" class="btn-chunky settings-btn" id="percentileModeBtn" onclick="togglePercentileMode()" title="Percentile ranks (R)">Pctl</button>
+            <button type="button" class="btn-chunky settings-btn" id="dataBarsBtn" onclick="toggleDataBars()" title="Inline data bars (B)">Bars</button>
+            <button type="button" class="btn-chunky settings-btn" id="leaderBadgesBtn" onclick="toggleLeaderBadges()" title="Top 3 badges (L)">Top 3</button>
+            <button type="button" class="btn-chunky settings-btn" id="diffModeBtn" onclick="toggleDiffMode()" title="Diff vs pinned (I)">Diff</button>
+            <button type="button" class="btn-chunky settings-btn" id="tierBreaksBtn" onclick="toggleTierBreaks()" title="Tier dividers (T)">Tiers</button>
+            <button type="button" class="btn-chunky settings-btn" id="densityBtn" onclick="toggleDensity()" title="Compact rows (D)">Dense</button>
+            <button type="button" class="btn-chunky settings-btn" id="groupHeadersBtn" onclick="toggleGroupHeaders()" title="Column groups (G)">Groups</button>
+            <button type="button" class="btn-chunky settings-btn" id="summaryBarBtn" onclick="toggleSummaryBar()" title="Summary row (A)">Summary</button>
+            <button type="button" class="btn-chunky settings-btn" onclick="openCustomScoring()">Custom Scoring</button>
+          </div>
+          <div class="tools-dropdown-hint">press <kbd>?</kbd> for all keyboard shortcuts</div>
+        </div>
+        <!-- ANALYSIS -->
+        <div class="tools-dropdown-section">
+          <div class="tools-dropdown-label">Analysis</div>
+          <div class="tools-dropdown-grid">
+            <button type="button" class="btn-chunky" onclick="openTradeAnalyzer(); closeToolsDropdown();" style="border-color:var(--orange);">Trade</button>
+            <button type="button" class="btn-chunky" onclick="openFormulaStore(); closeToolsDropdown();">Formula Store</button>
+            <button type="button" class="btn-chunky" id="tagFilterBtn" onclick="toggleTagFilter(); closeToolsDropdown();" oncontextmenu="event.preventDefault(); if(getTaggedCount()>0){if(!this.dataset.confirming){this.dataset.confirming='1';this.textContent='sure? right-click again';var _b=this;setTimeout(function(){delete _b.dataset.confirming;_b.textContent='Tags';},3000);return;}delete this.dataset.confirming;this.textContent='Tags';clearAllTags();}" title="Show only tagged players. Right-click to clear all.">Tags</button>
+            <button type="button" class="btn-chunky" id="tradeValuesBtn" onclick="openTradeValues(); closeToolsDropdown();" style="display:none; border-color:var(--orange);">Trade Values</button>
+            <button type="button" class="btn-chunky" id="agingCurvesBtn" onclick="openAgingCurves(); closeToolsDropdown();" style="display:none; border-color:var(--green);">Aging Curves</button>
+            <button type="button" class="btn-chunky" id="heatMapBtn" onclick="openHeatMap(); closeToolsDropdown();" style="display:none; border-color:var(--red);">Heat Map</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="tools-dropdown-backdrop" id="toolsDropdownBackdrop" onclick="closeToolsDropdown()"></div>
+
+    <!-- Hidden mode-specific buttons -->
+    <button type="button" class="btn-chunky" id="tiersBtn" onclick="openTierView()" style="display:none;">Tiers</button>
+    <button type="button" class="btn-chunky" id="bigBoardBtn" onclick="openBigBoard()" style="display:none;">Big Board</button>
+    <button type="button" class="btn-chunky" id="classAnalyticsBtn" onclick="openClassAnalytics()" style="display:none;">Class Analytics</button>
+
+    <span class="result-count" id="resultCount" aria-live="polite"></span>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar" id="filterBar">
+    <span class="filter-bar-label">Filters</span>
+
+    <!-- Team filter -->
+    <div class="filter-group" id="teamFilterGroup">
+      <select class="select-chunky filter-select-sm" id="teamFilter" onchange="addTeamFromSelect(this)" aria-label="Team filter">
+        <option value="">+ Team</option>
+      </select>
+      <div class="team-chips" id="teamChips"></div>
+    </div>
+
+    <!-- Min GP filter -->
+    <div class="filter-group">
+      <input type="number" class="input-chunky filter-input-sm" id="minGPInput"
+             placeholder="Min GP" min="1" max="17" aria-label="Minimum games played"
+             onchange="setMinGP(this.value)" onkeydown="if(event.key==='Enter'){setMinGP(this.value);this.blur();}">
+    </div>
+
+    <select class="select-chunky filter-select-sm" id="smartFilterSelect" onchange="applySmartFilter(this.value); this.value='';" title="Pre-built filter combos for common analysis" aria-label="Smart filters" style="border-color:var(--orange);">
+      <option value="">Smart Filters</option>
+      <option value="breakout">Breakout Candidates (Age ≤25, Snap% ≥50)</option>
+      <option value="buylow">Buy Low (PPG ≤14, Y/CAR ≥4)</option>
+      <option value="studs">Veteran Studs (Age 26-30, PPG ≥15)</option>
+      <option value="rookies">Rookies (Age ≤23)</option>
+      <option value="workhorses">Workhorses (Snap% ≥65, TGT/G ≥4)</option>
+      <option value="sleepers">Sleepers (PPG ≤12, Snap% ≥40)</option>
+    </select>
+    <div id="activeFilters"></div>
+    <button type="button" class="add-filter-btn" onclick="openFilterModal()">+ add filter</button>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <button type="button" class="scroll-top-btn" id="scrollTopBtn" style="display:none;" onclick="var w=document.querySelector('.table-wrap'); if(w) w.scrollTo({top:0, behavior:'smooth'})" title="Scroll to top" aria-label="Scroll to top">&#9650;</button>
+    <table class="screener-table" id="screenerTable">
+      <caption class="sr-only">NFL Player Statistics Screener</caption>
+      <thead id="tableHead" style="min-height:40px;"></thead>
+      <tbody id="pinnedBody" style="display:none;"></tbody>
+      <tbody id="tableBody"></tbody>
+      <tfoot id="tableFoot" style="display:none;"></tfoot>
+    </table>
+    <div class="loading-msg" id="loadingMsg">
+      <div class="skeleton-table">
+        <div class="skeleton-row skeleton-header"><div class="skeleton-cell" style="width:30%"></div><div class="skeleton-cell" style="width:15%"></div><div class="skeleton-cell" style="width:15%"></div><div class="skeleton-cell" style="width:20%"></div><div class="skeleton-cell" style="width:20%"></div></div>
+        <div class="skeleton-row"><div class="skeleton-cell" style="width:30%"></div><div class="skeleton-cell" style="width:15%"></div><div class="skeleton-cell" style="width:15%"></div><div class="skeleton-cell" style="width:20%"></div><div class="skeleton-cell" style="width:20%"></div></div>
+        <div class="skeleton-row"><div class="skeleton-cell" style="width:28%"></div><div class="skeleton-cell" style="width:15%"></div><div class="skeleton-cell" style="width:12%"></div><div class="skeleton-cell" style="width:18%"></div><div class="skeleton-cell" style="width:22%"></div></div>
+        <div class="skeleton-row"><div class="skeleton-cell" style="width:32%"></div><div class="skeleton-cell" style="width:14%"></div><div class="skeleton-cell" style="width:16%"></div><div class="skeleton-cell" style="width:19%"></div><div class="skeleton-cell" style="width:21%"></div></div>
+        <div class="skeleton-row"><div class="skeleton-cell" style="width:26%"></div><div class="skeleton-cell" style="width:16%"></div><div class="skeleton-cell" style="width:13%"></div><div class="skeleton-cell" style="width:17%"></div><div class="skeleton-cell" style="width:20%"></div></div>
+        <div class="skeleton-row"><div class="skeleton-cell" style="width:30%"></div><div class="skeleton-cell" style="width:15%"></div><div class="skeleton-cell" style="width:15%"></div><div class="skeleton-cell" style="width:20%"></div><div class="skeleton-cell" style="width:20%"></div></div>
+      </div>
+      <div id="loadingText" role="status" aria-live="polite" style="text-align:center; font-family:var(--font-hand); font-size:20px; color:var(--ink-light); margin-top:12px;">pulling film...</div>
+    </div>
+    <div style="display:flex; gap:14px; flex-wrap:wrap; padding:6px 12px; font-family:var(--font-mono); font-size:11px; color:var(--ink-light);">
+      <span><span style="background:var(--green); color:var(--text-on-accent); padding:0 4px; border-radius:var(--radius-sm); border:2px solid var(--ink); font-weight:700;">85+</span> DVS Elite</span>
+      <span><span style="background:var(--pos-qb); color:var(--text-on-accent); padding:0 4px; border-radius:var(--radius-sm); border:2px solid var(--ink); font-weight:700;">70+</span> DVS Star</span>
+      <span><span style="background:var(--orange); color:var(--text-on-accent); padding:0 4px; border-radius:var(--radius-sm); border:2px solid var(--ink); font-weight:700;">55+</span> DVS Starter</span>
+      <span><span style="background:var(--green); color:var(--text-on-accent); padding:0 4px; border-radius:var(--radius-sm); border:2px solid var(--ink); font-weight:700;">+50%</span> Breakout</span>
+      <span style="color:var(--ink-light);">&#8212; = not applicable for position</span>
+    </div>
+  </div>
+
+  <!-- BULK ACTION BAR -->
+  <div class="bulk-action-bar" id="bulkActionBar" style="display:none;">
+    <span class="bulk-count" id="bulkCount"></span>
+    <span class="bulk-names" id="bulkNames"></span>
+    <div id="quickCompareStrip" style="display:none; flex:1; overflow-x:auto; white-space:nowrap;"></div>
+    <button type="button" class="btn-chunky" id="bulkCompareBtn" onclick="openCompare()" style="border-color:var(--orange);">Compare</button>
+    <button type="button" class="btn-chunky" id="bulkPinBtn" onclick="bulkPinSelected()" title="Pin selected players to top for comparison">Pin</button>
+    <button type="button" class="btn-chunky" onclick="openChartPanel()">Chart</button>
+    <button type="button" class="btn-chunky" onclick="clearSelection()" style="border-color:var(--ink-light);">Clear</button>
+  </div>
+
+  <!-- WATERMARK -->
+  <div class="watermark">razzle.lol</div>
+
+  <!-- FOOTER -->
+  <div class="footer-bar">
+    <span>razzle.lol</span>
+    <div class="pagination">
+      <button type="button" class="btn-chunky" id="prevBtn" onclick="prevPage()">← prev</button>
+      <span id="pageInfo"></span>
+      <button type="button" class="btn-chunky" id="nextBtn" onclick="nextPage()">next →</button>
+      <select class="select-chunky" id="pageSizeSelect" onchange="changePageSize(this.value)" style="font-size:11px; padding:4px 6px; margin-left:8px;" title="Rows per page" aria-label="Rows per page">
+        <option value="25">25</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+      </select>
+    </div>
+    <span id="dataSource" style="font-family: var(--font-hand); font-size: 16px; color: var(--ink-light);">
+      the screener is forever free
+    </span>
+  </div>
+  <!-- Inline email capture (CEO-025) -->
+  <div id="labEmailCapture" style="text-align:center; padding:12px 16px; border-top:2px dashed var(--border-dashed); margin-top:8px; display:none;">
+    <form style="display:inline-flex; gap:6px; align-items:center; flex-wrap:wrap; justify-content:center;" onsubmit="return false;" id="labEmailForm">
+      <span style="font-family:var(--font-hand); font-size:14px; color:var(--ink-light);">Weekly insights &rarr;</span>
+      <input type="email" id="labEmailInput" placeholder="your@email.com" required autocomplete="email" style="padding:6px 10px; border:2px solid var(--ink); border-radius:6px; font-family:var(--font-mono); font-size:11px; background:var(--bg-card); width:180px;">
+      <button type="submit" class="btn-chunky btn-primary" style="font-size:11px; padding:6px 14px;">Go</button>
+    </form>
+    <div id="labEmailMsg" style="font-family:var(--font-hand); font-size:13px; margin-top:4px; display:none;"></div>
+  </div>
+</div>
+
+<!-- FILTER MODAL -->
+<div role="dialog" aria-modal="true" aria-labelledby="dlgTitleFilter" class="filter-modal-overlay" id="filterModalOverlay" onclick="closeFilterModal(event)" onkeydown="if(event.key==='Escape'){event.stopPropagation();closeFilterModal();}">
+  <div class="filter-modal" onclick="event.stopPropagation()">
+    <h3 id="dlgTitleFilter">Add Filter</h3>
+    <div class="filter-modal-row">
+      <select class="select-chunky" id="filterStat" style="flex:2" aria-label="Filter stat"></select>
+      <select class="select-chunky" id="filterOp" style="flex:1" aria-label="Filter operator">
+        <option value="gte">≥</option>
+        <option value="lte">≤</option>
+        <option value="gt">></option>
+        <option value="lt"><</option>
+        <option value="eq">=</option>
+      </select>
+      <input type="number" class="input-chunky" id="filterValue" placeholder="0" style="flex:1" inputmode="numeric" aria-label="Filter value" onkeydown="if(event.key==='Enter'){event.preventDefault();addFilter();}if(event.key==='Escape'){event.stopPropagation();closeFilterModal();}">
+    </div>
+    <div class="filter-modal-actions">
+      <button type="button" class="btn-chunky" onclick="closeFilterModal()">Never Mind</button>
+      <button type="button" class="btn-primary" onclick="addFilter()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- COLUMN PICKER -->
+<div role="dialog" aria-modal="true" aria-labelledby="dlgTitleColumns" class="column-picker-overlay" id="columnPickerOverlay" onclick="closeColumnPicker(event)">
+  <div class="column-picker" onclick="event.stopPropagation()">
+    <h3 id="dlgTitleColumns">Columns</h3>
+    <input type="text" id="columnPickerSearch" placeholder="Search columns..." oninput="filterColumnPicker(this.value)" aria-label="Search columns" style="width:100%; padding:8px 12px; margin-bottom:10px; font-family:var(--font-mono); font-size:13px; border:3px solid var(--ink); border-radius:8px; background:var(--bg); box-sizing:border-box;">
+    <div class="preset-bar" id="presetBar"></div>
+    <div id="columnGroups"></div>
+    <div style="margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end;">
+      <button type="button" class="btn-primary" onclick="closeColumnPicker()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- FORMULA BUILDER -->
+<div role="dialog" aria-modal="true" aria-labelledby="dlgTitleFormula" class="filter-modal-overlay" id="formulaOverlay" onclick="closeFormulaBuilder(event)">
+  <div class="filter-modal" style="width:440px;" onclick="event.stopPropagation()">
+    <h3 id="dlgTitleFormula">Custom Formula</h3>
+    <p style="font-family:var(--font-hand); font-size:18px; color:var(--ink-light); margin-bottom:12px;">
+      blend stats into a weighted score <span class="pro-locked" style="font-family:var(--font-mono); font-size:11px; color:var(--ink-light);">unlimited</span>
+    </p>
+    <div class="filter-modal-row">
+      <input type="text" class="input-chunky" id="formulaName" placeholder="formula name" style="flex:1" aria-label="Formula name">
+    </div>
+    <div id="formulaComponents"></div>
+    <button type="button" class="add-filter-btn" onclick="addFormulaComponent()" style="margin:8px 0;">+ add stat</button>
+    <div class="filter-modal-actions">
+      <button type="button" class="btn-chunky" onclick="closeFormulaBuilder()">Never Mind</button>
+      <button type="button" class="btn-primary" onclick="saveFormula()">Save Formula</button>
+    </div>
+    <div id="savedFormulas" style="margin-top:16px; border-top:2px dashed var(--border-dashed); padding-top:12px;"></div>
+  </div>
+</div>
+
+<!-- CHART PANEL -->
+<div role="dialog" aria-modal="true" aria-labelledby="dlgTitleCharts" class="filter-modal-overlay" id="chartOverlay" onclick="closeChartPanel(event)">
+  <div style="background:var(--bg-card); border:3px solid var(--ink); border-radius:12px; box-shadow:4px 4px 0 var(--ink); padding:24px; width:820px; max-width:95vw; max-height:90vh; overflow-y:auto;" onclick="event.stopPropagation()">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+      <h3 id="dlgTitleCharts">Charts</h3>
+      <div style="display:flex; gap:6px;">
+        <button type="button" class="btn-chunky" id="chartTabRadar" onclick="switchChartTab('radar')">Radar</button>
+        <button type="button" class="btn-chunky" id="chartTabScatter" onclick="switchChartTab('scatter')">Scatter</button>
+        <button type="button" class="btn-chunky" id="chartTabTrend" onclick="switchChartTab('trend')">Trend</button>
+        <button type="button" class="btn-chunky" id="chartTabHeatmap" onclick="switchChartTab('heatmap')">Heat Map</button>
+      </div>
+    </div>
+
+    <!-- Chart config -->
+    <div id="chartConfig" style="margin-bottom:16px;"></div>
+
+    <!-- Canvas -->
+    <div id="chartCanvasWrap" style="overflow-x:auto;">
+      <canvas id="chartCanvas" role="img" aria-label="Player statistics chart" width="760" height="460" style="border:2px solid var(--ink); border-radius:8px; background:var(--bg); width:100%;"></canvas>
+    </div>
+
+    <div style="margin-top:12px; display:flex; justify-content:flex-end; gap:8px;">
+      <button type="button" class="btn-primary" id="chartExportBtn" onclick="exportChartPNG()" style="display:none;">Export PNG</button>
+      <button type="button" class="btn-chunky" onclick="closeChartPanel()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- PLAYER COMPARE PANEL -->
+<div role="dialog" aria-modal="true" aria-labelledby="dlgTitleCompare" class="filter-modal-overlay" id="compareOverlay" onclick="closeCompare(event)">
+  <div style="background:var(--bg-card); border:3px solid var(--ink); border-radius:12px; box-shadow:4px 4px 0 var(--ink); padding:24px; width:860px; max-width:95vw; max-height:90vh; overflow-y:auto;" onclick="event.stopPropagation()">
+    <h3 id="dlgTitleCompare">Player Comparison</h3>
+    <div id="compareContent"></div>
+    <div style="margin-top:16px; text-align:center;">
+      <canvas id="compareRadar" role="img" aria-label="Player comparison radar chart" width="400" height="400" style="border:2px solid var(--ink); border-radius:8px; background:var(--bg); max-width:100%;"></canvas>
+    </div>
+    <div style="margin-top:12px; display:flex; justify-content:flex-end;">
+      <button type="button" class="btn-chunky" onclick="closeCompare()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE MODAL -->
+<div role="dialog" aria-modal="true" aria-labelledby="dlgTitleShare" class="filter-modal-overlay" id="shareOverlay" onclick="closeShareModal(event)">
+  <div style="background:var(--bg-card); border:3px solid var(--ink); border-radius:12px; box-shadow:4px 4px 0 var(--ink); padding:24px; width:520px; max-width:95vw;" onclick="event.stopPropagation()">
+    <h3 id="dlgTitleShare" style="margin:0 0 16px 0; font-family:var(--font-display);">Share This View</h3>
+
+    <!-- Shareable URL -->
+    <div style="margin-bottom:16px;">
+      <label style="font-family:var(--font-mono); font-size:11px; text-transform:uppercase; display:block; margin-bottom:6px;">Shareable URL</label>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input type="text" id="shareURLInput" readonly aria-label="Shareable URL" style="flex:1; font-family:var(--font-mono); font-size:12px; padding:8px 10px; border:2px solid var(--ink); border-radius:var(--radius-sm); background:var(--bg); color:var(--ink);">
+        <button type="button" class="btn-primary" id="shareURLCopyBtn" onclick="copyShareURLFromModal()" style="font-size:11px; padding:6px 14px; white-space:nowrap;">Copy URL</button>
+      </div>
+    </div>
+
+    <!-- Export PNG + CSV -->
+    <div style="margin-bottom:16px;">
+      <label style="font-family:var(--font-mono); font-size:11px; text-transform:uppercase; display:block; margin-bottom:6px;">Export Data</label>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="btn-chunky" onclick="exportImage(); closeShareModal();" style="font-size:12px; padding:6px 14px;">Download PNG</button>
+        <button type="button" class="btn-chunky btn-csv-export" onclick="exportCSV(); closeShareModal();" style="font-size:12px; padding:6px 14px;">Download CSV</button>
+        <button type="button" class="btn-chunky" id="clipboardCopyBtn" onclick="copyTableToClipboard()" style="font-size:12px; padding:6px 14px;">Copy to Clipboard</button>
+        <button type="button" class="btn-chunky" onclick="copyTableAsReddit()" style="font-size:12px; padding:6px 14px; border-color:var(--orange);">Copy as Reddit Table</button>
+      </div>
+    </div>
+
+    <!-- Reddit Title -->
+    <div style="margin-bottom:16px;">
+      <label style="font-family:var(--font-mono); font-size:11px; text-transform:uppercase; display:block; margin-bottom:6px;">Suggested Reddit Title</label>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input type="text" id="redditTitleInput" readonly aria-label="Reddit title" style="flex:1; font-family:var(--font-mono); font-size:12px; padding:8px 10px; border:2px solid var(--ink); border-radius:var(--radius-sm); background:var(--bg); color:var(--ink);">
+        <button type="button" class="btn-chunky" id="redditTitleCopyBtn" onclick="copyRedditTitle()" style="font-size:11px; padding:6px 14px; white-space:nowrap;">Copy</button>
+      </div>
+    </div>
+
+    <p style="font-family:var(--font-hand); font-size:16px; color:var(--ink-light); margin:8px 0 16px 0;">screenshots are billboards. share generously.</p>
+    <div style="display:flex; justify-content:flex-end;">
+      <button type="button" class="btn-chunky" onclick="closeShareModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- SAVED VIEWS OVERLAY -->
+<div role="dialog" aria-modal="true" aria-labelledby="dlgTitleSavedViews" class="filter-modal-overlay" id="savedViewsOverlay" onclick="closeSavedViews(event)">
+  <div style="background:var(--bg-card); border:3px solid var(--ink); border-radius:12px; box-shadow:4px 4px 0 var(--ink); padding:24px; width:520px; max-width:95vw;" onclick="event.stopPropagation()">
+    <h3 id="dlgTitleSavedViews" style="margin:0 0 16px 0; font-family:var(--font-display);">Saved Views</h3>
+
+    <!-- Save current view -->
+    <div style="margin-bottom:16px; padding-bottom:16px; border-bottom:2px dashed var(--border-dashed);">
+      <label style="font-family:var(--font-mono); font-size:11px; text-transform:uppercase; display:block; margin-bottom:6px;">Save Current View</label>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input type="text" id="saveViewName" placeholder="e.g. Dynasty WR Targets" aria-label="View name" style="flex:1; font-family:var(--font-mono); font-size:12px; padding:8px 10px; border:2px solid var(--ink); border-radius:var(--radius-sm); background:var(--bg); color:var(--ink);">
+        <button type="button" class="btn-primary" onclick="saveCurrentView()" style="font-size:11px; padding:6px 14px; white-space:nowrap;">Save</button>
+      </div>
+    </div>
+
+    <!-- Saved views list -->
+    <div id="savedViewsList" style="max-height:360px; overflow-y:auto;"></div>
+
+    <p style="font-family:var(--font-hand); font-size:16px; color:var(--ink-light); margin:12px 0 16px 0;">your setups, always ready. <span class="pro-locked" style="font-family:var(--font-mono); font-size:11px; color:var(--ink-light);">cloud sync</span></p>
+    <div style="display:flex; justify-content:flex-end;">
+      <button type="button" class="btn-chunky" onclick="closeSavedViews()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOM SCORING OVERLAY -->
+<div role="dialog" aria-modal="true" aria-labelledby="dlgTitleScoring" class="filter-modal-overlay" id="customScoringOverlay" onclick="closeCustomScoring(event)">
+  <div style="background:var(--bg-card); border:3px solid var(--ink); border-radius:12px; box-shadow:4px 4px 0 var(--ink); padding:24px; width:480px; max-width:95vw;" onclick="event.stopPropagation()">
+    <h3 id="dlgTitleScoring" style="margin:0 0 12px 0; font-family:var(--font-display);">Custom Scoring</h3>
+    <p style="font-family:var(--font-hand); font-size:14px; color:var(--ink-light); margin:0 0 16px 0;">build your own fantasy scoring system</p>
+
+    <!-- Config name -->
+    <div style="margin-bottom:12px;">
+      <label style="font-family:var(--font-mono); font-size:11px; text-transform:uppercase; display:block; margin-bottom:4px;">Config Name</label>
+      <input type="text" id="customScoringName" placeholder="e.g. My League" maxlength="20" aria-label="Scoring config name" style="width:100%; box-sizing:border-box; font-family:var(--font-mono); font-size:12px; padding:8px 10px; border:2px solid var(--ink); border-radius:var(--radius-sm); background:var(--bg); color:var(--ink);">
+    </div>
+
+    <!-- Scoring weights -->
+    <div id="customScoringWeights" style="max-height:320px; overflow-y:auto; margin-bottom:12px;"></div>
+
+    <!-- Save / Load / Delete -->
+    <div style="display:flex; gap:8px; align-items:center; margin-bottom:12px;">
+      <button type="button" class="btn-primary" onclick="saveCustomScoring()" style="font-size:11px; padding:6px 14px;">Save & Apply</button>
+      <select class="select-chunky" id="customScoringSelect" onchange="loadCustomScoringConfig(this.value)" style="flex:1; font-size:11px;" aria-label="Custom scoring config">
+        <option value="">Load saved...</option>
+      </select>
+      <button type="button" class="btn-chunky" onclick="deleteCustomScoring()" style="font-size:11px; padding:6px 10px; color:var(--red);">Delete</button>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end;">
+      <button type="button" class="btn-chunky" onclick="closeCustomScoring()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- RANKINGS EXPORT OVERLAY -->
+<div role="dialog" aria-modal="true" aria-labelledby="dlgTitleExport" class="filter-modal-overlay" id="rankingsExportOverlay" onclick="closeRankingsExport(event)">
+  <div style="background:var(--bg-card); border:3px solid var(--ink); border-radius:12px; box-shadow:4px 4px 0 var(--ink); padding:24px; width:500px; max-width:95vw;" onclick="event.stopPropagation()">
+    <h3 id="dlgTitleExport" style="margin:0 0 16px 0; font-family:var(--font-display);">Export Rankings</h3>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div>
+        <label style="font-family:var(--font-mono); font-size:11px; text-transform:uppercase; display:block; margin-bottom:4px;">Position</label>
+        <div id="rankPosButtons" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+      </div>
+      <div>
+        <label style="font-family:var(--font-mono); font-size:11px; text-transform:uppercase; display:block; margin-bottom:4px;">Count</label>
+        <div id="rankCountButtons" style="display:flex; gap:6px;"></div>
+      </div>
+      <div>
+        <label style="font-family:var(--font-mono); font-size:11px; text-transform:uppercase; display:block; margin-bottom:4px;">Sort By</label>
+        <div id="rankSortButtons" style="display:flex; gap:6px;"></div>
+      </div>
+      <p id="rankingsPreview" style="font-family:var(--font-hand); font-size:18px; color:var(--ink-medium); margin:4px 0;"></p>
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button type="button" class="btn-chunky" onclick="closeRankingsExport()">Never Mind</button>
+        <button type="button" class="btn-primary" onclick="generateRankingsExport()">Generate PNG</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROSPECT TIER VIEW -->
+<div role="dialog" aria-modal="true" aria-labelledby="dlgTitleTiers" class="filter-modal-overlay" id="tierOverlay" onclick="closeTierView(event)">
+  <div style="background:var(--bg-card); border:3px solid var(--ink); border-radius:12px; box-shadow:4px 4px 0 var(--ink); padding:24px; width:900px; max-width:95vw; max-height:90vh; overflow-y:auto;" onclick="event.stopPropagation()">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <h3 id="dlgTitleTiers" style="margin:0;">Draft Class Athletic Tiers</h3>
+      <div id="tierPositionBtns" style="display:flex; gap:6px; margin-left:auto;"></div>
+      <button type="button" class="btn-primary" onclick="exportTierImage()" style="font-size:11px; padding:6px 14px;">Export PNG</button>
+    </div>
+    <div id="tierContent">
+      <div style="text-align:center; padding:40px; font-family:var(--font-hand); font-size:20px; color:var(--ink-light);">pick a position above</div>
+    </div>
+    <div style="margin-top:12px; display:flex; justify-content:flex-end;">
+      <button type="button" class="btn-chunky" onclick="closeTierView()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- BIG BOARD OVERLAY -->
+<div role="dialog" aria-modal="true" aria-labelledby="dlgTitleBigBoard" class="filter-modal-overlay" id="bigBoardOverlay" onclick="closeBigBoard(event)">
+  <div style="background:var(--bg-card); border:3px solid var(--ink); border-radius:12px; box-shadow:4px 4px 0 var(--ink); padding:24px; width:960px; max-width:95vw; max-height:90vh; overflow-y:auto;" onclick="event.stopPropagation()">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+      <h3 id="dlgTitleBigBoard" style="margin:0;">Razzle Big Board</h3>
+      <div id="bbPositionBtns" style="display:flex; gap:6px; margin-left:auto;"></div>
+      <button type="button" class="btn-primary" id="bbExportBtn" onclick="exportBigBoardImage()" style="font-size:11px; padding:6px 14px;">Export PNG</button>
+    </div>
+    <div id="bbContent">
+      <div style="text-align:center; padding:40px; font-family:var(--font-hand); font-size:20px; color:var(--ink-light);">scouting the board...</div>
+    </div>
+    <div style="margin-top:12px; display:flex; justify-content:flex-end;">
+      <button type="button" class="btn-chunky" onclick="closeBigBoard()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLASS ANALYTICS OVERLAY -->
+<div role="dialog" aria-modal="true" aria-labelledby="dlgTitleClassAnalytics" class="filter-modal-overlay" id="classAnalyticsOverlay" onclick="closeClassAnalytics(event)">
+  <div style="background:var(--bg-card); border:3px solid var(--ink); border-radius:12px; box-shadow:4px 4px 0 var(--ink); padding:24px; width:960px; max-width:95vw; max-height:90vh; overflow-y:auto;" onclick="event.stopPropagation()">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+      <h3 id="dlgTitleClassAnalytics" style="margin:0;">Draft Class Analytics</h3>
+      <div id="caPositionBtns" style="display:flex; gap:6px; margin-left:auto;"></div>
+      <button type="button" class="btn-primary" id="caExportBtn" onclick="exportClassAnalyticsImage()" style="font-size:11px; padding:6px 14px;">Export PNG</button>
+    </div>
+    <div id="caContent">
+      <div style="text-align:center; padding:40px; font-family:var(--font-hand); font-size:20px; color:var(--ink-light);">analyzing draft classes...</div>
+    </div>
+    <div style="margin-top:12px; display:flex; justify-content:flex-end;">
+      <button type="button" class="btn-chunky" onclick="closeClassAnalytics()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRADE ANALYZER OVERLAY -->
+<div role="dialog" aria-modal="true" aria-labelledby="dlgTitleTradeAnalyzer" class="filter-modal-overlay" id="tradeAnalyzerOverlay" onclick="closeTradeAnalyzer(event)">
+  <div class="trade-analyzer-modal" onclick="event.stopPropagation()">
+    <div class="trade-analyzer-header">
+      <h3 id="dlgTitleTradeAnalyzer" style="margin:0; font-family:var(--font-display); font-size:20px;">Trade Analyzer</h3>
+      <span style="font-family:var(--font-hand); font-size:18px; color:var(--ink-light);">check the math on that deal</span>
+      <button type="button" class="btn-chunky" onclick="closeTradeAnalyzer()" style="margin-left:auto; font-size:12px; padding:4px 14px;">Close</button>
+    </div>
+
+    <div class="trade-analyzer-sides">
+      <!-- I GIVE side -->
+      <div class="trade-side">
+        <div class="trade-side-label" style="background:var(--red-light); border-color:var(--red);">
+          <span style="font-family:var(--font-mono); font-size:14px; text-transform:uppercase; letter-spacing:1px;">I Give</span>
+        </div>
+        <div class="trade-search-wrap">
+          <input type="text" class="input-chunky" id="taSearchGive" placeholder="search player..." autocomplete="off" aria-label="Search player to give">
+          <div class="trade-autocomplete" id="taAutoGive"></div>
+        </div>
+        <div class="trade-pick-row">
+          <select id="taPickYearGive" aria-label="Pick year to give"></select>
+          <select id="taPickRdGive" aria-label="Pick round to give"><option value="1">Rd 1</option><option value="2">Rd 2</option><option value="3">Rd 3</option><option value="4">Rd 4</option></select>
+          <select id="taPickNumGive" aria-label="Pick number to give"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
+          <button type="button" class="btn-chunky" onclick="_taAddPick('give')">+ Pick</button>
+        </div>
+        <div class="trade-player-list" id="taListGive">
+          <div class="trade-empty-hint">add players or picks to trade away</div>
+        </div>
+        <div class="trade-side-total">
+          <span style="font-family:var(--font-mono); font-size:13px;">TOTAL</span>
+          <span class="trade-total-value" id="taTotalGive">0</span>
+        </div>
+      </div>
+
+      <!-- VS divider -->
+      <div class="trade-vs-divider">
+        <span style="font-family:var(--font-display); font-size:16px; color:var(--ink-light);">VS</span>
+      </div>
+
+      <!-- I GET side -->
+      <div class="trade-side">
+        <div class="trade-side-label" style="background:var(--green-light); border-color:var(--green);">
+          <span style="font-family:var(--font-mono); font-size:14px; text-transform:uppercase; letter-spacing:1px;">I Get</span>
+        </div>
+        <div class="trade-search-wrap">
+          <input type="text" class="input-chunky" id="taSearchGet" placeholder="search player..." autocomplete="off" aria-label="Search player to get">
+          <div class="trade-autocomplete" id="taAutoGet"></div>
+        </div>
+        <div class="trade-pick-row">
+          <select id="taPickYearGet" aria-label="Pick year to get"></select>
+          <select id="taPickRdGet" aria-label="Pick round to get"><option value="1">Rd 1</option><option value="2">Rd 2</option><option value="3">Rd 3</option><option value="4">Rd 4</option></select>
+          <select id="taPickNumGet" aria-label="Pick number to get"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option></select>
+          <button type="button" class="btn-chunky" onclick="_taAddPick('get')">+ Pick</button>
+        </div>
+        <div class="trade-player-list" id="taListGet">
+          <div class="trade-empty-hint">add players or picks to acquire</div>
+        </div>
+        <div class="trade-side-total">
+          <span style="font-family:var(--font-mono); font-size:13px;">TOTAL</span>
+          <span class="trade-total-value" id="taTotalGet">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Verdict area -->
+    <div class="trade-verdict-area" id="taVerdictArea" style="display:none;">
+      <div id="taValueBars"></div>
+      <div id="taVerdict"></div>
+      <div id="taCommentary"></div>
+      <button type="button" class="btn-primary" onclick="exportTradeAnalyzerPNG()" style="margin-top:14px; font-size:12px; padding:6px 18px;">Export PNG</button>
+    </div>
+
+    <!-- Pick Value Chart -->
+    <div class="trade-pick-chart-wrap">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+        <span style="font-family:var(--font-mono); font-size:14px;">Pick Value Curve</span>
+        <span style="font-family:var(--font-hand); font-size:16px; color:var(--ink-light);">dynasty draft capital at a glance</span>
+      </div>
+      <canvas id="taPickChartCanvas" role="img" aria-label="Trade analyzer pick value chart" width="720" height="220" style="border:3px solid var(--ink); border-radius:8px; background:var(--bg); max-width:100%; display:block;"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- TRADE VALUE CHART OVERLAY -->
+<div role="dialog" aria-modal="true" aria-labelledby="dlgTitleTradeValues" class="filter-modal-overlay" id="tradeValuesOverlay" onclick="closeTradeValues(event)">
+  <div style="background:var(--bg-card); border:3px solid var(--ink); border-radius:12px; box-shadow:4px 4px 0 var(--ink); padding:24px; width:960px; max-width:95vw; max-height:90vh; overflow-y:auto;" onclick="event.stopPropagation()">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+      <h3 id="dlgTitleTradeValues" style="margin:0; font-family:var(--font-display);">Trade Values</h3>
+      <div style="font-family:var(--font-hand); font-size:18px; color:var(--ink-light);">dynasty trade currency</div>
+      <div id="tvPositionBtns" style="display:flex; gap:6px; margin-left:auto;"></div>
+      <button type="button" class="btn-primary" id="tvExportBtn" onclick="exportTradeValuesPNG()" style="font-size:11px; padding:6px 14px;">Export PNG</button>
+    </div>
+    <div id="tvContent">
+      <div style="text-align:center; padding:40px; font-family:var(--font-hand); font-size:20px; color:var(--ink-light);">pulling trade film...</div>
+    </div>
+    <!-- Trade Calculator -->
+    <div id="tvCalculator" style="display:none; margin-top:20px; border-top:2px dashed var(--border-dashed); padding-top:20px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+        <h4 style="margin:0; font-family:var(--font-display); font-size:16px;">Trade Calculator</h4>
+        <span style="font-family:var(--font-hand); font-size:16px; color:var(--ink-light);">check the math</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:16px; align-items:start;">
+        <div>
+          <div style="font-family:var(--font-mono); font-size:13px; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Side A</div>
+          <input type="text" class="input-chunky" id="tvSearchA" placeholder="search player..." aria-label="Search player for side A" style="width:100%; margin-bottom:8px; font-size:12px;">
+          <div id="tvAutoA" style="display:none; position:absolute; background:var(--bg-card); border:2px solid var(--ink); border-radius:8px; box-shadow:4px 4px 0 var(--ink); max-height:150px; overflow-y:auto; z-index:100; width:280px;"></div>
+          <div id="tvListA" style="display:flex; flex-direction:column; gap:6px; min-height:40px;"></div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding:6px 10px; border:2px solid var(--ink); border-radius:8px; background:var(--bg-warm);">
+            <span style="font-family:var(--font-mono); font-size:12px;">TOTAL</span>
+            <span id="tvTotalA" style="font-family:var(--font-mono); font-size:16px; font-weight:bold;">0</span>
+          </div>
+          <button type="button" class="btn-chunky" onclick="clearTradeSide('A')" style="font-size:11px; padding:3px 10px; margin-top:6px;">Clear</button>
+        </div>
+        <div id="tvBalance" style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding-top:30px;">
+          <div style="font-family:var(--font-mono); font-size:14px; font-weight:bold; padding:8px 14px; border:2px solid var(--ink); border-radius:8px;" id="tvBalanceBadge">—</div>
+        </div>
+        <div>
+          <div style="font-family:var(--font-mono); font-size:13px; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Side B</div>
+          <input type="text" class="input-chunky" id="tvSearchB" placeholder="search player..." aria-label="Search player for side B" style="width:100%; margin-bottom:8px; font-size:12px;">
+          <div id="tvAutoB" style="display:none; position:absolute; background:var(--bg-card); border:2px solid var(--ink); border-radius:8px; box-shadow:4px 4px 0 var(--ink); max-height:150px; overflow-y:auto; z-index:100; width:280px;"></div>
+          <div id="tvListB" style="display:flex; flex-direction:column; gap:6px; min-height:40px;"></div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding:6px 10px; border:2px solid var(--ink); border-radius:8px; background:var(--bg-warm);">
+            <span style="font-family:var(--font-mono); font-size:12px;">TOTAL</span>
+            <span id="tvTotalB" style="font-family:var(--font-mono); font-size:16px; font-weight:bold;">0</span>
+          </div>
+          <button type="button" class="btn-chunky" onclick="clearTradeSide('B')" style="font-size:11px; padding:3px 10px; margin-top:6px;">Clear</button>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:12px; display:flex; justify-content:flex-end;">
+      <button type="button" class="btn-chunky" onclick="closeTradeValues()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- PLAYER PROFILE MODAL -->
+<div role="dialog" aria-modal="true" aria-label="Player Profile" class="filter-modal-overlay" id="profileOverlay" onclick="closeProfile(event)">
+  <div class="profile-modal" onclick="event.stopPropagation()">
+    <div id="profileContent">
+      <div style="text-align:center; padding:40px; font-family:var(--font-hand); font-size:20px; color:var(--ink-light);">pulling film...</div>
+    </div>
+    <div style="margin-top:12px; display:flex; justify-content:flex-end;">
+      <button type="button" class="btn-chunky" onclick="closeProfile()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- PLAYER HOVER CARD -->
+<div id="playerHoverCard" class="hover-card" style="display:none;" onmouseenter="clearTimeout(_hoverTimer)" onmouseleave="hideHoverCard()"></div>
+
+<!-- PUBLISH TO STORE -->
+<div role="dialog" aria-modal="true" aria-labelledby="dlgTitlePublish" class="filter-modal-overlay" id="publishOverlay" onclick="closePublishFlow(event)">
+  <div class="filter-modal" style="width:420px;" onclick="event.stopPropagation()">
+    <h3 id="dlgTitlePublish">Publish to Store</h3>
+    <p style="font-family:var(--font-hand); font-size:18px; color:var(--ink-light); margin-bottom:12px;">
+      share your formula with the community
+    </p>
+    <div id="publishError" class="auth-error" role="alert"></div>
+    <div class="filter-modal-row">
+      <input type="text" class="input-chunky" id="publishName" placeholder="formula name" style="flex:1" readonly aria-label="Formula name" aria-describedby="publishError">
+    </div>
+    <div class="filter-modal-row">
+      <input type="text" class="input-chunky" id="publishCreator" placeholder="your name" style="flex:1" aria-label="Creator name" aria-describedby="publishError">
+    </div>
+    <div class="filter-modal-row">
+      <textarea class="input-chunky" id="publishDescription" placeholder="describe what this formula does..." style="flex:1; min-height:60px; resize:vertical; font-family:var(--font-mono); font-size:12px;" aria-describedby="publishError"></textarea>
+    </div>
+    <div style="margin-bottom:12px;">
+      <div style="font-family:var(--font-mono); font-size:11px; text-transform:uppercase; color:var(--ink-light); letter-spacing:1px; margin-bottom:6px;">Position Tags</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <label style="display:flex; align-items:center; gap:4px; font-family:var(--font-mono); font-size:12px; cursor:pointer;">
+          <input type="checkbox" class="publish-pos-check" value="QB" style="accent-color:var(--pos-qb);"> QB
+        </label>
+        <label style="display:flex; align-items:center; gap:4px; font-family:var(--font-mono); font-size:12px; cursor:pointer;">
+          <input type="checkbox" class="publish-pos-check" value="RB" style="accent-color:var(--pos-rb);"> RB
+        </label>
+        <label style="display:flex; align-items:center; gap:4px; font-family:var(--font-mono); font-size:12px; cursor:pointer;">
+          <input type="checkbox" class="publish-pos-check" value="WR" style="accent-color:var(--pos-wr);"> WR
+        </label>
+        <label style="display:flex; align-items:center; gap:4px; font-family:var(--font-mono); font-size:12px; cursor:pointer;">
+          <input type="checkbox" class="publish-pos-check" value="TE" style="accent-color:var(--pos-te);"> TE
+        </label>
+      </div>
+    </div>
+    <div style="font-family:var(--font-hand); font-size:14px; color:var(--ink-light); margin-bottom:12px; padding:8px; background:var(--bg); border-radius:var(--radius-sm); border:2px dashed var(--border-dashed);">
+      weights stay hidden — only stat names are shown in the store
+    </div>
+    <div class="filter-modal-actions">
+      <button type="button" class="btn-chunky" onclick="closePublishFlow()">Never Mind</button>
+      <button type="button" class="btn-primary" onclick="submitPublish()">Publish</button>
+    </div>
+  </div>
+</div>
+
+<!-- FORMULA STORE -->
+<div role="dialog" aria-modal="true" aria-labelledby="dlgTitleStore" class="filter-modal-overlay" id="storeOverlay" onclick="closeFormulaStore(event)">
+  <div class="store-modal" onclick="event.stopPropagation()">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+      <div>
+        <h3 id="dlgTitleStore" style="font-family:var(--font-display); font-size:20px;">Formula Store</h3>
+        <p style="font-family:var(--font-hand); font-size:18px; color:var(--ink-light);">community-built scoring formulas <span class="pro-locked" style="font-family:var(--font-mono); font-size:11px; color:var(--ink-light);">full access</span></p>
+      </div>
+      <button type="button" class="btn-chunky" onclick="closeFormulaStore()">Close</button>
+    </div>
+    <div id="storeContent"></div>
+  </div>
+</div>
+
+<!-- AGING CURVES -->
+<div role="dialog" aria-modal="true" aria-labelledby="dlgTitleAgingCurves" class="filter-modal-overlay" id="agingCurvesOverlay" onclick="closeAgingCurves(event)">
+  <div style="background:var(--bg-card); border:3px solid var(--ink); border-radius:12px; box-shadow:4px 4px 0 var(--ink); padding:24px; width:960px; max-width:95vw; max-height:90vh; overflow-y:auto;" onclick="event.stopPropagation()">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+      <h3 id="dlgTitleAgingCurves" style="margin:0; font-family:var(--font-display);">Aging Curves</h3>
+      <div style="font-family:var(--font-hand); font-size:18px; color:var(--ink-light);">how players age at each position...</div>
+      <div id="acPositionBtns" style="display:flex; gap:6px; margin-left:auto;"></div>
+      <button type="button" class="btn-primary" id="acExportBtn" onclick="exportAgingCurvesPNG()" style="font-size:11px; padding:6px 14px;">Export PNG</button>
+    </div>
+    <div id="acChartContainer" style="position:relative;">
+      <canvas id="acCanvas" role="img" aria-label="Aging curves chart by position" width="900" height="500" style="width:100%; border:2px solid var(--ink); border-radius:8px; background:var(--bg);"></canvas>
+    </div>
+    <div id="acLegend" style="margin-top:16px; display:flex; flex-wrap:wrap; gap:8px;"></div>
+  </div>
+</div>
+
+<!-- HEAT MAP -->
+<div role="dialog" aria-modal="true" aria-labelledby="dlgTitleHeatMap" class="filter-modal-overlay" id="heatMapOverlay" onclick="closeHeatMap(event)">
+  <div style="background:var(--bg-card); border:3px solid var(--ink); border-radius:12px; box-shadow:4px 4px 0 var(--ink); padding:24px; width:1000px; max-width:95vw; max-height:90vh; overflow-y:auto;" onclick="event.stopPropagation()">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+      <h3 id="dlgTitleHeatMap" style="margin:0; font-family:var(--font-display);">Heat Map</h3>
+      <div style="font-family:var(--font-hand); font-size:18px; color:var(--ink-light);">positional stat percentiles...</div>
+      <div id="hmPositionBtns" style="display:flex; gap:6px;"></div>
+      <div id="hmGroupBtns" style="display:flex; gap:6px; margin-left:auto;"></div>
+      <button type="button" class="btn-primary" id="hmExportBtn" onclick="exportHeatMapPNG()" style="font-size:11px; padding:6px 14px;">Export PNG</button>
+    </div>
+    <div id="hmChartContainer" style="position:relative; overflow-x:auto;">
+      <canvas id="hmCanvas" role="img" aria-label="Positional stat percentile heat map" width="960" height="900" style="width:100%; border:2px solid var(--ink); border-radius:8px; background:var(--bg);"></canvas>
+    </div>
+    <div id="hmLegend" style="margin-top:12px; display:flex; align-items:center; gap:12px; justify-content:center;">
+      <span style="font-family:var(--font-mono); font-size:11px; color:var(--ink-light);">0th</span>
+      <div style="width:200px; height:14px; border:2px solid var(--ink); border-radius:var(--radius-sm); display:flex; overflow:hidden;"><div style="flex:1; background:var(--red);"></div><div style="flex:1; background:var(--orange);"></div><div style="flex:1; background:var(--yellow);"></div><div style="flex:1; background:var(--green-light);"></div><div style="flex:1; background:var(--green);"></div></div>
+      <span style="font-family:var(--font-mono); font-size:11px; color:var(--ink-light);">100th percentile</span>
+    </div>
+  </div>
+</div>
+
+</div><!-- /panel-screener -->
+
+</div><!-- /lab-main -->
+</main>
+
+<script src="app.js" defer></script>
+<script src="agent-config.js" defer></script>
+<script defer src="lab-bundle.js"></script>
+<script>fetch("/api/analytics/pageview",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({page:location.pathname})}).catch(function(){});</script>
+
+<!-- LAB PANEL SWITCHING + REGISTRY -->
+<script>
+(function() {
+  var currentPanel = 'screener';
+  Object.defineProperty(window, '_currentPanelName', { get: function() { return currentPanel; } });
+  var labMain = document.getElementById('labMain');
+
+  // ─── Delegated click handler: any [data-pid] in panels opens player popup ───
+  labMain.addEventListener('click', function(e) {
+    var el = e.target.closest('[data-pid]');
+    if (!el || !labMain.contains(el)) return;
+    var pid = el.getAttribute('data-pid');
+    if (!pid) return;
+    // Don't hijack clicks on links/buttons inside the element
+    if (e.target.closest('a[href], button')) return;
+    e.preventDefault();
+    if (typeof openPlayerPopup === 'function') openPlayerPopup(pid);
+  });
+
+  // ─── Free panel set (no tier gate) ────────────────────────────
+  var FREE_PANELS = {
+    screener: true, weekly: true, prospects: true,
+    dashboard: true, leaders: true
+  };
+
+  // ─── escapeHtml fallback (in case app.js fails to load) ────────
+  if (typeof escapeHtml !== 'function') {
+    window.escapeHtml = function(s) {
+      var d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    };
+  }
+
+  // ─── Panel Registry ────────────────────────────────────────────
+  // Native panels register here.
+  // Each entry: { render: fn(container), loaded: bool, container: Element|null }
+  var panelRegistry = {};
+
+  // Public API: register a native render function for a panel
+  window.registerPanel = function(name, renderFn) {
+    panelRegistry[name] = { render: renderFn, loaded: false, container: null };
+  };
+
+  // Public API: force a panel to re-render (e.g. after season change)
+  window.reloadPanel = function(name) {
+    var entry = panelRegistry[name];
+    if (!entry || !entry.loaded || !entry.container) return;
+    var contentEl = entry.container.querySelector('.lab-panel-content');
+    if (!contentEl) return; // screener and other static panels — skip
+    entry.loaded = false;
+    contentEl.innerHTML = '';
+    entry.render(contentEl);
+    entry.loaded = true;
+  };
+
+  // Public API: invalidate all non-screener panel caches (on universe change)
+  window._invalidatePanelCaches = function() {
+    for (var name in panelRegistry) {
+      if (name === 'screener') continue;
+      var entry = panelRegistry[name];
+      if (entry.loaded && entry.container) {
+        entry.loaded = false;
+        var contentEl = entry.container.querySelector('.lab-panel-content');
+        if (contentEl) contentEl.innerHTML = '';
+      }
+    }
+    // Re-render the currently visible panel if it was invalidated
+    if (currentPanel !== 'screener' && panelRegistry[currentPanel]) {
+      var cur = panelRegistry[currentPanel];
+      if (!cur.loaded && cur.container) {
+        var el = cur.container.querySelector('.lab-panel-content');
+        if (el) {
+          el.innerHTML = '<div class="lab-panel-loading"><div class="loading-msg">' + escapeHtml(typeof getLoadingText === 'function' ? getLoadingText(currentPanel) : razzleLoading()) + '</div></div>';
+          try { cur.render(el); } catch(e) { console.error(e); }
+          cur.loaded = true;
+        }
+      }
+    }
+  };
+
+  // Register the screener — it already exists in the DOM
+  registerPanel('screener', function() {
+    // No-op: panel-screener is statically rendered in lab.html
+  });
+  // Point its container to the existing DOM element
+  panelRegistry['screener'].container = document.getElementById('panel-screener');
+  panelRegistry['screener'].loaded = true;
+
+  // Register native panels from lab-panels.js (deferred — runs after parsing)
+  // Defer scripts execute before DOMContentLoaded, so we register then.
+  function _registerDeferredPanels() {
+    if (window._labPanelDefs) {
+      window._labPanelDefs.forEach(function(def) {
+        registerPanel(def.name, def.render);
+      });
+    }
+  }
+  // If lab-panels.js already ran (e.g. cached), register now; otherwise wait
+  if (window._labPanelDefs && window._labPanelDefs.length > 0) {
+    _registerDeferredPanels();
+  } else {
+    document.addEventListener('DOMContentLoaded', _registerDeferredPanels);
+  }
+
+  // ─── Trigger Elite nudges after page settles ───────────────────
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      if (typeof checkNudges === 'function') checkNudges('lab', 'lab-nudge-container');
+    }, 3000);
+  });
+
+  // ─── Lock icons on Pro sidebar items for free users ────────────
+  function _updateSidebarLocks() {
+    var paid = typeof isPaidUser === 'function' && isPaidUser();
+    document.querySelectorAll('.lab-sidebar-item.pro-locked').forEach(function(item) {
+      if (paid) {
+        item.classList.remove('show-lock');
+        item.removeAttribute('aria-label');
+      } else {
+        item.classList.add('show-lock');
+        item.setAttribute('aria-label', item.textContent.trim() + ' (Pro — locked)');
+      }
+    });
+  }
+  // Run on load and on plan change
+  _updateSidebarLocks();
+  document.addEventListener('DOMContentLoaded', _updateSidebarLocks);
+  window.addEventListener('razzle-plan-changed', _updateSidebarLocks);
+
+  // ─── Agent attribution on sidebar categories (Pro+) ────────────
+  var CATEGORY_AGENTS = {
+    'Rankings & Values': 'bones',
+    'Performance': 'octo',
+    'Game Analysis': 'hawkeye',
+    'Trends & Projections': 'atlas',
+    'Records & History': 'atlas',
+    'League Tools': 'bones',
+  };
+  function _updateSidebarAgents() {
+    var paid = typeof isPaidUser === 'function' && isPaidUser();
+    document.querySelectorAll('.lab-sidebar-category').forEach(function(cat) {
+      var existing = cat.querySelector('.cat-agent');
+      if (existing) existing.remove();
+      if (!paid || typeof AGENT_TERRITORY === 'undefined') return;
+      var catText = cat.querySelector('.cat-text');
+      var name = catText ? catText.textContent.trim() : '';
+      var agentId = CATEGORY_AGENTS[name];
+      if (!agentId) return;
+      var agent = AGENT_TERRITORY[agentId];
+      if (!agent) return;
+      var badge = document.createElement('span');
+      badge.className = 'cat-agent';
+      badge.style.cssText = 'display:inline-flex; align-items:center; gap:3px; margin-left:6px; font-family:var(--font-hand); font-size:11px; opacity:0.5; font-weight:500; letter-spacing:0;';
+      badge.innerHTML = '<img src="' + agent.icon + '" width="12" height="12" alt="' + agent.name + '" style="vertical-align:middle;">' + agent.name;
+      catText.parentNode.insertBefore(badge, catText.nextSibling);
+    });
+  }
+  document.addEventListener('DOMContentLoaded', _updateSidebarAgents);
+  window.addEventListener('razzle-plan-changed', _updateSidebarAgents);
+
+  // CSV export lock styling for free users
+  // Hide CSV button on panels without table data (checks on render + after async load)
+  function _updateCsvVisibility(container) {
+    if (!container) return;
+    function check() {
+      var csvBtn = container.querySelector('.btn-csv-export');
+      if (!csvBtn) return;
+      var content = container.querySelector('.lab-panel-content');
+      var hasTable = content && (content.querySelector('table') || content.querySelector('.lp-table'));
+      csvBtn.style.display = hasTable ? '' : 'none';
+    }
+    check();
+    // Re-check after async data loads
+    setTimeout(check, 1500);
+    setTimeout(check, 4000);
+  }
+
+  function _updateCsvLocks() {
+    var paid = typeof isPaidUser === 'function' && isPaidUser();
+    document.querySelectorAll('.btn-csv-export').forEach(function(btn) {
+      if (paid) {
+        btn.classList.remove('csv-locked');
+        btn.textContent = 'CSV';
+      } else {
+        btn.classList.add('csv-locked');
+        btn.innerHTML = '&#x1F512; CSV';
+      }
+    });
+  }
+  _updateCsvLocks();
+  document.addEventListener('DOMContentLoaded', _updateCsvLocks);
+  window.addEventListener('razzle-plan-changed', _updateCsvLocks);
+
+  // ─── Panel Labels & Categories ─────────────────────────────────
+  var PANEL_LABELS = {
+    screener: 'The Screener',
+    rankings: 'Dynasty Rankings', tiers: 'Tiers', tradevalues: 'Trade Values',
+    vorp: 'VORP', advantage: 'Positional Advantage', auction: 'Auction Values', cheatsheet: 'Cheat Sheet',
+    breakouts: 'Breakouts', buysell: 'Buy / Sell', stocks: 'Stock Watch', waivers: 'Rising Players',
+    scarcity: 'Scarcity', handcuffs: 'Handcuffs',
+    efficiency: 'Efficiency', consistency: 'Consistency', snapefficiency: 'Snap Efficiency',
+    workload: 'Workload Monitor', dualthreat: 'Dual-Threat', targetpremium: 'Target Premium',
+    drops: 'Drop Rate', garbagetime: 'Garbage Time', successrate: 'Success Rate', correlations: 'Correlations',
+    weekly: 'Weekly Heatmap', matchups: 'Matchups', stacks: 'Stacks', redzone: 'Red Zone',
+    streaks: 'Streaks', weeklyleaders: 'Weekly Leaders', weeklymvp: 'Weekly MVP Grid', playoffs: 'Playoffs',
+    usage: 'Usage Trends', yoy: 'Year-over-Year', aging: 'Aging Curves', pace: 'Player Pace',
+    seasonpace: 'Season Pace', tdregression: 'TD Regression', airyards: 'Air Yards',
+    prospects: 'Big Board', draftclass: 'Draft Class Analytics', percentiles: 'Percentiles',
+    career: 'Career Stats', 'career-compare': 'Career Compare', comptable: 'Compare Table',
+    strengths: 'Strengths', reportcard: 'Report Card', fptsbreakdown: 'Points Breakdown',
+    gamelog: 'Game Log', archetypes: 'Archetypes', breakdown: 'Scoring Breakdown',
+    rosterbuilder: 'Roster Builder', tradefinder: 'Trade Finder', scoring: 'Scoring Comparison',
+    dashboard: 'Dashboard', schedule: 'Schedule / SOS', opportunity: 'Opportunity Share',
+    records: 'Records', recap: 'Season Recap', awards: 'Awards', leaders: 'Stat Leaders',
+    explorer: 'Explorer', targets: 'Target Distribution', team: 'Team Rosters',
+    drafttracker: 'Draft Class Tracker',
+    powerrankings: 'Power Rankings',
+    gamescript: 'Game Script',
+    faab: 'FAAB Strategy'
+  };
+
+  var PANEL_FLAVORS = {
+    screener: 'the research lab for fantasy football',
+    rankings: 'who\'s worth the most in your league',
+    tiers: 'S-tier or roster clogger? find out here',
+    tradevalues: 'every player\'s fantasy stock price',
+    vorp: 'how far above replacement are they really?',
+    advantage: 'which positions give you an edge?',
+    auction: 'turn trade values into draft-day dollars',
+    cheatsheet: 'your draft board, ready to print',
+    breakouts: 'the next league-winner is hiding here',
+    buysell: 'buy the dip, sell the peak',
+    stocks: 'rising and falling fantasy stocks',
+    waivers: 'trending up over recent weeks',
+    scarcity: 'positional drop-off tells you where to invest',
+    handcuffs: 'insurance policies for your starters',
+    efficiency: 'who does the most with the least?',
+    consistency: 'floor kings and ceiling chasers',
+    snapefficiency: 'fantasy points per snap — who\'s efficient?',
+    workload: 'touches, snaps, and usage trends',
+    dualthreat: 'rush + receive = cheat code',
+    targetpremium: 'target quality over target quantity',
+    drops: 'butterfingers or bad luck?',
+    garbagetime: 'stat padders vs clean producers',
+    successrate: 'efficient plays, not just big plays',
+    correlations: 'which stats actually predict fantasy points?',
+    weekly: 'every score, every week, one grid',
+    matchups: 'schedule advantages by position',
+    stacks: 'QB-WR correlation for lineup construction',
+    redzone: 'who gets the ball when it matters most?',
+    streaks: 'hot hands and cold stretches',
+    weeklyleaders: 'weekly position leaders at a glance',
+    weeklymvp: 'the MVP race, week by week',
+    playoffs: 'playoff schedule edges for your lineup',
+    usage: 'snap and touch trends over time',
+    yoy: 'who\'s improving? who\'s declining?',
+    aging: 'father time is undefeated... mostly',
+    pace: 'on pace for what? let\'s find out',
+    seasonpace: 'projected season totals from current pace',
+    tdregression: 'touchdowns lie — regression doesn\'t',
+    airyards: 'the air yards don\'t lie',
+    prospects: 'the next generation, ranked and rated',
+    draftclass: 'draft class deep dives',
+    percentiles: 'where do they rank among their peers?',
+    career: 'the full career picture',
+    'career-compare': 'side-by-side career timelines',
+    comptable: 'stat-for-stat comparison tables',
+    strengths: 'what they do best (and worst)',
+    reportcard: 'grades across every dimension',
+    fptsbreakdown: 'where do the fantasy points come from?',
+    gamelog: 'the game-by-game receipts',
+    archetypes: 'workhorse, speedster, or something else?',
+    breakdown: 'scoring category breakdown',
+    rosterbuilder: 'build your roster, get a grade',
+    tradefinder: 'find fair trade partners instantly',
+    scoring: 'PPR vs half vs standard — who moves?',
+    dashboard: 'your dynasty portfolio at a glance',
+    schedule: 'strength of schedule, visualized',
+    opportunity: 'volume is king — who gets the most?',
+    records: 'the fantasy record book',
+    recap: 'how the season unfolded',
+    awards: 'MVP, breakout star, and more',
+    leaders: 'season stat leaders with the crown',
+    explorer: 'scatter plots and custom stat exploration',
+    targets: 'who\'s getting fed on each team?',
+    team: 'full roster views by team',
+    drafttracker: 'how each draft class actually produced in fantasy',
+    powerrankings: 'which teams have the most dynasty firepower?',
+    gamescript: 'who produces when their team is winning vs losing?',
+    faab: 'when to be aggressive vs conservative with your budget'
+  };
+
+  // Panel methodology descriptions (top 10 complex panels + generic fallback)
+  var PANEL_METHODS = {
+    vorp: 'VORP = Player PPG minus replacement-level PPG for their position. Replacement thresholds: QB12, RB24, WR36, TE12. Higher VORP = more value above what you could get for free on waivers.',
+    stocks: 'Stock Score is a composite of 4 percentile rankings: PPO (efficiency), CoV (consistency), SOS (schedule), and PPG (production) — 25% each. Rising stocks = composite outperforms PPG rank. Falling = PPG rank outperforms composite.',
+    reportcard: 'Fantasy GPA combines 5 equal-weighted grades (20% each): Efficiency (PPO), Consistency (inverse CoV), Schedule (SOS), Production (PPG), and Opportunity Share. Each graded A+ to F on positional percentile curves.',
+    tdregression: 'Compares actual TDs scored to expected TDs based on historical TD rates per opportunity type (rush attempt, target, etc). Buy targets: fewer TDs than expected. Sell candidates: more TDs than expected.',
+    airyards: 'Air Yards measure target depth. Key metrics: aDOT (avg depth of target), RACR (receiver air conversion ratio = rec yards / air yards), WOPR (weighted opportunity rating = target share * 1.5 + air yard share * 0.7). Buy low: low RACR + high aDOT.',
+    snapefficiency: 'Fantasy Points Per Snap shows who produces the most per opportunity on the field. Filters to players with meaningful snap counts. Higher Pts/Snap = efficient usage.',
+    breakouts: 'Breakout Score measures the gap between opportunity metrics (targets, carries, snap%) and current production (PPG, YPG). High opportunity + low production = breakout candidate. Position-specific weighting.',
+    dualthreat: 'Dual-Threat Index uses the geometric mean of rushing and receiving production (yards, TDs, touches). Geometric mean rewards balance — a player must contribute in BOTH to score high. Primarily for RBs and QBs.',
+    targetpremium: 'Target Premium composite: YPT (yards per target) + catch rate + YAC/rec (yards after catch) + aDOT (target depth). Measures target quality over quantity — who does the most per target?',
+    consistency: 'Consistency grade is based on inverse Coefficient of Variation (StdDev / Mean PPG). Lower CoV = more consistent. A+ = rock solid weekly scores. F = wild swings. Minimum 6 games and 2 PPG to qualify.',
+  };
+  var PANEL_METHOD_DEFAULT = 'Player statistics sourced from publicly available NFL and NCAA data (2015-' + (new Date().getMonth() >= 8 ? new Date().getFullYear() : new Date().getFullYear() - 1) + ').';
+
+  // Map each panel to its sidebar category for breadcrumbs
+  var PANEL_CATEGORIES = {};
+  document.querySelectorAll('.lab-sidebar-category').forEach(function(cat) {
+    var catText = cat.querySelector('.cat-text');
+    var categoryName = catText ? catText.textContent.trim() : cat.textContent.trim();
+    var next = cat.nextElementSibling;
+    while (next && !next.classList.contains('lab-sidebar-category')) {
+      if (next.dataset && next.dataset.panel) {
+        PANEL_CATEGORIES[next.dataset.panel] = categoryName;
+      }
+      next = next.nextElementSibling;
+    }
+  });
+
+  // ─── Upgrade gate overlay for free users ───────────────────────
+  function _showUpgradeGate(panelName) {
+    // Hide all panels
+    document.querySelectorAll('.lab-panel').forEach(function(p) {
+      p.style.display = 'none';
+      p.classList.remove('panel-fade-out', 'panel-fade-in');
+    });
+    // Find or create the gate container
+    var gateId = 'panel-upgrade-gate';
+    var gate = document.getElementById(gateId);
+    if (!gate) {
+      gate = document.createElement('section');
+      gate.className = 'lab-panel';
+      gate.id = gateId;
+      gate.dataset.panel = '__gate__';
+      labMain.appendChild(gate);
+    }
+    gate.setAttribute('role', 'dialog');
+    gate.setAttribute('aria-modal', 'true');
+    gate.setAttribute('aria-labelledby', 'upgrade-gate-title');
+    var label = PANEL_LABELS[panelName] || panelName;
+    var flavor = PANEL_FLAVORS[panelName] || 'advanced analytics for serious managers';
+    var method = PANEL_METHODS[panelName] || '';
+    var tierInfo = typeof getUserTierInfo === 'function' ? getUserTierInfo() : {};
+    var trialLine = tierInfo.isTrial
+      ? "You're on Pro (" + (tierInfo.daysLeft >= 1 ? tierInfo.daysLeft + "d" : (tierInfo.hoursLeft > 0 ? tierInfo.hoursLeft + "h" : "<1h")) + " left). Subscribe to keep access."
+      : tierInfo.isExpiredTrial
+        ? "Your trial ended. Subscribe to unlock Pro panels."
+        : "7-day Elite trial on sign-up. Cancel anytime.";
+    gate.innerHTML =
+      '<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:400px; text-align:center; padding:48px 24px;">' +
+        '<div style="font-size:48px; margin-bottom:16px;">&#x1F512;</div>' +
+        '<div id="upgrade-gate-title" style="font-family:var(--font-display); font-size:24px; margin-bottom:8px;">' + escapeHtml(label) + '</div>' +
+        '<div style="font-family:var(--font-hand); font-size:20px; color:var(--ink-medium); margin-bottom:20px; max-width:440px;">' + escapeHtml(flavor) + '</div>' +
+        (method
+          ? '<div style="background:var(--bg); border:2px solid var(--ink); border-radius:var(--radius-sm); padding:16px 24px; margin-bottom:24px; text-align:left; max-width:440px;">' +
+              '<div style="font-family:var(--font-mono); font-size:12px; font-weight:700; margin-bottom:8px; color:var(--ink);">How ' + escapeHtml(label) + ' works:</div>' +
+              '<div style="font-family:var(--font-mono); font-size:11px; color:var(--ink-medium); line-height:1.7;">' + escapeHtml(method) + '</div>' +
+            '</div>'
+          : '<div style="background:var(--bg); border:2px solid var(--ink); border-radius:var(--radius-sm); padding:16px 24px; margin-bottom:24px; text-align:left; max-width:440px;">' +
+              '<div style="font-family:var(--font-mono); font-size:12px; font-weight:700; margin-bottom:8px; color:var(--ink);">Inside this panel:</div>' +
+              '<div style="font-family:var(--font-mono); font-size:11px; color:var(--ink-medium); line-height:1.7;">' +
+                'Sortable tables, position filters, and per-player grades for ' + escapeHtml(label.toLowerCase()) + '. ' +
+                'One of 70+ Pro panels with full data back to 2015.' +
+              '</div>' +
+            '</div>'
+        ) +
+        '<a href="/pricing.html" id="upgrade-gate-cta" class="btn-chunky btn-primary" style="font-size:14px; padding:10px 28px; text-decoration:none;">Unlock ' + escapeHtml(label) + '</a>' +
+        '<div style="font-family:var(--font-mono); font-size:11px; color:var(--ink-light); margin-top:12px;">' + trialLine + '</div>' +
+      '</div>';
+    gate.style.display = '';
+    var cta = document.getElementById('upgrade-gate-cta');
+    if (cta) cta.focus();
+  }
+
+  // ─── switchPanel ───────────────────────────────────────────────
+  window.switchPanel = function(panelName) {
+    if (panelName === currentPanel) return;
+    if (typeof window._abortPanelFetches === 'function') window._abortPanelFetches();
+
+    // Tier gate: non-free panels require Pro/Elite
+    if (!FREE_PANELS[panelName] && typeof isPaidUser === 'function' && !isPaidUser()) {
+      // Show upgrade prompt instead of panel content
+      _showUpgradeGate(panelName);
+      currentPanel = panelName;
+      // Update sidebar active state
+      document.querySelectorAll('.lab-sidebar-item').forEach(function(item) {
+        item.classList.toggle('active', item.dataset.panel === panelName);
+      });
+      // Update URL
+      var urlParams = new URLSearchParams();
+      urlParams.set('panel', panelName);
+      history.pushState({ panel: panelName, universe: 'nfl' }, '', window.location.pathname + '?' + urlParams.toString());
+      return;
+    }
+
+    // Update sidebar active state
+    document.querySelectorAll('.lab-sidebar-item').forEach(function(item) {
+      item.classList.toggle('active', item.dataset.panel === panelName);
+    });
+
+    // Find current visible panel for fade-out
+    var currentVisible = currentPanel ? document.querySelector('.lab-panel[data-panel="' + currentPanel + '"]') : null;
+
+    function showNewPanel() {
+      // Hide all panels
+      document.querySelectorAll('.lab-panel').forEach(function(p) {
+        p.style.display = 'none';
+        p.classList.remove('panel-fade-out', 'panel-fade-in');
+      });
+
+      var entry = panelRegistry[panelName];
+
+      if (entry) {
+        // Create container on first access (except screener which is static)
+        if (!entry.container) {
+          var section = document.createElement('section');
+          section.className = 'lab-panel';
+          section.dataset.panel = panelName;
+          section.id = 'panel-' + panelName;
+
+          // Add breadcrumb header with title + flavor text
+          var label = PANEL_LABELS[panelName] || panelName;
+          var cat = PANEL_CATEGORIES[panelName] || 'Screener';
+          var flavor = PANEL_FLAVORS[panelName] || '';
+          var header = document.createElement('div');
+          header.className = 'lab-panel-header';
+          var methodText = PANEL_METHODS[panelName] || PANEL_METHOD_DEFAULT;
+          var methodId = 'method-' + panelName;
+          header.innerHTML = '<span class="breadcrumb">' +
+                             '<a href="#" data-panel="screener" style="color:var(--orange);text-decoration:none;">Screener</a>' +
+                             ' &gt; ' +
+                             '<span style="color:var(--ink-light);">' + escapeHtml(cat) + '</span>' +
+                             ' &gt; ' +
+                             '<span>' + escapeHtml(label) + '</span>' +
+                           '</span>' +
+                             '<div class="panel-title-row">' +
+                               '<div class="panel-title">' + escapeHtml(label) + '</div>' +
+                               '<div class="panel-actions">' +
+                                 '<button type="button" class="btn-panel-action btn-info-toggle" onclick="toggleMethodology(\'' + escapeJS(methodId) + '\')" title="How is this calculated?" aria-label="How is this calculated?">&#9432;</button>' +
+                                 '<button type="button" class="btn-panel-action btn-csv-export" onclick="exportPanelCSV(\'' + escapeJS(panelName) + '\')" title="Export as CSV">CSV</button>' +
+                                 '<button type="button" class="btn-panel-action" onclick="screenshotPanel(\'' + escapeJS(panelName) + '\')" title="Screenshot as PNG">PNG</button>' +
+                                 '<button type="button" class="btn-panel-action" onclick="sharePanelURL(\'' + escapeJS(panelName) + '\')" title="Copy share link">Share</button>' +
+                               '</div>' +
+                             '</div>' +
+                             (flavor ? '<div class="panel-flavor">' + escapeHtml(flavor) + '</div>' : '') +
+                             (function() {
+                               var pa = typeof getPanelAgent === 'function' ? getPanelAgent(panelName) : null;
+                               if (!pa) return '';
+                               var html = '<div class="panel-agent-attr" style="font-family:var(--font-hand); font-size:13px; opacity:0.6; display:flex; align-items:center; gap:5px; margin-top:2px;">' +
+                                 '<img src="' + escapeAttr(pa.icon) + '" alt="' + escapeAttr(pa.name) + '" width="20" height="20" loading="lazy" style="vertical-align:middle;" onerror="this.style.display=\'none\'">' +
+                                 '<span>' + escapeHtml(pa.name) + ' \u2014 ' + escapeHtml(pa.role) + '</span></div>';
+                               // One-liner insight (Pro+ only)
+                               var paid = typeof isPaidUser === 'function' && isPaidUser();
+                               if (paid && typeof getOneLiner === 'function') {
+                                 var liner = getOneLiner(panelName);
+                                 if (liner) {
+                                   html += '<div class="panel-one-liner" style="font-family:var(--font-hand); font-size:14px; opacity:0.5; font-style:italic; margin-top:4px; max-width:500px;">' + escapeHtml(liner) + '</div>';
+                                 }
+                               }
+                               return html;
+                             })() +
+                             '<div class="panel-methodology" id="' + escapeAttr(methodId) + '" style="display:none;">' + escapeHtml(methodText) + '</div>';
+          section.appendChild(header);
+
+          // Content area for the render function
+          var content = document.createElement('div');
+          content.className = 'lab-panel-content';
+          section.appendChild(content);
+
+          labMain.appendChild(section);
+          entry.container = section;
+        }
+
+        // Show the container with fade-in
+        entry.container.style.display = '';
+        entry.container.classList.add('panel-fade-in');
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() {
+            entry.container.classList.remove('panel-fade-in');
+          });
+        });
+
+        // Lazy-load: render on first access
+        if (!entry.loaded) {
+          var contentEl = entry.container.querySelector('.lab-panel-content') || entry.container;
+          var panelLoadText = typeof getLoadingText === 'function' ? getLoadingText(panelName) : razzleLoading();
+          contentEl.innerHTML = '<div class="lab-panel-loading"><div class="loading-msg">' + escapeHtml(panelLoadText) + '</div></div>';
+          try {
+            entry.render(contentEl);
+          } catch (err) {
+            var panelErrText = typeof getErrorText === 'function' ? getErrorText(panelName) : 'something went sideways. Razzle knocked the server off the table. refresh and we\'ll pretend it didn\'t happen.';
+            contentEl.innerHTML = '<div class="lab-panel-loading"><div class="loading-msg" style="color:var(--red);">' + escapeHtml(panelErrText) + '</div></div>';
+            console.error('Panel render error (' + panelName + '):', err);
+          }
+          entry.loaded = true;
+        }
+        // Hide CSV button if panel has no table data (check after async render)
+        _updateCsvVisibility(entry.container);
+        // Update CSV lock styling on newly created panel buttons
+        if (typeof _updateCsvLocks === 'function') _updateCsvLocks();
+      }
+
+    }
+
+    // Fade out current panel, then show new one
+    if (currentVisible && currentVisible.offsetParent !== null) {
+      currentVisible.classList.add('panel-fade-out');
+      setTimeout(showNewPanel, 150);
+    } else {
+      showNewPanel();
+    }
+
+    currentPanel = panelName;
+    // Update tab title with panel name
+    var panelLabel = PANEL_LABELS[panelName] || panelName;
+    document.title = (panelName === 'screener' ? 'Razzle Lab \u2014 100+ Stats, Custom Formulas, Forever Free' : panelLabel + ' \u2014 Razzle Lab');
+
+    // Save last panel to localStorage for session memory
+    try { localStorage.setItem('razzle_last_panel', panelName); } catch(e) {}
+
+    // Update recently viewed panels
+    _updateRecentPanels(panelName);
+
+    // Track panel visits for Start Here auto-collapse
+    try {
+      var _pv = parseInt(localStorage.getItem('razzle_panel_visits') || '0', 10);
+      _pv++;
+      localStorage.setItem('razzle_panel_visits', String(_pv));
+      if (_pv >= 5) {
+        var _sh = document.getElementById('sidebarStartHere');
+        if (_sh) _sh.style.display = 'none';
+      }
+    } catch(e) {}
+
+    // Update URL state (include universe if not NFL)
+    var urlParams = new URLSearchParams();
+    if (panelName !== 'screener') urlParams.set('panel', panelName);
+    var uni = (typeof state !== 'undefined' && state.universe && state.universe !== 'nfl') ? state.universe : '';
+    if (uni) urlParams.set('u', uni);
+    var qs = urlParams.toString();
+    var newUrl = window.location.pathname + (qs ? '?' + qs : '');
+    history.pushState({ panel: panelName, universe: uni || 'nfl' }, '', newUrl);
+  };
+
+  // ─── Sidebar toggle ────────────────────────────────────────────
+  window.toggleSidebar = function() {
+    var sidebar = document.getElementById('labSidebar');
+    sidebar.classList.toggle('collapsed');
+    try { localStorage.setItem('razzle_sidebar_collapsed', sidebar.classList.contains('collapsed') ? '1' : '0'); } catch(e) {}
+  };
+
+  // Restore sidebar state
+  try {
+    if (localStorage.getItem('razzle_sidebar_collapsed') === '1') {
+      document.getElementById('labSidebar').classList.add('collapsed');
+    }
+  } catch(e) {}
+
+  // ─── Quick-Start Paths for new users (CEO-021) ────────────────
+  var _quickStartPaths = {
+    dynasty:   { panel: 'rankings', items: [
+      { panel: 'rankings',    label: 'Dynasty Rankings',  hint: 'know what your roster is worth' },
+      { panel: 'tradevalues', label: 'Trade Values',      hint: 'every player\'s trade stock' },
+      { panel: 'breakouts',   label: 'Breakout Finder',   hint: 'find your next sleeper' },
+      { panel: 'aging',       label: 'Aging Curves',      hint: 'peak age by position' },
+      { panel: 'buysell',     label: 'Buy / Sell',        hint: 'efficiency vs rank mismatch' }
+    ]},
+    redraft:   { panel: 'weekly', items: [
+      { panel: 'weekly',      label: 'Weekly Heatmap',    hint: 'week-by-week scoring grid' },
+      { panel: 'matchups',    label: 'Matchups',          hint: 'defense PPG allowed' },
+      { panel: 'consistency', label: 'Consistency',       hint: 'floor/ceiling grades' },
+      { panel: 'cheatsheet',  label: 'Cheat Sheet',       hint: 'draft day rankings' },
+      { panel: 'waivers',     label: 'Rising Players',    hint: 'trending up recently' }
+    ]},
+    prospects: { panel: 'prospects', items: [
+      { panel: 'prospects',   label: 'Big Board',         hint: 'prospect tier rankings' },
+      { panel: 'draftclass',  label: 'Draft Class',       hint: 'class analytics' },
+      { panel: 'percentiles', label: 'Percentiles',       hint: 'college stat percentiles' },
+      { panel: 'screener',    label: 'The Screener',      hint: 'switch to college mode' },
+      { panel: 'drafttracker',label: 'Draft Tracker',     hint: 'how each class performed' }
+    ]}
+  };
+
+  function _enterGuidedMode() {
+    var sidebar = document.getElementById('labSidebar');
+    if (sidebar) sidebar.classList.add('sidebar-guided');
+    var browseAll = document.getElementById('sidebarBrowseAll');
+    if (browseAll) browseAll.style.display = 'block';
+  }
+
+  function _exitGuidedMode() {
+    var sidebar = document.getElementById('labSidebar');
+    if (sidebar) sidebar.classList.remove('sidebar-guided');
+    var browseAll = document.getElementById('sidebarBrowseAll');
+    if (browseAll) browseAll.style.display = 'none';
+  }
+
+  (function _initQuickStart() {
+    try {
+      var userType = localStorage.getItem('razzle_user_type');
+      var dismissed = localStorage.getItem('razzle_start_here_dismissed');
+      var el = document.getElementById('sidebarStartHere');
+      if (!el || dismissed) return;
+
+      el.style.display = 'block';
+      _enterGuidedMode();
+
+      if (userType && _quickStartPaths[userType]) {
+        _showQuickStartPanels(userType);
+      }
+      // else: chooser is already visible by default
+    } catch(e) {}
+  })();
+
+  function _showQuickStartPanels(pathKey) {
+    var chooser = document.getElementById('quickStartChooser');
+    var panelsWrap = document.getElementById('quickStartPanels');
+    var panelList = document.getElementById('quickStartPanelList');
+    if (!chooser || !panelsWrap || !panelList) return;
+
+    var path = _quickStartPaths[pathKey];
+    if (!path) return;
+
+    chooser.style.display = 'none';
+    panelsWrap.style.display = 'block';
+    panelList.innerHTML = '';
+    path.items.forEach(function(item) {
+      var a = document.createElement('a');
+      a.href = '#';
+      a.className = 'lab-sidebar-item start-here-item';
+      a.dataset.panel = item.panel;
+      a.innerHTML = item.label + '<span class="start-here-hint">' + item.hint + '</span>';
+      panelList.appendChild(a);
+    });
+  }
+
+  // Quick-start chooser button clicks
+  (function() {
+    var chooser = document.getElementById('quickStartChooser');
+    if (!chooser) return;
+    chooser.addEventListener('click', function(e) {
+      var btn = e.target.closest('.quick-start-btn');
+      if (!btn) return;
+      var pathKey = btn.dataset.path;
+      try { localStorage.setItem('razzle_user_type', pathKey); } catch(e) {}
+
+      if (pathKey === 'all') {
+        // Dismiss entirely — reveal all panels
+        var el = document.getElementById('sidebarStartHere');
+        if (el) el.style.display = 'none';
+        _exitGuidedMode();
+        try { localStorage.setItem('razzle_start_here_dismissed', '1'); } catch(e) {}
+        return;
+      }
+
+      _showQuickStartPanels(pathKey);
+      // Open the path's default panel
+      var path = _quickStartPaths[pathKey];
+      if (path && typeof switchPanel === 'function') {
+        switchPanel(path.panel);
+      }
+    });
+  })();
+
+  // "switch" link — go back to chooser
+  (function() {
+    var link = document.getElementById('quickStartSwitch');
+    if (!link) return;
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      var chooser = document.getElementById('quickStartChooser');
+      var panelsWrap = document.getElementById('quickStartPanels');
+      if (chooser) chooser.style.display = 'block';
+      if (panelsWrap) panelsWrap.style.display = 'none';
+      try { localStorage.removeItem('razzle_user_type'); } catch(e) {}
+    });
+  })();
+
+  window._trackStartHere = function() {
+    try {
+      var visits = parseInt(localStorage.getItem('razzle_panel_visits') || '0', 10);
+      visits++;
+      localStorage.setItem('razzle_panel_visits', String(visits));
+      if (visits >= 8) {
+        var el = document.getElementById('sidebarStartHere');
+        if (el) el.style.display = 'none';
+        _exitGuidedMode();
+      }
+    } catch(e) {}
+  };
+
+  // ─── "Browse all panels" link (S1-016) ────────────────────────
+  (function() {
+    var link = document.getElementById('sidebarBrowseAll');
+    if (!link) return;
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      _exitGuidedMode();
+      // Also dismiss Start Here card
+      var el = document.getElementById('sidebarStartHere');
+      if (el) el.style.display = 'none';
+      try { localStorage.setItem('razzle_start_here_dismissed', '1'); } catch(e2) {}
+    });
+  })();
+
+  // ─── Sidebar panel click delegation (S2-084) ─────────────────
+  (function() {
+    var sidebar = document.getElementById('labSidebar');
+    if (!sidebar) return;
+    sidebar.addEventListener('click', function(e) {
+      var item = e.target.closest('[data-panel]');
+      if (!item) return;
+      e.preventDefault();
+      switchPanel(item.dataset.panel);
+      if (item.classList.contains('start-here-item') && typeof _trackStartHere === 'function') {
+        _trackStartHere();
+      }
+    });
+  })();
+
+  // ─── Breadcrumb panel click delegation (S2-084) ──────────────
+  (function() {
+    var main = document.getElementById('labMain');
+    if (!main) return;
+    main.addEventListener('click', function(e) {
+      var item = e.target.closest('.breadcrumb [data-panel]');
+      if (!item) return;
+      e.preventDefault();
+      switchPanel(item.dataset.panel);
+    });
+  })();
+
+  // ─── Sidebar keyboard navigation ─────────────────────────────
+  (function() {
+    var sidebar = document.getElementById('labSidebar');
+    if (!sidebar) return;
+
+    // Add tabindex to all sidebar items
+    sidebar.querySelectorAll('.lab-sidebar-item').forEach(function(item) {
+      item.setAttribute('tabindex', '0');
+      item.setAttribute('role', 'link');
+    });
+
+    // Add aria-label to category headers
+    sidebar.querySelectorAll('.lab-sidebar-category').forEach(function(cat) {
+      cat.setAttribute('role', 'heading');
+      cat.setAttribute('aria-level', '3');
+    });
+
+    sidebar.addEventListener('keydown', function(e) {
+      var focused = document.activeElement;
+      if (!focused || !focused.classList.contains('lab-sidebar-item')) return;
+
+      var items = Array.from(sidebar.querySelectorAll('.lab-sidebar-item'));
+      var idx = items.indexOf(focused);
+      if (idx < 0) return;
+
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          if (idx < items.length - 1) items[idx + 1].focus();
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          if (idx > 0) items[idx - 1].focus();
+          break;
+        case 'Home':
+          e.preventDefault();
+          items[0].focus();
+          break;
+        case 'End':
+          e.preventDefault();
+          items[items.length - 1].focus();
+          break;
+        case 'Enter':
+        case ' ':
+          e.preventDefault();
+          focused.click();
+          break;
+        case 'Escape':
+          // Close mobile sidebar
+          if (window.innerWidth <= 768) {
+            sidebar.classList.remove('open');
+          }
+          break;
+      }
+    });
+  })();
+
+  // ─── Recently viewed panels ─────────────────────────────────────
+  var RECENT_MAX = 5;
+  var RECENT_KEY = 'razzle_recent_panels';
+
+  function _getRecentPanels() {
+    try {
+      var raw = localStorage.getItem(RECENT_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch(e) { return []; }
+  }
+
+  function _updateRecentPanels(panelName) {
+    var recents = _getRecentPanels();
+    // Remove if already in list
+    recents = recents.filter(function(p) { return p !== panelName; });
+    // Add to front
+    recents.unshift(panelName);
+    // Trim to max
+    if (recents.length > RECENT_MAX + 1) recents = recents.slice(0, RECENT_MAX + 1);
+    try { localStorage.setItem(RECENT_KEY, JSON.stringify(recents)); } catch(e) {}
+    _renderRecentPanels();
+  }
+
+  function _renderRecentPanels() {
+    var container = document.getElementById('sidebarRecentChips');
+    var wrapper = document.getElementById('sidebarRecent');
+    if (!container || !wrapper) return;
+
+    var recents = _getRecentPanels();
+    // Exclude current panel from display
+    var display = recents.filter(function(p) { return p !== currentPanel; }).slice(0, RECENT_MAX);
+
+    if (display.length === 0) {
+      wrapper.classList.remove('has-items');
+      container.innerHTML = '';
+      return;
+    }
+
+    wrapper.classList.add('has-items');
+    container.innerHTML = display.map(function(p) {
+      var label = PANEL_LABELS[p] || p;
+      return '<a class="sidebar-recent-chip" data-panel="' + escapeAttr(p) + '">' + escapeHtml(label) + '</a>';
+    }).join('');
+  }
+
+  // Initial render of recent panels
+  _renderRecentPanels();
+
+  // ─── Favorite panels ──────────────────────────────────────────
+  var FAV_KEY = 'razzle_favorite_panels';
+  var FAV_MAX = 10;
+
+  function _getFavorites() {
+    try {
+      var raw = localStorage.getItem(FAV_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch(e) { return []; }
+  }
+
+  function _saveFavorites(favs) {
+    try { localStorage.setItem(FAV_KEY, JSON.stringify(favs)); } catch(e) {}
+  }
+
+  function toggleFavorite(panelName) {
+    var favs = _getFavorites();
+    var idx = favs.indexOf(panelName);
+    if (idx !== -1) {
+      favs.splice(idx, 1);
+    } else {
+      if (favs.length >= FAV_MAX) {
+        _showToast('max ' + FAV_MAX + ' favorites');
+        return;
+      }
+      favs.push(panelName);
+    }
+    _saveFavorites(favs);
+    _renderFavorites();
+    _renderFavStars();
+  }
+  // Expose globally for onclick
+  window.toggleFavorite = toggleFavorite;
+
+  function _renderFavorites() {
+    var container = document.getElementById('sidebarFavChips');
+    var wrapper = document.getElementById('sidebarFavorites');
+    if (!container || !wrapper) return;
+    var favs = _getFavorites();
+    if (favs.length === 0) {
+      wrapper.classList.remove('has-items');
+      container.innerHTML = '';
+      return;
+    }
+    wrapper.classList.add('has-items');
+    container.innerHTML = favs.map(function(p) {
+      var label = PANEL_LABELS[p] || p;
+      return '<a class="sidebar-recent-chip" data-panel="' + escapeAttr(p) + '">' + escapeHtml(label) + '</a>';
+    }).join('');
+  }
+
+  function _renderFavStars() {
+    var favs = _getFavorites();
+    document.querySelectorAll('.sidebar-fav-star').forEach(function(star) {
+      var panel = star.getAttribute('data-panel');
+      if (favs.indexOf(panel) !== -1) {
+        star.classList.add('favorited');
+        star.textContent = '\u2605';
+      } else {
+        star.classList.remove('favorited');
+        star.textContent = '\u2606';
+      }
+    });
+  }
+
+  // Inject star icons into sidebar items
+  (function _injectFavStars() {
+    var favs = _getFavorites();
+    document.querySelectorAll('.lab-sidebar-item').forEach(function(item) {
+      var panel = item.getAttribute('data-panel');
+      if (!panel) return;
+      var star = document.createElement('span');
+      star.className = 'sidebar-fav-star' + (favs.indexOf(panel) !== -1 ? ' favorited' : '');
+      star.setAttribute('data-panel', panel);
+      star.textContent = favs.indexOf(panel) !== -1 ? '\u2605' : '\u2606';
+      star.addEventListener('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        toggleFavorite(panel);
+      });
+      item.appendChild(star);
+    });
+  })();
+
+  _renderFavorites();
+
+  // Set tool count badge
+  (function() {
+    var badge = document.getElementById('sidebarToolCount');
+    if (!badge) return;
+    var count = document.querySelectorAll('.lab-sidebar-item').length;
+    badge.textContent = count + ' tools';
+  })();
+
+  // ─── Category collapse/expand ─────────────────────────────────
+  (function() {
+    var sidebar = document.getElementById('labSidebar');
+    if (!sidebar) return;
+    var cats = sidebar.querySelectorAll('.lab-sidebar-category');
+    var CAT_COLLAPSE_KEY = 'razzle_cat_collapsed';
+
+    function getSavedState() {
+      try {
+        var raw = localStorage.getItem(CAT_COLLAPSE_KEY);
+        return raw ? JSON.parse(raw) : {};
+      } catch(e) { return {}; }
+    }
+
+    function saveState(state) {
+      try { localStorage.setItem(CAT_COLLAPSE_KEY, JSON.stringify(state)); } catch(e) {}
+    }
+
+    function getCatItems(cat) {
+      var items = [];
+      var next = cat.nextElementSibling;
+      while (next && !next.classList.contains('lab-sidebar-category')) {
+        if (next.classList.contains('lab-sidebar-item')) items.push(next);
+        next = next.nextElementSibling;
+      }
+      return items;
+    }
+
+    function applyCatState(cat, collapsed) {
+      var items = getCatItems(cat);
+      if (collapsed) {
+        cat.classList.add('cat-collapsed');
+        items.forEach(function(item) { item.classList.add('cat-hidden'); });
+      } else {
+        cat.classList.remove('cat-collapsed');
+        items.forEach(function(item) { item.classList.remove('cat-hidden'); });
+      }
+      // Keep aria-expanded in sync (only for collapsible categories with the attribute)
+      if (cat.hasAttribute('aria-expanded')) {
+        cat.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      }
+    }
+
+    var saved = getSavedState();
+    var isFirstVisit = Object.keys(saved).length === 0 && !localStorage.getItem('razzle_lab_visited');
+
+    cats.forEach(function(cat, idx) {
+      // Skip non-collapsible parent headers
+      if (cat.classList.contains('sidebar-cat-forever-free') || cat.classList.contains('sidebar-cat-pro-parent')) return;
+
+      // Add chevron if not already present
+      if (!cat.querySelector('.cat-chevron')) {
+        var chevron = document.createElement('span');
+        chevron.className = 'cat-chevron';
+        chevron.textContent = '\u25BE'; // ▾
+        cat.appendChild(chevron);
+      }
+
+      // On first visit, collapse Pro categories so free panels are prominent
+      var catKey = 'cat_' + idx;
+      if (isFirstVisit) {
+        // Collapse all Pro sub-categories (not the FREE PANELS section)
+        var catText = (cat.querySelector('.cat-text') || {}).textContent || '';
+        if (catText !== 'FREE PANELS') {
+          applyCatState(cat, true);
+          saved[catKey] = true;
+        }
+      } else if (saved[catKey]) {
+        applyCatState(cat, true);
+      }
+
+      // Make collapsible categories keyboard-accessible
+      cat.setAttribute('role', 'button');
+      cat.setAttribute('tabindex', '0');
+      cat.setAttribute('aria-expanded', saved[catKey] ? 'false' : 'true');
+
+      function toggleCat() {
+        var isCollapsed = cat.classList.contains('cat-collapsed');
+        applyCatState(cat, !isCollapsed);
+        cat.setAttribute('aria-expanded', isCollapsed ? 'true' : 'false');
+        var s = getSavedState();
+        if (!isCollapsed) {
+          s[catKey] = true;
+        } else {
+          delete s[catKey];
+        }
+        saveState(s);
+      }
+
+      // Click handler
+      cat.addEventListener('click', toggleCat);
+
+      // Keyboard handler — Enter/Space
+      cat.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleCat();
+        }
+      });
+    });
+
+    // Save first-visit collapsed state and show onboarding card
+    if (isFirstVisit) {
+      saveState(saved);
+      var ob = document.getElementById('sidebarOnboard');
+      if (ob) ob.style.display = 'block';
+    }
+
+    // Expose for search override
+    window._restoreCatCollapseState = function() {
+      var s = getSavedState();
+      cats.forEach(function(cat, idx) {
+        if (s['cat_' + idx]) applyCatState(cat, true);
+        else applyCatState(cat, false);
+      });
+    };
+
+    window._overrideCatForSearch = function() {
+      sidebar.querySelectorAll('.lab-sidebar-item').forEach(function(item) {
+        if (!item.classList.contains('search-hidden')) {
+          item.classList.remove('cat-hidden');
+        }
+      });
+    };
+  })();
+
+  // ─── Sidebar search filter ──────────────────────────────────────
+  (function() {
+    var searchInput = document.getElementById('sidebarSearch');
+    if (!searchInput) return;
+    var sidebar = document.getElementById('labSidebar');
+
+    searchInput.addEventListener('input', function() {
+      var q = this.value.trim().toLowerCase();
+      var items = sidebar.querySelectorAll('.lab-sidebar-item');
+      var cats = sidebar.querySelectorAll('.lab-sidebar-category');
+
+      if (!q) {
+        // Restore all items
+        items.forEach(function(item) { item.classList.remove('search-hidden'); });
+        cats.forEach(function(cat) { cat.classList.remove('search-hidden'); });
+        var emptyHide = document.getElementById('sidebarSearchEmpty');
+        if (emptyHide) emptyHide.style.display = 'none';
+        // Restore category collapse state
+        if (typeof _restoreCatCollapseState === 'function') _restoreCatCollapseState();
+        return;
+      }
+
+      // Hide all items first, then show matches
+      items.forEach(function(item) {
+        var text = item.textContent.toLowerCase();
+        var panel = (item.dataset.panel || '').toLowerCase();
+        if (text.indexOf(q) !== -1 || panel.indexOf(q) !== -1) {
+          item.classList.remove('search-hidden');
+        } else {
+          item.classList.add('search-hidden');
+        }
+      });
+
+      // Show category if it has any visible child items
+      cats.forEach(function(cat) {
+        var next = cat.nextElementSibling;
+        var hasVisible = false;
+        while (next && !next.classList.contains('lab-sidebar-category')) {
+          if (next.classList.contains('lab-sidebar-item') && !next.classList.contains('search-hidden')) {
+            hasVisible = true;
+          }
+          next = next.nextElementSibling;
+        }
+        if (hasVisible) {
+          cat.classList.remove('search-hidden');
+        } else {
+          cat.classList.add('search-hidden');
+        }
+      });
+
+      // Override category collapse — show matching items regardless
+      if (typeof _overrideCatForSearch === 'function') _overrideCatForSearch();
+
+      // Show empty state if no matches
+      var emptyEl = document.getElementById('sidebarSearchEmpty');
+      var anyVisible = false;
+      for (var k = 0; k < items.length; k++) {
+        if (!items[k].classList.contains('search-hidden')) { anyVisible = true; break; }
+      }
+      if (!emptyEl) {
+        emptyEl = document.createElement('div');
+        emptyEl.id = 'sidebarSearchEmpty';
+        emptyEl.style.cssText = 'padding:16px 12px;font-family:var(--font-hand);font-size:14px;color:var(--ink-light);text-align:center;';
+        emptyEl.textContent = 'nothing matches that search, coach.';
+        sidebar.appendChild(emptyEl);
+      }
+      emptyEl.style.display = anyVisible ? 'none' : 'block';
+    });
+
+    // Click search icon in collapsed mode → expand sidebar and focus
+    searchInput.addEventListener('click', function() {
+      if (sidebar.classList.contains('collapsed')) {
+        sidebar.classList.remove('collapsed');
+        try { localStorage.setItem('razzle_sidebar_collapsed', '0'); } catch(e) {}
+        setTimeout(function() { searchInput.focus(); }, 200);
+      }
+    });
+
+    // Escape clears search
+    searchInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        this.value = '';
+        this.dispatchEvent(new Event('input'));
+        this.blur();
+      }
+    });
+  })();
+
+  // ─── URL state on load ─────────────────────────────────────────
+  var params = new URLSearchParams(window.location.search);
+
+  // Restore universe from URL param (overrides localStorage)
+  var urlUniverse = params.get('u');
+  if (urlUniverse && (urlUniverse === 'college' || urlUniverse === 'prospects')) {
+    if (typeof state !== 'undefined' && state.universe !== urlUniverse) {
+      state.universe = urlUniverse;
+      localStorage.setItem('razzle_universe', urlUniverse);
+      if (typeof applyUniverseUI === 'function') applyUniverseUI();
+    }
+  }
+
+  // Defer initial panel switch until after deferred scripts have registered panels
+  function _initPanel() {
+    var initPanel = params.get('panel');
+    if (!initPanel) {
+      // Restore last-visited panel from localStorage
+      try { initPanel = localStorage.getItem('razzle_last_panel'); } catch(e) {}
+    }
+    if (initPanel && initPanel !== 'screener') {
+      switchPanel(initPanel);
+    }
+  }
+  // If panels already registered, switch now; otherwise wait for DOMContentLoaded
+  if (window._labPanelDefs && window._labPanelDefs.length > 0) {
+    _initPanel();
+  } else {
+    document.addEventListener('DOMContentLoaded', function() {
+      // Ensure panels are registered first (in case _registerDeferredPanels hasn't fired)
+      _registerDeferredPanels();
+      _initPanel();
+    });
+  }
+
+  // Handle browser back/forward
+  window.addEventListener('popstate', function(e) {
+    if (e.state && e.state.panel) {
+      switchPanel(e.state.panel);
+    } else {
+      switchPanel('screener');
+    }
+    // Restore universe on popstate
+    if (e.state && e.state.universe && typeof state !== 'undefined') {
+      var newUni = e.state.universe;
+      if (state.universe !== newUni && typeof setUniverse === 'function') {
+        setUniverse(newUni);
+      }
+    }
+  });
+
+  // ─── Mobile sidebar ────────────────────────────────────────────
+  var mobileToggle = document.querySelector('.lab-menu-toggle');
+  var labSidebar = document.getElementById('labSidebar');
+
+  function _openLabSidebar() {
+    labSidebar.classList.add('open');
+    mobileToggle.setAttribute('aria-expanded', 'true');
+    // Make main content inert for focus trap
+    var labMain = document.getElementById('labMain');
+    if (labMain) labMain.setAttribute('inert', '');
+    // Focus first interactive element in sidebar after animation
+    var firstFocusable = labSidebar.querySelector('.sidebar-search, .lab-sidebar-item, [tabindex="0"]');
+    if (firstFocusable) setTimeout(function() { firstFocusable.focus(); }, 100);
+    // Add focus trap
+    labSidebar.addEventListener('keydown', _labSidebarFocusTrap);
+  }
+
+  function _closeLabSidebar() {
+    labSidebar.classList.remove('open');
+    mobileToggle.setAttribute('aria-expanded', 'false');
+    // Restore main content
+    var labMain = document.getElementById('labMain');
+    if (labMain) labMain.removeAttribute('inert');
+    // Remove focus trap
+    labSidebar.removeEventListener('keydown', _labSidebarFocusTrap);
+    // Return focus to hamburger button
+    mobileToggle.focus();
+  }
+
+  function _labSidebarFocusTrap(e) {
+    if (e.key !== 'Tab') return;
+    var focusable = labSidebar.querySelectorAll(
+      'a[href]:not([tabindex="-1"]):not(.cat-hidden):not(.search-hidden), ' +
+      'button:not([tabindex="-1"]), ' +
+      'input:not([tabindex="-1"]), ' +
+      '[tabindex="0"]'
+    );
+    if (focusable.length === 0) return;
+    var first = focusable[0];
+    var last = focusable[focusable.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else {
+      if (document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }
+
+  if (mobileToggle) {
+    mobileToggle.addEventListener('click', function() {
+      if (labSidebar.classList.contains('open')) {
+        _closeLabSidebar();
+      } else {
+        _openLabSidebar();
+      }
+    });
+  }
+
+  // Escape key closes mobile sidebar
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && labSidebar.classList.contains('open')) {
+      _closeLabSidebar();
+    }
+  });
+
+  document.addEventListener('click', function(e) {
+    if (labSidebar.classList.contains('open') && !labSidebar.contains(e.target) && !e.target.closest('.lab-menu-toggle')) {
+      _closeLabSidebar();
+    }
+  });
+
+  document.querySelectorAll('.lab-sidebar-item').forEach(function(item) {
+    item.addEventListener('click', function() {
+      if (window.innerWidth <= 768) {
+        _closeLabSidebar();
+      }
+    });
+  });
+})();
+
+// ─── Lab email capture (CEO-025) ─────────────────────────────
+(function() {
+  var wrap = document.getElementById('labEmailCapture');
+  if (!wrap) return;
+  // Only show for non-logged-in users
+  try { if (localStorage.getItem('razzle_user')) return; } catch(e) {}
+  try { if (localStorage.getItem('razzle_email_subscribed')) return; } catch(e) {}
+  wrap.style.display = 'block';
+  var form = document.getElementById('labEmailForm');
+  var input = document.getElementById('labEmailInput');
+  var msg = document.getElementById('labEmailMsg');
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var email = input.value.trim();
+    if (!email) return;
+    var base = typeof API_BASE !== 'undefined' ? API_BASE : '';
+    fetch(base + '/api/waitlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email })
+    }).then(function(r) { return r.json(); }).then(function(data) {
+      msg.style.display = 'block';
+      if (data.error) { msg.textContent = data.error; msg.style.color = 'var(--red)'; }
+      else {
+        msg.textContent = "You're in. First drop next Tuesday.";
+        msg.style.color = 'var(--green)';
+        input.value = '';
+        try { localStorage.setItem('razzle_email_subscribed', '1'); } catch(e) {}
+      }
+    }).catch(function() {
+      msg.style.display = 'block';
+      msg.textContent = 'Something went wrong.';
+      msg.style.color = 'var(--red)';
+    });
+  });
+})();
+</script>
+</body>
+</html>

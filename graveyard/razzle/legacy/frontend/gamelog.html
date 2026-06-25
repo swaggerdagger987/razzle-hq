@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Game Log — Razzle</title>
+<meta property="og:title" content="Game Log — Razzle">
+<meta property="og:description" content="Full game log for any player. Week-by-week box scores with every stat line from the season. Film don't lie, neither do game logs.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Game Log — Razzle">
+<meta name="twitter:description" content="Full game log for any player. Week-by-week box scores with every stat line. Film don't lie, neither do game logs.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Game log viewer on razzle.lol. Week-by-week box score stats for any fantasy-relevant player across all seasons.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=gamelog">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=gamelog">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .gl-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  .gl-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .gl-header h1 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    color: var(--ink);
+    margin: 0 0 4px;
+  }
+  .gl-header .gl-subtitle {
+    font-family: var(--font-hand);
+    font-size: 20px;
+    color: var(--ink-light);
+  }
+
+  /* Search */
+  .gl-search-wrap {
+    max-width: 400px;
+    margin: 0 auto 24px;
+    position: relative;
+  }
+  .gl-search {
+    width: 100%;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    padding: 10px 14px;
+    border: 3px solid var(--ink);
+    border-radius: 8px;
+    background: var(--bg-card);
+    box-sizing: border-box;
+  }
+  .gl-search::placeholder { color: var(--ink-medium); }
+  .gl-ac-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-card);
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 100;
+    display: none;
+  }
+  .gl-ac-item {
+    padding: 8px 12px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+  }
+  .gl-ac-item:hover, .gl-ac-item.highlighted {
+    background: var(--bg);
+  }
+  .gl-ac-pos {
+    font-weight: 700;
+    font-size: 11px;
+  }
+
+  /* Controls row */
+  .gl-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .gl-controls select {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 6px 10px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+  }
+  .gl-export {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 5px 14px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .gl-export:hover { background: var(--ink); color: var(--bg); }
+
+  /* Player card */
+  .gl-player-card {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: var(--radius-sm);
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .gl-player-name {
+    font-family: var(--font-display);
+    font-size: 20px;
+    color: var(--ink);
+  }
+  .gl-pos-badge {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: var(--radius-sm);
+    color: var(--text-on-accent);
+    border: 2px solid var(--ink);
+    margin-left: 8px;
+  }
+  .gl-team {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-light);
+    margin-left: 8px;
+  }
+  .gl-summary-stats {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .gl-summary-stat {
+    text-align: center;
+  }
+  .gl-summary-val {
+    font-family: var(--font-mono);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .gl-summary-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-light);
+    text-transform: uppercase;
+  }
+
+  /* Table */
+  .gl-table-wrap {
+    overflow-x: auto;
+    border: 3px solid var(--ink);
+    border-radius: var(--radius-sm);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .gl-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+  .gl-table th {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 8px 10px;
+    text-align: right;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .gl-table th:first-child { text-align: center; }
+  .gl-table th:hover { background: var(--ink); }
+  .gl-table td {
+    padding: 7px 10px;
+    text-align: right;
+    border-bottom: 2px dashed var(--border-dashed);
+  }
+  .gl-table td:first-child { text-align: center; font-weight: 700; }
+  .gl-table tr:last-child td { border-bottom: none; }
+  .gl-table tbody tr:hover { background: var(--bg-warm); }
+
+  /* Totals row */
+  .gl-table .totals-row td {
+    font-weight: 700;
+    background: var(--bg);
+    border-top: 3px solid var(--ink);
+  }
+
+  /* PPR color tiers */
+  .fpts-elite { color: var(--semantic-green); font-weight: 700; }
+  .fpts-great { color: var(--blue); font-weight: 700; }
+  .fpts-ok { }
+  .fpts-bad { color: var(--semantic-red); }
+
+  /* Loading / empty */
+  .gl-loading {
+    text-align: center;
+    font-family: var(--font-hand);
+    font-size: 18px;
+    color: var(--ink-light);
+    padding: 60px 0;
+  }
+
+  @media (max-width: 768px) {
+    .gl-header h1 { font-size: 24px; }
+    .gl-player-card { flex-direction: column; align-items: flex-start; }
+    .gl-table { font-size: 11px; }
+  }
+  @media (max-width: 480px) {
+    .gl-page { padding: 16px 8px 40px; }
+    .gl-header h1 { font-size: 20px; }
+    .gl-header .gl-subtitle { font-size: 16px; }
+    .gl-controls { gap: 8px; }
+    .gl-player-card { padding: 10px 12px; }
+    .gl-player-name { font-size: 18px; }
+    .gl-summary-val { font-size: 16px; }
+    .gl-table { font-size: 11px; }
+    .gl-table th, .gl-table td { padding: 5px 6px; }
+  }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div id="site-header" data-page="gamelog"></div>
+
+<main class="gl-page" id="main-content">
+  <div class="gl-header">
+    <h1>Game Log</h1>
+    <div class="gl-subtitle">the full season tape, week by week</div>
+  </div>
+
+  <div class="gl-search-wrap">
+    <input type="text" class="gl-search" id="glSearch" placeholder="search for a player..." autocomplete="off" aria-label="Player search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="glAcList">
+    <div class="gl-ac-list" id="glAcList" role="listbox"></div>
+  </div>
+
+  <div id="glContent" role="status" aria-live="polite">
+    <div class="gl-loading">search for a player to see their game log</div>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  'use strict';
+
+
+  var _cs = getComputedStyle(document.documentElement);
+  var POS_COLORS = {
+    QB: _cs.getPropertyValue('--pos-qb').trim() || '#5b7fff',
+    RB: _cs.getPropertyValue('--pos-rb').trim() || '#2ec4b6',
+    WR: _cs.getPropertyValue('--pos-wr').trim() || '#d97757',
+    TE: _cs.getPropertyValue('--pos-te').trim() || '#8b5cf6'
+  };
+
+  var currentPlayerId = '';
+  var currentData = null;
+  var sortCol = 'week';
+  var sortDir = 1;
+  var acIdx = -1;
+
+  /* ---- URL state ---- */
+
+  /* ---- Autocomplete ---- */
+  var searchInput = document.getElementById('glSearch');
+  var acList = document.getElementById('glAcList');
+  var acTimer = null;
+
+  searchInput.addEventListener('input', function() {
+    clearTimeout(acTimer);
+    var q = searchInput.value.trim();
+    if (q.length < 2) { acList.style.display = 'none'; searchInput.setAttribute('aria-expanded', 'false'); return; }
+    acTimer = setTimeout(function() {
+      apiFetch('/api/players/quick-search?q=' + encodeURIComponent(q) + '&limit=8')
+        .then(function(data) {
+          var players = Array.isArray(data) ? data : (data.players || []);
+          if (!players.length) { acList.style.display = 'none'; searchInput.setAttribute('aria-expanded', 'false'); return; }
+          acIdx = -1;
+          acList.innerHTML = players.map(function(p, i) {
+            var posColor = POS_COLORS[p.position] || (_cs.getPropertyValue('--ink-light').trim() || '#8a7565');
+            return '<div class="gl-ac-item" role="option" data-id="' + escapeHtml(p.player_id) + '" data-idx="' + i + '">' +
+              '<span>' + escapeHtml(p.name) + ' <span class="gl-ac-pos" style="color:' + posColor + '">' + escapeHtml(p.position) + '</span></span>' +
+              '<span style="color:var(--ink-light)">' + escapeHtml(p.team) + '</span></div>';
+          }).join('');
+          acList.style.display = 'block';
+          searchInput.setAttribute('aria-expanded', 'true');
+
+          acList.querySelectorAll('.gl-ac-item').forEach(function(item) {
+            item.addEventListener('click', function() {
+              selectPlayer(item.getAttribute('data-id'));
+              acList.style.display = 'none';
+              searchInput.setAttribute('aria-expanded', 'false');
+            });
+          });
+        }).catch(function() { acList.style.display = 'none'; searchInput.setAttribute('aria-expanded', 'false'); });
+    }, 200);
+  });
+
+  searchInput.addEventListener('keydown', function(e) {
+    var items = acList.querySelectorAll('.gl-ac-item');
+    if (!items.length || acList.style.display === 'none') return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      acIdx = Math.min(acIdx + 1, items.length - 1);
+      items.forEach(function(it, i) { it.classList.toggle('highlighted', i === acIdx); });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      acIdx = Math.max(acIdx - 1, 0);
+      items.forEach(function(it, i) { it.classList.toggle('highlighted', i === acIdx); });
+    } else if (e.key === 'Enter' && acIdx >= 0) {
+      e.preventDefault();
+      selectPlayer(items[acIdx].getAttribute('data-id'));
+      acList.style.display = 'none';
+      searchInput.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.gl-search-wrap')) { acList.style.display = 'none'; searchInput.setAttribute('aria-expanded', 'false'); }
+  });
+
+  function selectPlayer(pid) {
+    currentPlayerId = pid;
+    searchInput.value = '';
+    loadGameLog(pid);
+  }
+
+  /* ---- Load ---- */
+  function loadGameLog(pid, season) {
+    var url = '/api/game-log?player_id=' + encodeURIComponent(pid);
+    if (season) url += '&season=' + encodeURIComponent(season);
+
+    savePageState({ player: pid, season: season || '' });
+    document.getElementById('glContent').innerHTML = '<div class="gl-loading">' + razzleLoading() + '</div>';
+
+    fetch(url).then(function(r) {
+      if (!r.ok) throw new Error('API error');
+      return r.json();
+    }).then(function(data) {
+      if (data.error) {
+        document.getElementById('glContent').innerHTML = '<div class="gl-loading">' + escapeHtml(data.error) + '</div>';
+        return;
+      }
+      currentData = data;
+      sortCol = 'week';
+      sortDir = 1;
+      render(data);
+    }).catch(function() {
+      document.getElementById('glContent').innerHTML = '<div class="gl-loading">interception on that request. retry?</div>';
+    });
+  }
+
+  /* ---- Render ---- */
+  function render(data) {
+    var posColor = POS_COLORS[data.position] || (_cs.getPropertyValue('--ink-light').trim() || '#8a7565');
+    var weeks = (data.weeks || []).slice();
+
+    // Sort
+    weeks.sort(function(a, b) {
+      var av = a[sortCol] || 0, bv = b[sortCol] || 0;
+      return (av - bv) * sortDir;
+    });
+
+    var html = '';
+
+    // Controls
+    html += '<div class="gl-controls">';
+    html += '<select id="glSeason" aria-label="Season">';
+    (data.available_seasons || []).forEach(function(s) {
+      html += '<option value="' + s + '"' + (s === data.season ? ' selected' : '') + '>' + s + '</option>';
+    });
+    html += '</select>';
+    html += '<button class="gl-export" id="glExport">Export PNG</button>';
+    html += '</div>';
+
+    // Player card
+    html += '<div class="gl-player-card">';
+    html += '<div>';
+    html += '<span class="gl-player-name">' + escapeHtml(data.name) + '</span>';
+    html += '<span class="gl-pos-badge" style="background:' + posColor + '">' + escapeHtml(data.position) + '</span>';
+    html += '<span class="gl-team">' + escapeHtml(data.team) + '</span>';
+    html += '</div>';
+    html += '<div class="gl-summary-stats">';
+    html += '<div class="gl-summary-stat"><div class="gl-summary-val">' + escapeHtml(String(data.games)) + '</div><div class="gl-summary-label">Games</div></div>';
+    html += '<div class="gl-summary-stat"><div class="gl-summary-val">' + escapeHtml(String(data.totals.fpts)) + '</div><div class="gl-summary-label">Total Pts</div></div>';
+    html += '<div class="gl-summary-stat"><div class="gl-summary-val">' + escapeHtml(String(data.ppg)) + '</div><div class="gl-summary-label">PPG</div></div>';
+    html += '</div>';
+    html += '</div>';
+
+    // Table columns based on position
+    var cols = [
+      { key: 'week', label: 'Wk', align: 'center' },
+      { key: 'fpts', label: 'PPR' },
+    ];
+
+    if (data.position === 'QB') {
+      cols.push({ key: 'cmp', label: 'Cmp' });
+      cols.push({ key: 'pass_att', label: 'Att' });
+      cols.push({ key: 'pass_yd', label: 'Pass Yd' });
+      cols.push({ key: 'pass_td', label: 'Pass TD' });
+      cols.push({ key: 'ints', label: 'INT' });
+      cols.push({ key: 'car', label: 'Car' });
+      cols.push({ key: 'rush_yd', label: 'Rush Yd' });
+      cols.push({ key: 'rush_td', label: 'Rush TD' });
+    } else if (data.position === 'RB') {
+      cols.push({ key: 'car', label: 'Car' });
+      cols.push({ key: 'rush_yd', label: 'Rush Yd' });
+      cols.push({ key: 'rush_td', label: 'Rush TD' });
+      cols.push({ key: 'tgt', label: 'Tgt' });
+      cols.push({ key: 'rec', label: 'Rec' });
+      cols.push({ key: 'rec_yd', label: 'Rec Yd' });
+      cols.push({ key: 'rec_td', label: 'Rec TD' });
+    } else {
+      cols.push({ key: 'tgt', label: 'Tgt' });
+      cols.push({ key: 'rec', label: 'Rec' });
+      cols.push({ key: 'rec_yd', label: 'Rec Yd' });
+      cols.push({ key: 'rec_td', label: 'Rec TD' });
+      cols.push({ key: 'car', label: 'Car' });
+      cols.push({ key: 'rush_yd', label: 'Rush Yd' });
+      cols.push({ key: 'rush_td', label: 'Rush TD' });
+    }
+
+    html += '<div class="gl-table-wrap"><table class="gl-table"><caption class="sr-only">Player game log with weekly stats</caption>';
+    html += '<thead><tr>';
+    for (var c = 0; c < cols.length; c++) {
+      var arrow = sortCol === cols[c].key ? (sortDir === 1 ? ' ▲' : ' ▼') : '';
+      html += '<th data-col="' + cols[c].key + '">' + escapeHtml(cols[c].label) + arrow + '</th>';
+    }
+    html += '</tr></thead>';
+
+    html += '<tbody>';
+    for (var i = 0; i < weeks.length; i++) {
+      var w = weeks[i];
+      var fptsClass = w.fpts >= 30 ? 'fpts-elite' : w.fpts >= 20 ? 'fpts-great' : w.fpts >= 10 ? 'fpts-ok' : 'fpts-bad';
+      html += '<tr>';
+      for (var ci = 0; ci < cols.length; ci++) {
+        var val = w[cols[ci].key];
+        var cls = cols[ci].key === 'fpts' ? fptsClass : '';
+        html += '<td class="' + cls + '">' + escapeHtml(String(val !== null && val !== undefined ? val : 0)) + '</td>';
+      }
+      html += '</tr>';
+    }
+
+    // Totals row
+    html += '<tr class="totals-row">';
+    for (var ti = 0; ti < cols.length; ti++) {
+      if (cols[ti].key === 'week') {
+        html += '<td>TOT</td>';
+      } else {
+        var tval = data.totals[cols[ti].key] || 0;
+        html += '<td>' + escapeHtml(String(tval)) + '</td>';
+      }
+    }
+    html += '</tr>';
+
+    html += '</tbody></table></div>';
+
+    document.getElementById('glContent').innerHTML = html;
+
+    // Season selector event
+    document.getElementById('glSeason').addEventListener('change', function() {
+      loadGameLog(currentPlayerId, this.value);
+    });
+
+    // Sort event
+    document.querySelectorAll('.gl-table th').forEach(function(th) {
+      th.addEventListener('click', function() {
+        var col = th.getAttribute('data-col');
+        if (sortCol === col) {
+          sortDir *= -1;
+        } else {
+          sortCol = col;
+          sortDir = col === 'week' ? 1 : -1;
+        }
+        render(currentData);
+      });
+    });
+
+    // Export
+    document.getElementById('glExport').addEventListener('click', function() {
+      var btn = this; btn.disabled = true; btn.textContent = 'Exporting...';
+      var root = document.getElementById('main-content');
+      loadHtml2Canvas().then(function(h2c) { return h2c(root, { backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf', scale: 2 }); }).then(function(canvas) {
+        var ctx = canvas.getContext('2d');
+        ctx.font = "600 24px Caveat, cursive";
+        ctx.fillStyle = document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.15)' : 'rgba(45,31,20,0.12)';
+        ctx.fillText('razzle.lol', canvas.width - 130, canvas.height - 16);
+        var link = document.createElement('a');
+        link.download = 'razzle-gamelog.png';
+        link.href = canvas.toDataURL();
+        link.click();
+      }).finally(function() { btn.disabled = false; btn.textContent = 'Export PNG'; });
+    });
+  }
+
+  /* ---- Analytics ---- */
+  apiFetch('/api/analytics/pageview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: '/gamelog.html', referrer: document.referrer || '' })
+  }).catch(function() {});
+
+  /* ---- Init from URL ---- */
+  var init = restorePageState({ player: '', season: '' });
+  if (init.player) {
+    currentPlayerId = init.player;
+    loadGameLog(init.player, init.season || undefined);
+  }
+})();
+</script>
+</body>
+</html>

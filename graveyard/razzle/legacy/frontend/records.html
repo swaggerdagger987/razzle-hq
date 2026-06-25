@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Record Book — Razzle</title>
+<meta property="og:title" content="Record Book — Razzle">
+<meta property="og:description" content="The fantasy football record book. Highest single-game scores, best season totals, career PPG leaders. Who holds the records and who's chasing them?">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Record Book — Razzle">
+<meta name="twitter:description" content="The fantasy football record book. Highest single-game scores, best season totals, career PPG leaders. Who holds the records?">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Fantasy football record book on razzle.lol. Single-game highs, best season totals, career PPG leaders, and most career points since 2015.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=records">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=records">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .rb-page { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+  .rb-header { text-align: center; margin-bottom: 24px; }
+  .rb-header h1 { font-family: var(--font-display); font-size: 32px; color: var(--ink); margin: 0 0 4px; }
+  .rb-header .rb-subtitle { font-family: var(--font-hand); font-size: 20px; color: var(--ink-light); }
+
+  .rb-controls { display: flex; justify-content: center; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .rb-controls .pos-tabs { display: flex; gap: 4px; }
+  .rb-controls .pos-tab {
+    font-family: var(--font-mono); font-size: 12px; padding: 5px 12px;
+    border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--bg-card);
+    cursor: pointer; font-weight: 700;
+  }
+  .rb-controls .pos-tab.active { background: var(--ink); color: var(--bg); }
+  .rb-export {
+    font-family: var(--font-mono); font-size: 12px; padding: 5px 14px;
+    border: 2px solid var(--ink); border-radius: var(--radius-sm); background: var(--bg-card);
+    cursor: pointer; font-weight: 700;
+  }
+  .rb-export:hover { background: var(--ink); color: var(--bg); }
+
+  .rb-loading { text-align: center; font-family: var(--font-hand); font-size: 18px; color: var(--ink-light); padding: 60px 0; }
+
+  .rb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 768px) { .rb-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 480px) {
+    .rb-page { padding: 16px 8px 40px; }
+    .rb-header h1 { font-size: 20px; }
+    .rb-header .rb-subtitle { font-size: 16px; }
+    .rb-controls { gap: 8px; }
+    .rb-controls .pos-tab { padding: 4px 8px; font-size: 11px; }
+    .rb-table { font-size: 11px; }
+    .rb-table th, .rb-table td { padding: 4px 5px; }
+    .rb-section-header { font-size: 14px; padding: 8px 10px; }
+  }
+
+  .rb-section {
+    background: var(--bg-card); border: 3px solid var(--ink); border-radius: var(--radius-sm);
+    box-shadow: 4px 4px 0 var(--ink); overflow: hidden;
+  }
+  .rb-section-header {
+    font-family: var(--font-display); font-size: 16px; padding: 10px 14px;
+    background: var(--ink); color: var(--bg);
+  }
+
+  .rb-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 12px; }
+  .rb-table th {
+    background: var(--bg); padding: 6px 8px; text-align: right;
+    font-size: 11px; font-weight: 700; border-bottom: 2px solid var(--ink-faint);
+  }
+  .rb-table th:first-child { text-align: center; width: 30px; }
+  .rb-table th:nth-child(2) { text-align: left; }
+  .rb-table td { padding: 6px 8px; text-align: right; border-bottom: 2px dashed var(--border-dashed); }
+  .rb-table td:first-child { text-align: center; font-weight: 700; }
+  .rb-table td:nth-child(2) { text-align: left; }
+  .rb-table tbody tr:hover { background: var(--bg-warm); }
+
+  .rb-rank { font-family: var(--font-mono); font-size: 14px; }
+  .rb-rank.gold { color: var(--yellow); }
+  .rb-rank.silver { color: var(--ink-light); }
+  .rb-rank.bronze { color: var(--orange); }
+
+  .rb-pos-chip {
+    font-size: 11px; font-weight: 700; padding: 1px 5px; border-radius: var(--radius-sm);
+    color: var(--text-on-accent); margin-left: 4px;
+  }
+  .rb-season-badge {
+    font-size: 11px; padding: 1px 5px; border-radius: var(--radius-sm);
+    background: var(--bg); border: 2px solid var(--ink-faint);
+  }
+  .rb-fpts { font-weight: 700; }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div id="site-header" data-page="records"></div>
+
+<main class="rb-page" id="main-content">
+  <div class="rb-header">
+    <h1>Record Book</h1>
+    <div class="rb-subtitle">the all-time fantasy greats (2015-present)</div>
+  </div>
+
+  <div class="rb-controls">
+    <div class="pos-tabs" role="tablist" aria-label="Position filter">
+      <button class="pos-tab active" data-pos="">ALL</button>
+      <button class="pos-tab" data-pos="QB">QB</button>
+      <button class="pos-tab" data-pos="RB">RB</button>
+      <button class="pos-tab" data-pos="WR">WR</button>
+      <button class="pos-tab" data-pos="TE">TE</button>
+    </div>
+    <button class="rb-export" id="rbExport">Export PNG</button>
+  </div>
+
+  <div id="rbContent" style="overflow-x:auto">
+    <div class="rb-loading">digging through the record books...</div>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  'use strict';
+
+
+  var _cs = getComputedStyle(document.documentElement);
+  var POS_COLORS = {
+    QB: _cs.getPropertyValue('--pos-qb').trim() || '#5b7fff',
+    RB: _cs.getPropertyValue('--pos-rb').trim() || '#2ec4b6',
+    WR: _cs.getPropertyValue('--pos-wr').trim() || '#d97757',
+    TE: _cs.getPropertyValue('--pos-te').trim() || '#8b5cf6'
+  };
+  var currentPosition = '';
+
+  // Restore URL state
+  var _urlState = restorePageState({ pos: '' });
+  if (_urlState.pos) {
+    currentPosition = _urlState.pos;
+    document.querySelectorAll('.pos-tab').forEach(function(b) {
+      b.classList.toggle('active', (b.getAttribute('data-pos') || '') === currentPosition);
+    });
+  }
+
+  function posChip(pos) {
+    var c = POS_COLORS[pos] || 'var(--ink-light)';
+    return '<span class="rb-pos-chip" style="background:' + c + '">' + escapeHtml(pos) + '</span>';
+  }
+
+  function fmt(v, d) { return v != null ? Number(v).toFixed(d || 1) : '-'; }
+
+  function rankClass(i) {
+    if (i === 0) return 'gold';
+    if (i === 1) return 'silver';
+    if (i === 2) return 'bronze';
+    return '';
+  }
+
+  function load() {
+    var url = '/api/records?';
+    if (currentPosition) url += 'position=' + encodeURIComponent(currentPosition);
+
+    document.getElementById('rbContent').innerHTML = '<div class="rb-loading">' + razzleLoading() + '</div>';
+
+    fetch(url).then(function(r) {
+      if (!r.ok) throw new Error('API error');
+      return r.json();
+    }).then(function(data) {
+      render(data);
+    }).catch(function() {
+      document.getElementById('rbContent').innerHTML = '<div class="rb-loading">the tape machine jammed — give it another shot</div>';
+    });
+  }
+
+  function render(data) {
+    var html = '<div class="rb-grid">';
+
+    // Single-game records
+    html += '<div class="rb-section">';
+    html += '<div class="rb-section-header">Single-Game Records</div>';
+    html += '<table class="rb-table"><caption class="sr-only">Single-game fantasy scoring records</caption><thead><tr><th scope="col">#</th><th scope="col">Player</th><th scope="col">Szn</th><th scope="col">Wk</th><th scope="col">PPR</th></tr></thead><tbody>';
+    (data.single_game || []).forEach(function(p, i) {
+      html += '<tr><td><span class="rb-rank ' + rankClass(i) + '">' + (i + 1) + '</span></td>';
+      html += '<td>' + escapeHtml(p.name) + posChip(p.position) + '</td>';
+      html += '<td><span class="rb-season-badge">' + escapeHtml(String(p.season)) + '</span></td>';
+      html += '<td>' + escapeHtml(String(p.week)) + '</td>';
+      html += '<td class="rb-fpts">' + escapeHtml(fmt(p.fpts)) + '</td></tr>';
+    });
+    html += '</tbody></table></div>';
+
+    // Single-season records
+    html += '<div class="rb-section">';
+    html += '<div class="rb-section-header">Single-Season Records</div>';
+    html += '<table class="rb-table"><caption class="sr-only">Single-season fantasy scoring records</caption><thead><tr><th scope="col">#</th><th scope="col">Player</th><th scope="col">Szn</th><th scope="col">G</th><th scope="col">Total</th><th scope="col">PPG</th></tr></thead><tbody>';
+    (data.single_season || []).forEach(function(p, i) {
+      html += '<tr><td><span class="rb-rank ' + rankClass(i) + '">' + (i + 1) + '</span></td>';
+      html += '<td>' + escapeHtml(p.name) + posChip(p.position) + '</td>';
+      html += '<td><span class="rb-season-badge">' + escapeHtml(String(p.season)) + '</span></td>';
+      html += '<td>' + escapeHtml(fmt(p.games, 0)) + '</td>';
+      html += '<td class="rb-fpts">' + escapeHtml(fmt(p.total_fpts)) + '</td>';
+      html += '<td>' + escapeHtml(fmt(p.ppg)) + '</td></tr>';
+    });
+    html += '</tbody></table></div>';
+
+    // Career PPG leaders
+    html += '<div class="rb-section">';
+    html += '<div class="rb-section-header">Career PPG Leaders</div>';
+    html += '<table class="rb-table"><caption class="sr-only">Career fantasy points per game leaders</caption><thead><tr><th scope="col">#</th><th scope="col">Player</th><th scope="col">G</th><th scope="col">PPG</th><th scope="col">Total</th></tr></thead><tbody>';
+    (data.career_ppg || []).forEach(function(p, i) {
+      html += '<tr><td><span class="rb-rank ' + rankClass(i) + '">' + (i + 1) + '</span></td>';
+      html += '<td>' + escapeHtml(p.name) + posChip(p.position) + '</td>';
+      html += '<td>' + escapeHtml(String(p.games)) + '</td>';
+      html += '<td class="rb-fpts">' + escapeHtml(String(p.ppg)) + '</td>';
+      html += '<td>' + escapeHtml(String(p.total_fpts)) + '</td></tr>';
+    });
+    html += '</tbody></table></div>';
+
+    // Career total points
+    html += '<div class="rb-section">';
+    html += '<div class="rb-section-header">Most Career Points</div>';
+    html += '<table class="rb-table"><caption class="sr-only">Most career total fantasy points</caption><thead><tr><th scope="col">#</th><th scope="col">Player</th><th scope="col">G</th><th scope="col">Total</th><th scope="col">PPG</th></tr></thead><tbody>';
+    (data.career_total || []).forEach(function(p, i) {
+      html += '<tr><td><span class="rb-rank ' + rankClass(i) + '">' + (i + 1) + '</span></td>';
+      html += '<td>' + escapeHtml(p.name) + posChip(p.position) + '</td>';
+      html += '<td>' + escapeHtml(fmt(p.games, 0)) + '</td>';
+      html += '<td class="rb-fpts">' + escapeHtml(fmt(p.total_fpts)) + '</td>';
+      html += '<td>' + escapeHtml(fmt(p.ppg)) + '</td></tr>';
+    });
+    html += '</tbody></table></div>';
+
+    html += '</div>';
+    document.getElementById('rbContent').innerHTML = html;
+  }
+
+  /* ---- Position tabs ---- */
+  document.querySelectorAll('.pos-tab').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.pos-tab').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentPosition = btn.getAttribute('data-pos') || '';
+      savePageState({ pos: currentPosition });
+      load();
+    });
+  });
+
+  document.getElementById('rbExport').addEventListener('click', function() {
+    var btn = this; btn.disabled = true; btn.textContent = 'Exporting...';
+    var root = document.getElementById('main-content');
+    loadHtml2Canvas().then(function(h2c) { return h2c(root, { backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf', scale: 2 }); }).then(function(canvas) {
+      var ctx = canvas.getContext('2d');
+      ctx.font = "600 24px Caveat, cursive";
+      ctx.fillStyle = document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.15)' : 'rgba(45,31,20,0.12)';
+      ctx.fillText('razzle.lol', canvas.width - 130, canvas.height - 16);
+      var link = document.createElement('a');
+      link.download = 'razzle-records.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }).finally(function() { btn.disabled = false; btn.textContent = 'Export PNG'; });
+  });
+
+  fetch('/api/analytics/pageview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: '/records.html', referrer: document.referrer || '' })
+  }).catch(function() {});
+
+  load();
+})();
+</script>
+</body>
+</html>

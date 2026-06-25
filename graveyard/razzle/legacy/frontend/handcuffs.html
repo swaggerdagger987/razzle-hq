@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Handcuff Rankings — Razzle</title>
+<meta property="og:title" content="Handcuff Rankings — Razzle">
+<meta property="og:description" content="Which backup RBs are worth your last roster spot? Handcuff value ranked by team rushing volume and efficiency. One injury from league-winner status.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Handcuff Rankings — Razzle">
+<meta name="twitter:description" content="Which backup RBs are worth your last roster spot? Ranked by team rushing volume. One injury from league-winner status.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Handcuff rankings on razzle.lol. Backup RBs ranked by team rushing volume and efficiency — the ones worth rostering for their upside.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=handcuffs">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=handcuffs">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .hc-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  .hc-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .hc-header h1 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    color: var(--ink);
+    margin: 0 0 4px;
+  }
+  .hc-header .hc-subtitle {
+    font-family: var(--font-hand);
+    font-size: 20px;
+    color: var(--ink-light);
+  }
+
+  .hc-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .hc-controls select {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 6px 10px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+  }
+  .hc-export {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 5px 14px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .hc-export:hover { background: var(--ink); color: var(--bg); }
+
+  .hc-loading {
+    text-align: center;
+    font-family: var(--font-hand);
+    font-size: 18px;
+    color: var(--ink-light);
+    padding: 60px 0;
+  }
+
+  .hc-card {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: var(--radius-sm);
+    box-shadow: 4px 4px 0 var(--ink);
+    overflow: hidden;
+  }
+  .hc-card-header {
+    font-family: var(--font-display);
+    font-size: 18px;
+    padding: 10px 16px;
+    background: var(--green);
+    color: var(--text-on-accent);
+  }
+
+  .hc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .hc-table th {
+    background: var(--bg);
+    padding: 6px 8px;
+    text-align: right;
+    font-size: 11px;
+    font-weight: 700;
+    border-bottom: 2px solid var(--ink-faint);
+    white-space: nowrap;
+  }
+  .hc-table th:first-child, .hc-table th:nth-child(2), .hc-table th:nth-child(3) { text-align: left; }
+  .hc-table td {
+    padding: 6px 8px;
+    text-align: right;
+    border-bottom: 2px dashed var(--border-dashed);
+  }
+  .hc-table td:first-child, .hc-table td:nth-child(2), .hc-table td:nth-child(3) { text-align: left; }
+  .hc-table tbody tr:hover { background: var(--bg-warm); }
+
+  .hc-rank {
+    font-weight: 700;
+    color: var(--ink-light);
+    font-size: 11px;
+  }
+
+  .hc-team-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: var(--radius-sm);
+    background: var(--green);
+    color: var(--text-on-accent);
+  }
+
+  .hc-value-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: var(--radius-sm);
+    border: 2px solid;
+    background: var(--semantic-green-light);
+    color: var(--semantic-green);
+    border-color: var(--semantic-green);
+  }
+
+  .hc-starter {
+    color: var(--ink-light);
+    font-size: 11px;
+  }
+
+  .hc-empty {
+    text-align: center;
+    font-family: var(--font-hand);
+    font-size: 14px;
+    color: var(--ink-light);
+    padding: 30px 16px;
+  }
+
+  @media (max-width: 768px) {
+    .hc-table { font-size: 11px; }
+  }
+  @media (max-width: 480px) {
+    .hc-page { padding: 16px 8px 40px; }
+    .hc-header h1 { font-size: 20px; }
+    .hc-header .hc-subtitle { font-size: 16px; }
+    .hc-controls { gap: 8px; }
+    .hc-table { font-size: 11px; }
+    .hc-table th, .hc-table td { padding: 4px 5px; }
+    .hc-card-header { font-size: 14px; padding: 8px 12px; }
+  }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div id="site-header" data-page="handcuffs"></div>
+
+<main class="hc-page" id="main-content">
+  <div class="hc-header">
+    <h1>Handcuff Rankings</h1>
+    <div class="hc-subtitle">most valuable backup RBs by team rushing volume</div>
+  </div>
+
+  <div class="hc-controls">
+    <select id="hcSeason" aria-label="Season"></select>
+    <button class="hc-export" id="hcExport">Export PNG</button>
+  </div>
+
+  <div id="hcContent" style="overflow-x:auto">
+    <div class="hc-loading">mapping the handcuff depth...</div>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<div style="position:fixed; bottom:10px; right:14px; font-family:var(--font-hand); font-size:14px; color:var(--ink-light); opacity:0.7; pointer-events:none; z-index:999;">razzle.lol</div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  'use strict';
+
+
+  function fmt(v, dec) {
+    if (v === null || v === undefined) return '-';
+    return Number(v).toFixed(dec === undefined ? 1 : dec);
+  }
+
+  /* ---- URL state ---- */
+
+  /* ---- Fetch ---- */
+  function load() {
+    var selSeason = document.getElementById('hcSeason');
+    var season = selSeason.value || '';
+    savePageState({ season: season });
+
+    var url = '/api/handcuffs';
+    if (season) url += '?season=' + encodeURIComponent(season);
+
+    document.getElementById('hcContent').innerHTML = '<div class="hc-loading">' + razzleLoading() + '</div>';
+
+    fetch(url).then(function(r) {
+      if (!r.ok) throw new Error('API error');
+      return r.json();
+    }).then(function(data) {
+      populateSeasons(data.available_seasons, data.season);
+      render(data);
+    }).catch(function() {
+      document.getElementById('hcContent').innerHTML = '<div class="hc-loading">something went sideways. Razzle knocked the data cable loose. try refreshing</div>';
+    });
+  }
+
+  function populateSeasons(seasons, current) {
+    var sel = document.getElementById('hcSeason');
+    if (sel.options.length > 0) return;
+    if (!seasons || !seasons.length) return;
+    seasons.forEach(function(s) {
+      var opt = document.createElement('option');
+      opt.value = s;
+      opt.textContent = s;
+      if (s === current) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+
+  /* ---- Render ---- */
+  function render(data) {
+    var hcs = data.handcuffs || [];
+
+    if (!hcs.length) {
+      document.getElementById('hcContent').innerHTML = '<div class="hc-card"><div class="hc-card-header">Handcuff Rankings</div><div class="hc-empty" style="padding:32px 16px;text-align:center;"><div style="font-family:var(--font-hand);font-size:20px;color:var(--ink-medium);margin-bottom:8px;">no carry data for this season yet</div><div style="font-family:var(--font-mono);font-size:12px;color:var(--ink-light);">handcuff rankings are derived from in-season carry shares. try a completed season like 2024.</div></div></div>';
+      return;
+    }
+
+    var html = '<div class="hc-card">';
+    html += '<div class="hc-card-header">Handcuff Rankings (' + escapeHtml(String(data.count)) + ' teams)</div>';
+    html += '<table class="hc-table"><caption class="sr-only">Handcuff rankings by backup value and starter risk</caption><thead><tr>';
+    html += '<th scope="col">#</th><th scope="col">Team</th><th scope="col">Handcuff</th><th scope="col">HC PPG</th><th scope="col">HC Car/G</th><th scope="col">HC YPC</th><th scope="col">Value</th><th scope="col">Starter</th><th scope="col">Str PPG</th><th scope="col">Str Car/G</th><th scope="col">Team Rush/G</th>';
+    html += '</tr></thead><tbody>';
+
+    for (var i = 0; i < hcs.length; i++) {
+      var h = hcs[i];
+
+      html += '<tr>';
+      html += '<td class="hc-rank">' + (i + 1) + '</td>';
+      html += '<td><span class="hc-team-badge">' + escapeHtml(h.team) + '</span></td>';
+      html += '<td style="font-weight:700">' + escapeHtml(h.handcuff_name) + '</td>';
+      html += '<td style="font-weight:700;color:var(--semantic-green)">' + escapeHtml(String(fmt(h.hc_ppg))) + '</td>';
+      html += '<td>' + escapeHtml(String(fmt(h.hc_car_g))) + '</td>';
+      html += '<td>' + escapeHtml(String(fmt(h.hc_ypc))) + '</td>';
+      html += '<td><span class="hc-value-badge">' + escapeHtml(String(fmt(h.hc_value))) + '</span></td>';
+      html += '<td class="hc-starter">' + escapeHtml(h.starter_name) + '</td>';
+      html += '<td class="hc-starter">' + escapeHtml(String(fmt(h.starter_ppg))) + '</td>';
+      html += '<td class="hc-starter">' + escapeHtml(String(fmt(h.starter_car_g))) + '</td>';
+      html += '<td>' + escapeHtml(String(fmt(h.team_rush_g))) + '</td>';
+      html += '</tr>';
+    }
+
+    html += '</tbody></table></div>';
+    document.getElementById('hcContent').innerHTML = html;
+  }
+
+  document.getElementById('hcSeason').addEventListener('change', load);
+
+  /* ---- PNG export ---- */
+  document.getElementById('hcExport').addEventListener('click', function() {
+    var btn = this; btn.disabled = true; btn.textContent = 'Exporting...';
+    var root = document.getElementById('main-content');
+    loadHtml2Canvas().then(function(h2c) { return h2c(root, { backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf', scale: 2 }); }).then(function(canvas) {
+      var ctx = canvas.getContext('2d');
+      ctx.font = "600 24px Caveat, cursive";
+      ctx.fillStyle = document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.15)' : 'rgba(45,31,20,0.12)';
+      ctx.fillText('razzle.lol', canvas.width - 130, canvas.height - 16);
+      var link = document.createElement('a');
+      link.download = 'razzle-handcuffs.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }).finally(function() { btn.disabled = false; btn.textContent = 'Export PNG'; });
+  });
+
+  /* ---- Analytics ---- */
+  fetch('/api/analytics/pageview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: '/handcuffs.html', referrer: document.referrer || '' })
+  }).catch(function() {});
+
+  /* ---- Init from URL ---- */
+  var init = restorePageState({ season: '' });
+  if (init.season) {
+    var sel = document.getElementById('hcSeason');
+    var opt = document.createElement('option');
+    opt.value = init.season;
+    opt.textContent = init.season;
+    opt.selected = true;
+    sel.appendChild(opt);
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>

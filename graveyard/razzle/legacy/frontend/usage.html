@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Usage Trends — Razzle</title>
+<meta property="og:title" content="Usage Trends — Razzle">
+<meta property="og:description" content="Snap count trends with sparklines. See who's gaining snaps and who's losing them over the last 3, 5, or 8 weeks. Usage changes predict production changes.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Usage Trends — Razzle">
+<meta name="twitter:description" content="Snap count trends with sparklines. See who's gaining snaps and who's losing them. Usage changes predict production changes.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Snap count and usage trends on razzle.lol. Sparkline charts showing rising and falling snap counts over configurable windows (3, 5, 8 weeks).">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=usage">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=usage">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="standalone-common.css">
+<style>
+
+  /* Page-specific: table (different th padding/font from standard) */
+  .usage-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .usage-table th {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--ink-medium);
+    background: var(--bg-warm);
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 3px solid var(--ink);
+  }
+  .usage-table th.center { text-align: center; }
+  .usage-table td {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink);
+    padding: 8px 10px;
+    border-bottom: 2px dashed var(--border-dashed);
+    vertical-align: middle;
+  }
+  .usage-table tr:last-child td { border-bottom: none; }
+  .usage-table tr { cursor: pointer; transition: background 0.1s; }
+  .usage-table tbody tr:hover { background: var(--bg-warm); }
+
+  /* Page-specific: player cell (larger headshot) */
+  .usage-player-cell { display: flex; align-items: center; gap: 8px; }
+  .usage-headshot {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 2px solid var(--ink); object-fit: cover; flex-shrink: 0; background: var(--bg-warm);
+  }
+  .usage-player-info { min-width: 0; }
+  .usage-player-name {
+    font-family: var(--font-mono); font-size: 14px; font-weight: 700; color: var(--ink);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .usage-player-meta { display: flex; align-items: center; gap: 4px; margin-top: 1px; }
+
+  /* Page-specific: section arrow colors */
+  .usage-section-header .section-arrow { font-size: 20px; }
+  .usage-section-header .section-arrow.up { color: var(--green); }
+  .usage-section-header .section-arrow.down { color: var(--red); }
+
+  /* Page-specific: delta cell */
+  .usage-delta {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .usage-delta.up { color: var(--green); }
+  .usage-delta.down { color: var(--red); }
+
+  /* Page-specific: sparkline cell */
+  .usage-sparkline {
+    width: 160px;
+    height: 30px;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 768px) {
+    .usage-sparkline { width: 100px; }
+    .usage-table th, .usage-table td { padding: 6px 6px; font-size: 12px; }
+  }
+  @media (max-width: 480px) {
+    .usage-page { padding: 16px 12px 40px; }
+    .usage-sparkline { width: 70px; height: 24px; }
+    .usage-table th.hide-mobile, .usage-table td.hide-mobile { display: none; }
+  }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div id="site-header" data-page="usage"></div>
+
+<main class="usage-page" id="main-content">
+  <div class="usage-header">
+    <h1>Usage Trends</h1>
+    <div class="usage-subtitle">who's gaining and losing snaps week over week</div>
+  </div>
+
+  <div class="usage-controls">
+    <div class="usage-pos-tabs" id="pos-tabs" role="tablist" aria-label="Position filter">
+      <button class="usage-pos-tab active" data-pos="">All</button>
+      <button class="usage-pos-tab" data-pos="QB">QB</button>
+      <button class="usage-pos-tab" data-pos="RB">RB</button>
+      <button class="usage-pos-tab" data-pos="WR">WR</button>
+      <button class="usage-pos-tab" data-pos="TE">TE</button>
+    </div>
+    <select class="usage-select" id="window-select" title="Trend window" aria-label="Trend window">
+      <option value="3">Last 3 weeks</option>
+      <option value="5" selected>Last 5 weeks</option>
+      <option value="8">Last 8 weeks</option>
+    </select>
+    <select class="usage-select" id="season-select" title="Season" aria-label="Season"></select>
+  </div>
+
+  <div class="usage-actions">
+    <button class="btn-chunky" id="export-btn" title="Export as PNG">Export PNG</button>
+  </div>
+
+  <div id="usage-body" role="status" aria-live="polite" style="overflow-x:auto">
+    <div class="usage-loading" id="usage-loading">tracking snap counts...
+      <div class="loading-skeleton">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card" style="height:150px"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Watermark -->
+<div style="position:fixed; bottom:10px; right:14px; font-family:var(--font-hand); font-size:14px; color:var(--ink-light); opacity:0.7; pointer-events:none; z-index:999;">razzle.lol</div>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  'use strict';
+
+  var _cs = getComputedStyle(document.documentElement);
+  var POS_COLORS = {
+    QB: _cs.getPropertyValue('--pos-qb').trim() || '#5b7fff',
+    RB: _cs.getPropertyValue('--pos-rb').trim() || '#2ec4b6',
+    WR: _cs.getPropertyValue('--pos-wr').trim() || '#d97757',
+    TE: _cs.getPropertyValue('--pos-te').trim() || '#8b5cf6'
+  };
+
+
+  var currentPosition = '';
+  var currentWindow = 5;
+
+  // Restore URL state
+  var urlState = restorePageState({pos: '', window: '', season: ''});
+  if (urlState.pos) currentPosition = urlState.pos;
+  if (urlState.window) currentWindow = parseInt(urlState.window) || 5;
+
+  // Sync UI from URL state
+  if (currentPosition) {
+    document.querySelectorAll('.usage-pos-tab').forEach(function(t) {
+      t.classList.toggle('active', (t.getAttribute('data-pos') || '') === currentPosition);
+    });
+  }
+  if (urlState.window) document.getElementById('window-select').value = urlState.window;
+
+  function _saveState() {
+    savePageState({ pos: currentPosition, window: String(currentWindow), season: document.getElementById('season-select').value });
+  }
+
+  function drawSparkline(canvas, weeks, trend) {
+    var ctx = canvas.getContext('2d');
+    var w = canvas.width;
+    var h = canvas.height;
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    ctx.scale(dpr, dpr);
+
+    if (!weeks || !weeks.length) return;
+
+    var vals = weeks.map(function(wk) { return wk.snap_pct; });
+    var maxVal = Math.max.apply(null, vals.concat([100]));
+    var minVal = Math.min.apply(null, vals.concat([0]));
+    var range = maxVal - minVal || 1;
+
+    var barW = Math.max(4, Math.floor((w - 4) / vals.length) - 2);
+    var gap = 2;
+    var totalW = vals.length * (barW + gap) - gap;
+    var startX = Math.max(0, (w - totalW) / 2);
+
+    var barColor = trend === 'up' ? (_cs.getPropertyValue('--green').trim() || '#2ec4b6') : (trend === 'down' ? (_cs.getPropertyValue('--red').trim() || '#e63946') : (_cs.getPropertyValue('--ink-light').trim() || '#8a7565'));
+
+    for (var i = 0; i < vals.length; i++) {
+      var barH = Math.max(3, ((vals[i] - minVal) / range) * (h - 4));
+      var x = startX + i * (barW + gap);
+      var y = h - barH - 2;
+
+      // Lighter older bars, solid recent
+      var alpha = 0.4 + 0.6 * (i / (vals.length - 1 || 1));
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = barColor;
+      ctx.fillRect(x, y, barW, barH);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function buildPlayerRow(p, idx) {
+    var pos = (p.position || 'WR').toLowerCase();
+    var deltaAbs = Math.abs(p.delta);
+    var arrow = p.trend === 'up' ? '&#9650;' : (p.trend === 'down' ? '&#9660;' : '&#9654;');
+    var deltaClass = p.trend === 'up' ? 'up' : (p.trend === 'down' ? 'down' : '');
+    var sign = p.trend === 'up' ? '+' : '';
+
+    var html = '<tr data-pid="' + escapeHtml(p.player_id) + '">';
+
+    // Player cell
+    html += '<td>';
+    html += '<div class="usage-player-cell">';
+    if (p.headshot_url) {
+      html += '<img class="usage-headshot" src="' + escapeHtml(p.headshot_url) + '" alt="Player headshot" loading="lazy" onerror="this.onerror=null;this.src=\'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><circle cx=%2220%22 cy=%2220%22 r=%2220%22 fill=%22%23d97757%22/><text x=%2220%22 y=%2225%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2216%22>?</text></svg>\'">';
+    }
+    html += '<div class="usage-player-info">';
+    html += '<div class="usage-player-name">' + escapeHtml(p.name) + '</div>';
+    html += '<div class="usage-player-meta">';
+    html += '<span class="usage-pos-badge ' + pos + '">' + escapeHtml(p.position) + '</span>';
+    html += '<span class="usage-team-label">' + escapeHtml(p.team) + '</span>';
+    html += '</div></div></div>';
+    html += '</td>';
+
+    // Current snap%
+    html += '<td style="text-align:center; font-weight:700;">' + escapeHtml(String(p.current_snap_pct)) + '%</td>';
+
+    // Season avg
+    html += '<td class="hide-mobile" style="text-align:center;">' + escapeHtml(String(p.season_avg_snap_pct)) + '%</td>';
+
+    // Delta
+    html += '<td style="text-align:center;">';
+    html += '<span class="usage-delta ' + deltaClass + '">';
+    html += '<span>' + arrow + '</span> ' + sign + escapeHtml(String(p.delta)) + '%';
+    html += '</span>';
+    html += '</td>';
+
+    // Sparkline
+    html += '<td class="hide-mobile" style="text-align:center;"><canvas class="usage-sparkline" width="160" height="30" data-weeks=\'' + JSON.stringify(p.weeks) + '\' data-trend="' + escapeHtml(p.trend) + '" role="img" aria-label="Usage trend sparkline"></canvas></td>';
+
+    // Games
+    html += '<td style="text-align:center;">' + escapeHtml(String(p.games)) + '</td>';
+
+    // Annotation
+    html += '<td class="hide-mobile"><span class="usage-annotation">' + escapeHtml(p.annotation) + '</span></td>';
+
+    html += '</tr>';
+    return html;
+  }
+
+  function buildTable(players, direction) {
+    if (!players || !players.length) {
+      return '<div class="usage-empty">no ' + direction + ' found for this filter</div>';
+    }
+
+    var arrowClass = direction === 'risers' ? 'up' : 'down';
+    var arrowIcon = direction === 'risers' ? '&#9650;' : '&#9660;';
+    var label = direction === 'risers' ? 'Risers' : 'Fallers';
+
+    var html = '<div class="usage-section">';
+    html += '<div class="usage-section-header">';
+    html += '<span class="section-arrow ' + arrowClass + '">' + arrowIcon + '</span> ';
+    html += label + ' <span style="font-family:var(--font-hand); font-size:16px; color:var(--ink-light); font-weight:500;">(' + players.length + ' players)</span>';
+    html += '</div>';
+
+    html += '<table class="usage-table"><caption class="sr-only">Snap count and usage trends — ' + escapeHtml(label) + '</caption>';
+    html += '<thead><tr>';
+    html += '<th>Player</th>';
+    html += '<th class="center">Snap%</th>';
+    html += '<th class="center hide-mobile">Avg</th>';
+    html += '<th class="center" title="Change in snap% over selected window">Delta</th>';
+    html += '<th class="center hide-mobile">Trend</th>';
+    html += '<th class="center">GP</th>';
+    html += '<th class="hide-mobile"></th>';
+    html += '</tr></thead>';
+    html += '<tbody>';
+
+    players.forEach(function(p, i) {
+      html += buildPlayerRow(p, i);
+    });
+
+    html += '</tbody></table>';
+    html += '</div>';
+    return html;
+  }
+
+  function renderSparklines() {
+    document.querySelectorAll('.usage-sparkline[data-weeks]').forEach(function(canvas) {
+      try {
+        var weeks = JSON.parse(canvas.getAttribute('data-weeks'));
+        var trend = canvas.getAttribute('data-trend') || 'flat';
+        drawSparkline(canvas, weeks, trend);
+      } catch(e) {}
+    });
+  }
+
+  async function loadData(season, position, trendWindow) {
+    var bodyEl = document.getElementById('usage-body');
+    bodyEl.innerHTML = '<div class="usage-loading">tracking snap counts...</div>';
+
+    var url = '/api/usage-trends?window=' + (trendWindow || 5) + '&limit=30';
+    if (season) url += '&season=' + season;
+    if (position) url += '&position=' + position;
+
+    try {
+      var resp = await fetch(url);
+      if (!resp.ok) throw new Error('API error');
+      var data = await resp.json();
+
+      // Populate season selector
+      var sel = document.getElementById('season-select');
+      if (sel && data.available_seasons) {
+        var curSeason = season || data.season;
+        sel.innerHTML = '';
+        data.available_seasons.forEach(function(s) {
+          var opt = document.createElement('option');
+          opt.value = s;
+          opt.textContent = s;
+          if (s == curSeason) opt.selected = true;
+          sel.appendChild(opt);
+        });
+      }
+
+      var html = '';
+      html += buildTable(data.risers, 'risers');
+      html += buildTable(data.fallers, 'fallers');
+
+      if (!(data.risers || []).length && !(data.fallers || []).length) {
+        html = '<div class="usage-empty">no usage trend data available for this filter</div>';
+      }
+
+      bodyEl.innerHTML = html;
+      renderSparklines();
+
+      // Click handlers
+      bodyEl.querySelectorAll('tr[data-pid]').forEach(function(row) {
+        row.addEventListener('click', function() {
+          var pid = row.getAttribute('data-pid');
+          if (pid) window.location.href = '/player/' + encodeURIComponent(pid);
+        });
+      });
+    } catch(e) {
+      bodyEl.innerHTML = '<div class="usage-error"><div class="usage-error-msg">' + razzleError() + '</div><button class="btn-chunky" onclick="location.reload()">Retry</button></div>';
+    }
+  }
+
+  // Position tab handlers
+  document.querySelectorAll('.usage-pos-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.usage-pos-tab').forEach(function(t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      currentPosition = tab.getAttribute('data-pos') || '';
+      var season = document.getElementById('season-select').value;
+      loadData(season, currentPosition, currentWindow);
+      _saveState();
+    });
+  });
+
+  // Window change handler
+  document.getElementById('window-select').addEventListener('change', function() {
+    currentWindow = parseInt(this.value) || 5;
+    var season = document.getElementById('season-select').value;
+    loadData(season, currentPosition, currentWindow);
+    _saveState();
+  });
+
+  // Season change handler
+  document.getElementById('season-select').addEventListener('change', function() {
+    loadData(this.value, currentPosition, currentWindow);
+    _saveState();
+  });
+
+  // Export PNG
+  document.getElementById('export-btn').addEventListener('click', function() {
+    var btn = this; btn.disabled = true; btn.textContent = 'Exporting...';
+    var target = document.getElementById('main-content');
+    if (!target) { btn.disabled = false; btn.textContent = 'Export PNG'; return; }
+    loadHtml2Canvas().then(function(h2c) { return h2c(target, { backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf', scale: 2 }); }).then(function(canvas) {
+      var ctx = canvas.getContext('2d');
+      ctx.font = '24px Caveat, cursive';
+      ctx.fillStyle = document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.25)' : 'rgba(45,31,20,0.25)';
+      ctx.textAlign = 'right';
+      ctx.fillText('razzle.lol', canvas.width - 20, canvas.height - 16);
+      var a = document.createElement('a');
+      a.download = 'razzle-usage-trends.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    }).finally(function() { btn.disabled = false; btn.textContent = 'Export PNG'; });
+  });
+
+  // Analytics
+  fetch('/api/analytics/pageview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: '/usage.html' }),
+  }).catch(function(){});
+
+  // Quick search (Ctrl+K)
+  if (typeof window.initQuickSearch === 'function') window.initQuickSearch();
+
+  // Load
+  loadData(urlState.season || '', currentPosition, currentWindow);
+})();
+</script>
+</body>
+</html>

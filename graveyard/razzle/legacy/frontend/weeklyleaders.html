@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Weekly Leaders — Razzle</title>
+<meta property="og:title" content="Weekly Leaders — Razzle">
+<meta property="og:description" content="Who went off this week? Top fantasy performers at every position for any NFL week. The box score recap you actually want to read.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Weekly Leaders — Razzle">
+<meta name="twitter:description" content="Who went off this week? Top fantasy performers at every position for any NFL week.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Weekly fantasy leaders on razzle.lol. Top performers at every position for any NFL week with full stat lines.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=weeklyleaders">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=weeklyleaders">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .wl-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  .wl-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .wl-header h1 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    color: var(--ink);
+    margin: 0 0 4px;
+  }
+  .wl-header .wl-subtitle {
+    font-family: var(--font-hand);
+    font-size: 20px;
+    color: var(--ink-light);
+  }
+
+  /* Controls */
+  .wl-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .wl-select {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 7px 12px;
+    border: 3px solid var(--ink);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .wl-pos-tabs {
+    display: flex;
+    border: 3px solid var(--ink);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .wl-pos-tab {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 6px 14px;
+    background: var(--bg-card);
+    color: var(--ink);
+    border: none;
+    border-right: 3px solid var(--ink);
+    cursor: pointer;
+    transition: background-color 0.12s, color 0.12s;
+  }
+  .wl-pos-tab:last-child { border-right: none; }
+  .wl-pos-tab.active { background: var(--ink); color: var(--bg-card); }
+  .wl-pos-tab:hover:not(.active) { background: var(--bg-warm); }
+
+  /* Week nav */
+  .wl-week-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .wl-week-btn {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border: 3px solid var(--ink);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .wl-week-btn:hover { background: var(--bg-warm); }
+  .wl-week-btn:disabled { opacity: 0.3; cursor: default; }
+  .wl-week-label {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+    min-width: 80px;
+    text-align: center;
+  }
+
+  .wl-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  /* Table */
+  .wl-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .wl-table th {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 8px;
+    background: var(--bg-warm);
+    color: var(--ink);
+    border-bottom: 3px solid var(--ink);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+  }
+  .wl-table th.center, .wl-table td.center { text-align: center; }
+  .wl-table th.sorted { color: var(--orange); }
+  .wl-table th .sort-arrow { font-size: 11px; margin-left: 2px; }
+  .wl-table th:hover { background: var(--bg); }
+  .wl-table td {
+    padding: 8px;
+    border-bottom: 2px dashed var(--border-dashed);
+    vertical-align: middle;
+  }
+  .wl-table tbody tr { cursor: pointer; transition: background 0.1s; }
+  .wl-table tbody tr:hover { background: var(--bg-warm); }
+
+  /* Rank badge */
+  .wl-rank {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 2px solid var(--ink);
+  }
+  .wl-rank.top1 { background: var(--yellow); color: var(--ink); }
+  .wl-rank.top2 { background: var(--ink-faint); color: var(--ink); }
+  .wl-rank.top3 { background: var(--orange); color: var(--text-on-accent); }
+
+  /* Player cell */
+  .wl-player-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 160px;
+  }
+  .wl-player-info { min-width: 0; }
+  .wl-player-name {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .wl-player-meta {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 1px;
+  }
+  .wl-pos-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: var(--radius-sm);
+    color: var(--text-on-accent);
+  }
+  .wl-pos-badge.qb { background: var(--pos-qb); }
+  .wl-pos-badge.rb { background: var(--pos-rb); }
+  .wl-pos-badge.wr { background: var(--pos-wr); }
+  .wl-pos-badge.te { background: var(--pos-te); }
+  .wl-team-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-medium);
+  }
+
+  /* Points highlight */
+  .wl-pts {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .wl-pts.elite { color: var(--green); }
+  .wl-pts.great { color: var(--blue); }
+  .wl-pts.good { color: var(--ink); }
+
+  /* Loading / Empty / Error */
+  .wl-loading, .wl-empty {
+    text-align: center;
+    padding: 60px 20px;
+    font-family: var(--font-hand);
+    font-size: 20px;
+    color: var(--ink-light);
+  }
+  .wl-error {
+    text-align: center;
+    padding: 40px 20px;
+    font-family: var(--font-hand);
+    font-size: 20px;
+    color: var(--red);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .wl-page { padding: 16px 10px 40px; }
+    .wl-header h1 { font-size: 24px; }
+    .wl-table { font-size: 12px; }
+    .hide-mobile { display: none !important; }
+    .wl-player-cell { min-width: 120px; }
+    .wl-player-name { font-size: 12px; }
+  }
+  @media (max-width: 480px) {
+    .wl-controls { gap: 8px; }
+    .wl-pos-tab { padding: 5px 10px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div id="site-header" data-page="weeklyleaders"></div>
+
+<main class="wl-page" id="main-content">
+  <div class="wl-header">
+    <h1>Weekly Leaders</h1>
+    <div class="wl-subtitle">who went off this week</div>
+  </div>
+
+  <div class="wl-controls">
+    <select class="wl-select" id="wlSeason" aria-label="Season selector"></select>
+    <div class="wl-week-nav">
+      <button class="wl-week-btn" id="wlPrev" aria-label="Previous week">&larr;</button>
+      <div class="wl-week-label" id="wlWeekLabel">Week 1</div>
+      <button class="wl-week-btn" id="wlNext" aria-label="Next week">&rarr;</button>
+    </div>
+    <div class="wl-pos-tabs" role="tablist" aria-label="Position filter">
+      <button class="wl-pos-tab active" data-pos="" role="tab" aria-selected="true">ALL</button>
+      <button class="wl-pos-tab" data-pos="QB" role="tab" aria-selected="false">QB</button>
+      <button class="wl-pos-tab" data-pos="RB" role="tab" aria-selected="false">RB</button>
+      <button class="wl-pos-tab" data-pos="WR" role="tab" aria-selected="false">WR</button>
+      <button class="wl-pos-tab" data-pos="TE" role="tab" aria-selected="false">TE</button>
+    </div>
+  </div>
+
+  <div class="wl-actions">
+    <button class="btn-chunky" id="wlExport" title="Export as PNG">Export PNG</button>
+  </div>
+
+  <div id="wlContent" style="overflow-x:auto">
+    <div class="wl-loading">tallying weekly honors...</div>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  'use strict';
+
+
+  function fmt(v, dec) {
+    if (v === null || v === undefined) return '-';
+    return Number(v).toFixed(dec === undefined ? 1 : dec);
+  }
+
+  var currentPosition = '';
+  var currentWeek = 0;
+  var currentData = null;
+  var availableWeeks = [];
+
+  var sortState = { col: 'fantasy_points', dir: -1 };
+
+  /* ---- URL state ---- */
+
+  /* ---- Fetch ---- */
+  function load() {
+    var sel = document.getElementById('wlSeason');
+    var season = sel.value || '';
+    var pos = currentPosition;
+    var week = currentWeek || '';
+    savePageState({ season: season, week: week, pos: pos });
+
+    document.getElementById('wlContent').innerHTML = '<div class="wl-loading">' + razzleLoading() + '</div>';
+
+    var url = '/api/weekly-leaders?';
+    if (season) url += 'season=' + encodeURIComponent(season) + '&';
+    if (week) url += 'week=' + encodeURIComponent(week) + '&';
+    if (pos) url += 'position=' + encodeURIComponent(pos);
+
+    fetch(url).then(function(r) {
+      if (!r.ok) throw new Error('API error');
+      return r.json();
+    }).then(function(data) {
+      currentData = data;
+      currentWeek = data.week;
+      availableWeeks = data.available_weeks || [];
+      populateSeasons(data.available_seasons, data.season);
+      updateWeekUI();
+      render(data);
+    }).catch(function() {
+      document.getElementById('wlContent').innerHTML =
+        '<div class="wl-error">' + razzleError() + '<br><button class="btn-chunky" onclick="location.reload()">retry</button></div>';
+    });
+  }
+
+  function populateSeasons(seasons, current) {
+    var sel = document.getElementById('wlSeason');
+    if (sel.children.length > 0 && sel.value) return;
+    sel.innerHTML = '';
+    (seasons || []).forEach(function(s) {
+      var o = document.createElement('option');
+      o.value = s;
+      o.textContent = s;
+      if (String(s) === String(current)) o.selected = true;
+      sel.appendChild(o);
+    });
+  }
+
+  function updateWeekUI() {
+    document.getElementById('wlWeekLabel').textContent = 'Week ' + currentWeek;
+    var idx = availableWeeks.indexOf(currentWeek);
+    document.getElementById('wlPrev').disabled = idx <= 0;
+    document.getElementById('wlNext').disabled = idx >= availableWeeks.length - 1;
+  }
+
+  /* ---- Render ---- */
+  function render(data) {
+    var c = document.getElementById('wlContent');
+    var leaders = data.leaders || [];
+
+    if (!leaders.length) {
+      c.innerHTML = '<div class="wl-empty">' + razzleEmpty() + '</div>';
+      return;
+    }
+
+    // Sort
+    var sorted = leaders.slice().sort(function(a, b) {
+      var va = a[sortState.col], vb = b[sortState.col];
+      if (typeof va === 'string') return sortState.dir * va.localeCompare(vb);
+      return sortState.dir * ((va || 0) - (vb || 0));
+    });
+
+    // Re-rank after sort
+    sorted.forEach(function(p, i) { p._rank = i + 1; });
+
+    var cols = [
+      { key: '_rank', label: '#', cls: 'center' },
+      { key: 'name', label: 'Player', cls: '' },
+      { key: 'fantasy_points', label: 'PPR', cls: 'center' },
+      { key: 'pass_yd', label: 'Pass Yd', cls: 'center hide-mobile' },
+      { key: 'pass_td', label: 'Pass TD', cls: 'center hide-mobile' },
+      { key: 'rush_yd', label: 'Rush Yd', cls: 'center' },
+      { key: 'rush_td', label: 'Rush TD', cls: 'center hide-mobile' },
+      { key: 'rec', label: 'Rec', cls: 'center' },
+      { key: 'rec_yd', label: 'Rec Yd', cls: 'center' },
+      { key: 'rec_td', label: 'Rec TD', cls: 'center hide-mobile' },
+      { key: 'tgt', label: 'Tgt', cls: 'center hide-mobile' }
+    ];
+
+    var html = '<table class="wl-table" role="grid"><caption class="sr-only">Weekly fantasy scoring leaders</caption><thead><tr>';
+    cols.forEach(function(col) {
+      var arrow = '';
+      var scls = '';
+      if (sortState.col === col.key) {
+        arrow = '<span class="sort-arrow">' + (sortState.dir > 0 ? '&#9650;' : '&#9660;') + '</span>';
+        scls = ' sorted';
+      }
+      html += '<th data-col="' + escapeHtml(col.key) + '" class="' + escapeHtml(col.cls) + scls + '">' + escapeHtml(col.label) + arrow + '</th>';
+    });
+    html += '</tr></thead><tbody>';
+
+    sorted.forEach(function(p) {
+      html += '<tr data-pid="' + escapeHtml(p.player_id) + '">';
+
+      // Rank
+      var rankCls = p._rank === 1 ? 'top1' : p._rank === 2 ? 'top2' : p._rank === 3 ? 'top3' : '';
+      html += '<td class="center"><span class="wl-rank ' + rankCls + '">' + escapeHtml(String(p._rank)) + '</span></td>';
+
+      // Player
+      html += '<td><div class="wl-player-cell"><div class="wl-player-info">';
+      html += '<div class="wl-player-name">' + escapeHtml(p.name) + '</div>';
+      html += '<div class="wl-player-meta">';
+      html += '<span class="wl-pos-badge ' + escapeHtml((p.position || '').toLowerCase()) + '">' + escapeHtml(p.position) + '</span>';
+      html += '<span class="wl-team-label">' + escapeHtml(p.team) + '</span>';
+      html += '</div></div></div></td>';
+
+      // PPR points
+      var pts = p.fantasy_points != null ? p.fantasy_points : 0;
+      var ptsCls = pts >= 30 ? 'elite' : pts >= 20 ? 'great' : 'good';
+      html += '<td class="center"><span class="wl-pts ' + ptsCls + '">' + fmt(pts, 1) + '</span></td>';
+
+      // Stats
+      html += '<td class="center hide-mobile">' + (p.pass_yd != null ? escapeHtml(String(p.pass_yd)) : '-') + '</td>';
+      html += '<td class="center hide-mobile">' + (p.pass_td != null ? escapeHtml(String(p.pass_td)) : '-') + '</td>';
+      html += '<td class="center">' + (p.rush_yd != null ? escapeHtml(String(p.rush_yd)) : '-') + '</td>';
+      html += '<td class="center hide-mobile">' + (p.rush_td != null ? escapeHtml(String(p.rush_td)) : '-') + '</td>';
+      html += '<td class="center">' + (p.rec != null ? escapeHtml(String(p.rec)) : '-') + '</td>';
+      html += '<td class="center">' + (p.rec_yd != null ? escapeHtml(String(p.rec_yd)) : '-') + '</td>';
+      html += '<td class="center hide-mobile">' + (p.rec_td != null ? escapeHtml(String(p.rec_td)) : '-') + '</td>';
+      html += '<td class="center hide-mobile">' + (p.tgt != null ? escapeHtml(String(p.tgt)) : '-') + '</td>';
+
+      html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    c.innerHTML = html;
+
+    // Bind sort headers
+    c.querySelectorAll('th[data-col]').forEach(function(th) {
+      th.addEventListener('click', function() {
+        var col = th.getAttribute('data-col');
+        if (sortState.col === col) {
+          sortState.dir *= -1;
+        } else {
+          sortState.col = col;
+          sortState.dir = col === 'name' ? 1 : -1;
+        }
+        render(currentData);
+      });
+    });
+
+    // Row clicks
+    c.querySelectorAll('tr[data-pid]').forEach(function(tr) {
+      tr.addEventListener('click', function() {
+        window.location.href = '/player/' + encodeURIComponent(tr.getAttribute('data-pid'));
+      });
+    });
+  }
+
+  /* ---- Controls ---- */
+  document.querySelectorAll('.wl-pos-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.wl-pos-tab').forEach(function(t) {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+      currentPosition = tab.getAttribute('data-pos') || '';
+      load();
+    });
+  });
+
+  document.getElementById('wlSeason').addEventListener('change', function() {
+    currentWeek = 0; // reset week when season changes
+    load();
+  });
+
+  document.getElementById('wlPrev').addEventListener('click', function() {
+    var idx = availableWeeks.indexOf(currentWeek);
+    if (idx > 0) {
+      currentWeek = availableWeeks[idx - 1];
+      load();
+    }
+  });
+
+  document.getElementById('wlNext').addEventListener('click', function() {
+    var idx = availableWeeks.indexOf(currentWeek);
+    if (idx < availableWeeks.length - 1) {
+      currentWeek = availableWeeks[idx + 1];
+      load();
+    }
+  });
+
+  /* ---- PNG Export ---- */
+  document.getElementById('wlExport').addEventListener('click', function() {
+    var btn = this; btn.disabled = true; btn.textContent = 'Exporting...';
+    var root = document.getElementById('main-content');
+    loadHtml2Canvas().then(function(h2c) { return h2c(root, { backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf', scale: 2 }); }).then(function(canvas) {
+      var ctx = canvas.getContext('2d');
+      ctx.font = "600 24px Caveat, cursive";
+      ctx.fillStyle = document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.18)' : 'rgba(45,31,20,0.15)';
+      ctx.fillText('razzle.lol', canvas.width - 160, canvas.height - 20);
+      var link = document.createElement('a');
+      link.download = 'razzle-weekly-leaders.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }).finally(function() { btn.disabled = false; btn.textContent = 'Export PNG'; });
+  });
+
+  /* ---- Analytics ---- */
+  if (typeof fetch !== 'undefined') {
+    fetch('/api/analytics/pageview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ page: 'weeklyleaders', referrer: document.referrer || '' })
+    }).catch(function() {});
+  }
+
+  /* ---- Init ---- */
+  var urlState = restorePageState({ pos: '', season: '', week: '' });
+  if (urlState.pos) {
+    currentPosition = urlState.pos;
+    document.querySelectorAll('.wl-pos-tab').forEach(function(t) {
+      t.classList.remove('active');
+      t.setAttribute('aria-selected', 'false');
+      if ((t.getAttribute('data-pos') || '') === urlState.pos) {
+        t.classList.add('active');
+        t.setAttribute('aria-selected', 'true');
+      }
+    });
+  }
+  if (urlState.week) currentWeek = parseInt(urlState.week, 10) || 0;
+  if (urlState.season) {
+    var sel = document.getElementById('wlSeason');
+    var o = document.createElement('option');
+    o.value = urlState.season;
+    o.textContent = urlState.season;
+    o.selected = true;
+    sel.appendChild(o);
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>

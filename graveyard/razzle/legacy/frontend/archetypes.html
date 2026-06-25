@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Player Archetypes — Razzle</title>
+<meta property="og:title" content="Player Archetypes — Razzle">
+<meta property="og:description" content="18 stat-driven archetypes: Workhorse, Alpha Target, Deep Threat, Dual-Threat QB, and more. Every player classified by what they actually do on the field.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Player Archetypes — Razzle">
+<meta name="twitter:description" content="18 stat-driven archetypes: Workhorse, Alpha Target, Deep Threat, Dual-Threat QB, and more. Players classified by what they actually do.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Fantasy player archetypes on razzle.lol. 18 position-specific archetypes classified by stat thresholds — Workhorse, Deep Threat, Alpha Target, and more.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=archetypes">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=archetypes">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="standalone-common.css">
+<style>
+
+  .ar-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-light);
+    margin-top: 6px;
+  }
+
+  /* Controls */
+  
+  .ar-controls select {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 6px 10px;
+    border: 3px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    color: var(--ink);
+  }
+  .ar-export-btn {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 6px 16px;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--ink);
+    cursor: pointer;
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .ar-export-btn:hover { background: var(--orange); color: var(--text-on-accent); }
+
+  /* Position tabs */
+
+  .ar-pos-tab:hover { transform: translateY(-1px); }
+
+  /* Archetype cards */
+  .ar-archetype {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: var(--radius);
+    box-shadow: 4px 4px 0 var(--ink);
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .ar-arch-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .ar-arch-icon {
+    font-size: 24px;
+    min-width: 32px;
+    text-align: center;
+  }
+  .ar-arch-info { flex: 1; }
+  .ar-arch-name {
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--ink);
+  }
+  .ar-arch-desc {
+    font-family: var(--font-hand);
+    font-size: 14px;
+    color: var(--ink-light);
+  }
+  .ar-arch-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    border: 2px solid;
+  }
+  .ar-arch-badge.QB { background: rgba(91,127,255,0.12); color: var(--pos-qb); border-color: var(--pos-qb); }
+  .ar-arch-badge.RB { background: rgba(46,196,182,0.12); color: var(--pos-rb); border-color: var(--pos-rb); }
+  .ar-arch-badge.WR { background: rgba(217,119,87,0.12); color: var(--pos-wr); border-color: var(--pos-wr); }
+  .ar-arch-badge.TE { background: rgba(139,92,246,0.12); color: var(--pos-te); border-color: var(--pos-te); }
+
+  .ar-arch-count {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-light);
+  }
+
+  /* Player grid inside archetype */
+  .ar-players {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px;
+    padding: 12px;
+  }
+  .ar-player-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 2px solid var(--ink-faint);
+    border-radius: var(--radius-sm);
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .ar-player-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 2px 3px 0 var(--ink-faint);
+    border-color: var(--ink);
+  }
+
+  .ar-player-ppg {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--orange);
+  }
+  .ar-player-stat {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-light);
+  }
+
+  /* Position badge small */
+  .ar-pos-sm {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 1px 5px;
+    border-radius: var(--radius-sm);
+    color: var(--text-on-accent);
+  }
+  .ar-pos-sm.QB { background: var(--pos-qb); }
+  .ar-pos-sm.RB { background: var(--pos-rb); }
+  .ar-pos-sm.WR { background: var(--pos-wr); }
+  .ar-pos-sm.TE { background: var(--pos-te); }
+
+  @media (max-width: 768px) {
+    .ar-players { grid-template-columns: 1fr 1fr; }
+    
+  }
+  @media (max-width: 480px) {
+    .ar-players { grid-template-columns: 1fr; }
+    
+  }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div id="site-header" data-page="archetypes"></div>
+
+<main class="ar-page" id="main-content">
+  <div class="ar-header">
+    <h1>Player Archetypes</h1>
+    <div class="ar-subtitle">what kind of player are they, really?</div>
+    <div class="ar-meta" id="ar-meta"></div>
+  </div>
+
+  <div class="ar-controls">
+    <select id="season-select" aria-label="Season"></select>
+    <button class="ar-export-btn" id="export-btn">Export PNG</button>
+  </div>
+
+  <div class="ar-pos-tabs" id="pos-tabs" role="tablist" aria-label="Position filter">
+    <button class="ar-pos-tab active" data-pos="">All</button>
+    <button class="ar-pos-tab" data-pos="QB">QB</button>
+    <button class="ar-pos-tab" data-pos="RB">RB</button>
+    <button class="ar-pos-tab" data-pos="WR">WR</button>
+    <button class="ar-pos-tab" data-pos="TE">TE</button>
+  </div>
+
+  <div id="ar-list">
+    <div class="ar-loading">classifying player archetypes...</div>
+  </div>
+</main>
+
+<div class="watermark">razzle.lol</div>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  'use strict';
+
+
+  var ICONS = {
+    workhorse: '&#x1F3CB;', pass_catcher: '&#x1F3C8;', efficient: '&#x26A1;',
+    td_vulture: '&#x1F3AF;', committee: '&#x1F465;',
+    alpha: '&#x1F451;', deep_threat: '&#x1F680;', possession: '&#x1F91D;',
+    yac_monster: '&#x1F4A8;', role_player: '&#x1F527;',
+    elite_receiver: '&#x2B50;', red_zone: '&#x1F3AF;', reliable: '&#x1F91D;',
+    blocking_te: '&#x1F6E1;',
+    elite_dual: '&#x1F525;', gunslinger: '&#x1F52B;', game_manager: '&#x1F4CB;',
+    rusher: '&#x1F3C3;', backup: '&#x1F4A4;',
+  };
+
+  var state = { season: 0, position: '' };
+  var listEl = document.getElementById('ar-list');
+  var seasonSelect = document.getElementById('season-select');
+  var posTabs = document.getElementById('pos-tabs');
+
+  // Restore URL state
+  var urlState = restorePageState({ pos: '', season: '' });
+  if (urlState.pos) {
+    state.position = urlState.pos;
+    posTabs.querySelectorAll('.ar-pos-tab').forEach(function(t) {
+      t.classList.toggle('active', t.getAttribute('data-pos') === state.position);
+    });
+  }
+  if (urlState.season) state.season = parseInt(urlState.season, 10) || 0;
+
+  seasonSelect.addEventListener('change', function() {
+    state.season = parseInt(this.value, 10) || 0;
+    savePageState({ pos: state.position, season: state.season });
+    fetchData();
+  });
+
+  posTabs.addEventListener('click', function(e) {
+    var tab = e.target.closest('.ar-pos-tab');
+    if (!tab) return;
+    posTabs.querySelectorAll('.ar-pos-tab').forEach(function(t) { t.classList.remove('active'); });
+    tab.classList.add('active');
+    state.position = tab.getAttribute('data-pos');
+    savePageState({ pos: state.position, season: state.season });
+    fetchData();
+  });
+
+  document.getElementById('export-btn').addEventListener('click', function() {
+    var btn = this; btn.disabled = true; btn.textContent = 'Exporting...';
+    var el = document.getElementById('main-content');
+    loadHtml2Canvas().then(function(h2c) { return h2c(el, { backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf', scale: 2 }); }).then(function(canvas) {
+      var ctx = canvas.getContext('2d');
+      ctx.font = "600 24px Caveat, cursive";
+      ctx.fillStyle = document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.15)' : 'rgba(45,31,20,0.12)';
+      ctx.fillText('razzle.lol', canvas.width - 160, canvas.height - 20);
+      var link = document.createElement('a');
+      link.download = 'razzle-archetypes.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }).finally(function() { btn.disabled = false; btn.textContent = 'Export PNG'; });
+  });
+
+  function fetchData() {
+    listEl.innerHTML = '<div class="ar-loading">' + razzleLoading() + '</div>';
+    var params = [];
+    if (state.season > 0) params.push('season=' + state.season);
+    if (state.position) params.push('position=' + state.position);
+    var url = '/api/player-archetypes' + (params.length ? '?' + params.join('&') : '');
+
+    fetch(url).then(function(resp) {
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      return resp.json();
+    }).then(function(data) {
+      if (data.available_seasons && seasonSelect.options.length <= 1) {
+        seasonSelect.innerHTML = '';
+        data.available_seasons.forEach(function(s) {
+          var opt = document.createElement('option');
+          opt.value = s;
+          opt.textContent = s;
+          if (s === data.season) opt.selected = true;
+          seasonSelect.appendChild(opt);
+        });
+      }
+      document.getElementById('ar-meta').textContent = data.season + ' season \u00b7 ' + data.total_players + ' players classified';
+      renderArchetypes(data.archetypes || []);
+    }).catch(function(err) {
+      listEl.innerHTML = '<div class="ar-error">' + razzleError() + '</div>';
+    });
+  }
+
+  function renderArchetypes(archetypes) {
+    if (archetypes.length === 0) {
+      listEl.innerHTML = '<div class="ar-loading">no archetypes found for this filter</div>';
+      return;
+    }
+    var html = '';
+    archetypes.forEach(function(arch) {
+      html += '<div class="ar-archetype">';
+      html += '<div class="ar-arch-header">';
+      html += '<div class="ar-arch-icon">' + (ICONS[arch.id] || '&#x2B50;') + '</div>';
+      html += '<div class="ar-arch-info">';
+      html += '<div class="ar-arch-name">' + escapeHtml(arch.name) + '</div>';
+      html += '<div class="ar-arch-desc">' + escapeHtml(arch.desc) + '</div>';
+      html += '</div>';
+      html += '<span class="ar-arch-badge ' + escapeHtml(arch.position) + '">' + escapeHtml(arch.position) + '</span>';
+      html += '<span class="ar-arch-count">' + escapeHtml(String(arch.count)) + '</span>';
+      html += '</div>';
+
+      html += '<div class="ar-players">';
+      (arch.players || []).forEach(function(p) {
+        html += '<div class="ar-player-card">';
+        html += '<span class="ar-pos-sm ' + escapeHtml(p.position) + '">' + escapeHtml(p.position) + '</span>';
+        html += '<div style="flex:1;min-width:0;">';
+        html += '<div class="ar-player-name">' + escapeHtml(p.full_name) + '</div>';
+        html += '<div class="ar-player-meta">' + escapeHtml(p.team) + ' &middot; age ' + escapeHtml(String(p.age)) + '</div>';
+        html += '</div>';
+        html += '<div style="text-align:right;">';
+        html += '<div class="ar-player-ppg">' + escapeHtml(String(p.ppg)) + '</div>';
+        html += '<div class="ar-player-stat">' + escapeHtml(p.key_stat || '') + '</div>';
+        html += '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+      html += '</div>';
+    });
+    listEl.innerHTML = html;
+  }
+
+  // Analytics
+  if (typeof fetch !== 'undefined') {
+    fetch('/api/analytics/pageview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ page: 'archetypes', referrer: document.referrer || '' })
+    }).catch(function() {});
+  }
+
+  fetchData();
+})();
+</script>
+</body>
+</html>

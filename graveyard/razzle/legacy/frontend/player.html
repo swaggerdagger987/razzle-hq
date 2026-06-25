@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<base href="/">
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Player Profile — Razzle</title>
+<meta property="og:title" content="Player Profile — Razzle">
+<meta property="og:description" content="Deep-dive player profile. Season stats, career arc, combine measurables, dynasty value, and trade comps all in one card.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Player Profile — Razzle">
+<meta name="twitter:description" content="Deep-dive player profile. Season stats, career arc, combine measurables, dynasty value, and trade comps all in one card.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle player analysis and stats">
+<meta name="description" content="Fantasy football player profile on razzle.lol. Season stats, career trajectory, combine data, dynasty trade value, and comparable players.">
+<link rel="canonical" href="https://razzle.lol/player.html">
+<meta property="og:url" content="https://razzle.lol/player.html">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="/styles.css">
+<style>
+  .player-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  .player-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-light);
+    text-decoration: none;
+    margin-bottom: 16px;
+    padding: 4px 0;
+  }
+  .player-back:hover { color: var(--orange); }
+
+  .player-hero {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 24px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .player-hero-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .player-hero-headshot {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 3px solid var(--ink);
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--bg-warm);
+  }
+
+  .player-pos-badge {
+    font-family: var(--font-display);
+    font-size: 24px;
+    color: var(--text-on-accent);
+    padding: 6px 14px;
+    border: 3px solid var(--ink);
+    border-radius: 8px;
+    box-shadow: 2px 2px 0 var(--ink);
+    transform: rotate(-2deg);
+    flex-shrink: 0;
+  }
+
+  .player-name {
+    font-family: var(--font-display);
+    font-size: 32px;
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+
+  .player-meta {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-medium);
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+
+  .player-draft-badge {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--text-on-accent);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 3px 10px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    transform: rotate(-1deg);
+    margin-right: 6px;
+  }
+
+  .player-breakout-badge {
+    display: inline-block;
+    background: var(--green-light, #d4edda);
+    color: var(--green, #28a745);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 3px 10px;
+    border: 2px solid var(--green, #28a745);
+    border-radius: var(--radius-sm);
+    transform: rotate(1deg);
+  }
+
+  .player-hero-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .player-stats-bar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 2px dashed var(--border-dashed);
+  }
+
+  .player-stat-card {
+    flex: 1;
+    min-width: 90px;
+    background: var(--bg);
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    box-shadow: 2px 2px 0 var(--ink);
+    padding: 10px 12px;
+    text-align: center;
+  }
+
+  .player-stat-value {
+    font-family: var(--font-display);
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  .player-stat-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-light);
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .player-section {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+
+  .player-section-title {
+    font-family: var(--font-display);
+    font-size: 16px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .player-season-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  .player-season-table th {
+    text-align: right;
+    padding: 6px 8px;
+    border-bottom: 2px solid var(--ink);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--ink-light);
+    white-space: nowrap;
+  }
+  .player-season-table th:first-child { text-align: left; }
+
+  .player-season-table td {
+    text-align: right;
+    padding: 5px 8px;
+    border-bottom: 2px dashed var(--border-dashed);
+    white-space: nowrap;
+  }
+  .player-season-table td:first-child {
+    text-align: left;
+    font-weight: 700;
+  }
+
+  .player-combine-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+  }
+
+  .player-combine-item {
+    background: var(--bg);
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    padding: 8px 10px;
+    text-align: center;
+  }
+
+  .player-combine-value {
+    font-family: var(--font-display);
+    font-size: 18px;
+  }
+
+  .player-combine-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-light);
+    text-transform: uppercase;
+  }
+
+  .player-charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .player-chart-wrap {
+    text-align: center;
+  }
+
+  .player-chart-wrap canvas {
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    background: var(--bg);
+    width: 100%;
+  }
+
+  .player-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    text-align: center;
+  }
+
+  .player-loading-text {
+    font-family: var(--font-hand);
+    font-size: 20px;
+    color: var(--ink-light);
+  }
+
+  .player-share-url {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-light);
+    margin-top: 6px;
+  }
+
+  /* Watermark — uses shared .watermark from styles.css */
+
+  @media (max-width: 768px) {
+    .player-page { padding: 16px 12px 48px; }
+    .player-name { font-size: 24px; }
+    .player-hero { padding: 16px; }
+    .player-hero-actions { margin-left: 0; margin-top: 12px; width: 100%; }
+    .player-hero-actions .btn-primary,
+    .player-hero-actions .btn-chunky { flex: 1; min-height: 44px; }
+    .player-charts-row { grid-template-columns: 1fr; }
+    .player-section { padding: 14px 16px; }
+    .player-season-table { font-size: 11px; }
+  }
+
+  @media (max-width: 480px) {
+    .player-name { font-size: 20px; }
+    .player-pos-badge { font-size: 20px; padding: 4px 10px; }
+    .player-stat-card { min-width: 70px; }
+    .player-stat-value { font-size: 18px; }
+    .player-combine-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+  }
+
+  /* Dark mode */
+  [data-theme="dark"] .player-hero { background: var(--bg-card); }
+  [data-theme="dark"] .player-section { background: var(--bg-card); }
+  [data-theme="dark"] .player-stat-card { background: var(--bg-card); }
+  [data-theme="dark"] .player-combine-item { background: var(--bg-card); }
+  [data-theme="dark"] .player-chart-wrap canvas { background: var(--bg-card); }
+  [data-theme="dark"] .player-season-table th { color: var(--ink-light); }
+  [data-theme="dark"] .player-season-table td { color: var(--ink-medium); }
+  [data-theme="dark"] .player-breakout-badge { background: var(--bg-card); color: var(--green); border-color: var(--green); }
+  [data-theme="dark"] .player-draft-badge { background: var(--ink-medium); }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#playerPage" class="skip-link">Skip to main content</a>
+
+<!-- NAV -->
+<div id="site-header" data-page="player"></div>
+
+<main class="player-page" id="playerPage">  <h1 class="sr-only" id="playerH1">Player Profile — Razzle</h1>
+  <div class="player-loading">
+    <div class="player-loading-text">loading the dossier...</div>
+  </div>
+</main>
+
+<!-- AD SLOT -->
+<div class="ad-slot" data-ad-unit="player-mid" style="max-width:728px; margin:0 auto 20px; min-height:0; text-align:center;">
+  <!-- AdSense code goes here when activated -->
+</div>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="/app.js"></script>
+<script src="/player.js"></script>
+<script>
+restorePageState({});
+fetch("/api/analytics/pageview",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({page:location.pathname})}).catch(function(){});
+</script>
+</body>
+</html>

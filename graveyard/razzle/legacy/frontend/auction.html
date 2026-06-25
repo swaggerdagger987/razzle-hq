@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Auction Values — Razzle</title>
+<meta property="og:title" content="Auction Values — Razzle">
+<meta property="og:description" content="Convert dynasty trade values into auction dollar amounts for any budget. Set your total budget, get exact bid prices for every player.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Auction Values — Razzle">
+<meta name="twitter:description" content="Convert dynasty trade values into auction dollar amounts for any budget. Set your budget, get exact bid prices.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Fantasy auction dollar values on razzle.lol. Convert trade values to auction bids for any budget size with adjustable roster settings.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=auction">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=auction">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="standalone-common.css">
+<style>
+
+  /* Controls */
+  
+  .av-controls label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-light);
+  }
+  .av-controls select, .av-controls input[type="number"] {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 6px 10px;
+    border: 3px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    color: var(--ink);
+  }
+  .av-controls input[type="range"] {
+    width: 120px;
+    accent-color: var(--orange);
+  }
+  .av-budget-display {
+    font-family: var(--font-display);
+    font-size: 20px;
+    color: var(--orange);
+    min-width: 50px;
+    text-align: center;
+  }
+
+  /* Position filter tabs */
+
+  .av-pos-tab:hover { transform: translateY(-1px); }
+
+  /* Position summary cards */
+  .av-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .av-sum-card {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 12px;
+    text-align: center;
+  }
+  .av-sum-pos {
+    font-family: var(--font-display);
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+  .av-sum-pos.QB { color: var(--pos-qb); }
+  .av-sum-pos.RB { color: var(--pos-rb); }
+  .av-sum-pos.WR { color: var(--pos-wr); }
+  .av-sum-pos.TE { color: var(--pos-te); }
+  .av-sum-stat {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-light);
+    line-height: 1.6;
+  }
+  .av-sum-big {
+    font-family: var(--font-display);
+    font-size: 24px;
+    color: var(--ink);
+  }
+
+  /* Player table */
+  .av-table-wrap {
+    overflow-x: auto;
+    
+  }
+
+  .av-table tr:hover { background: var(--orange-hover); }
+
+  /* Position badges */
+  
+  .av-pos-badge.QB { background: var(--pos-qb); }
+  .av-pos-badge.RB { background: var(--pos-rb); }
+  .av-pos-badge.WR { background: var(--pos-wr); }
+  .av-pos-badge.TE { background: var(--pos-te); }
+
+  /* Dollar value */
+  .av-dollar {
+    font-family: var(--font-display);
+    font-size: 16px;
+    color: var(--ink);
+  }
+  .av-dollar.premium { color: var(--red); }
+  .av-dollar.starter { color: var(--orange); }
+  .av-dollar.value { color: var(--pos-rb); }
+  .av-dollar.bargain { color: var(--pos-qb); }
+  .av-dollar.dollar-tier { color: var(--ink-light); }
+
+  /* Trade value bar */
+  .av-tv-bar {
+    width: 80px;
+    height: 8px;
+    background: var(--ink-faint);
+    border-radius: var(--radius-sm);
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+  .av-tv-fill {
+    height: 100%;
+    border-radius: 8px;
+    background: var(--orange);
+  }
+
+  /* Tier badge */
+  .av-tier-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 8px;
+    border: 2px solid;
+  }
+  .av-tier-badge.premium { background: rgba(212,64,64,0.12); color: var(--red); border-color: var(--red); }
+  .av-tier-badge.starter { background: rgba(217,119,87,0.12); color: var(--orange); border-color: var(--orange); }
+  .av-tier-badge.value { background: rgba(46,196,182,0.12); color: var(--pos-rb); border-color: var(--pos-rb); }
+  .av-tier-badge.bargain { background: rgba(91,127,255,0.12); color: var(--pos-qb); border-color: var(--pos-qb); }
+  .av-tier-badge.dollar-tier { background: color-mix(in srgb, var(--ink) 6%, transparent); color: var(--ink-light); border-color: var(--ink-faint); }
+
+  /* Search */
+  .av-search {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  .av-search input {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 7px 14px;
+    border: 3px solid var(--ink);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--ink);
+    width: 260px;
+  }
+  .av-search input::placeholder { color: var(--ink-medium); }
+
+  /* Export button */
+  .av-export-btn {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 6px 16px;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--ink);
+    cursor: pointer;
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .av-export-btn:hover { background: var(--orange); color: var(--text-on-accent); }
+
+  @media (max-width: 768px) {
+    .av-summary { grid-template-columns: repeat(2, 1fr); }
+
+  }
+  @media (max-width: 480px) {
+    .av-summary { grid-template-columns: 1fr; }
+    
+  }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div id="site-header" data-page="auction"></div>
+
+<main class="av-page" id="main-content">
+  <div class="av-header">
+    <h1>Auction Values</h1>
+    <div class="av-subtitle">trade values converted to draft-day dollars</div>
+  </div>
+
+  <div class="av-controls">
+    <label>Budget:
+      <input type="range" id="budget-slider" min="50" max="500" step="10" value="200">
+    </label>
+    <div class="av-budget-display" id="budget-display">$200</div>
+    <label>Roster:
+      <input type="number" id="roster-input" min="8" max="25" value="15" style="width:60px;">
+    </label>
+    <label>Season:
+      <select id="season-select" aria-label="Season"></select>
+    </label>
+    <button class="av-export-btn" id="export-btn">Export PNG</button>
+  </div>
+
+  <div class="av-pos-tabs" id="pos-tabs" role="tablist" aria-label="Position filter">
+    <button class="av-pos-tab active" data-pos="ALL">All</button>
+    <button class="av-pos-tab" data-pos="QB">QB</button>
+    <button class="av-pos-tab" data-pos="RB">RB</button>
+    <button class="av-pos-tab" data-pos="WR">WR</button>
+    <button class="av-pos-tab" data-pos="TE">TE</button>
+  </div>
+
+  <div class="av-search">
+    <input type="text" id="search-input" placeholder="search players..." aria-label="Search players">
+  </div>
+
+  <div class="av-summary" id="pos-summary"></div>
+
+  <div class="av-table-wrap" id="table-wrap">
+    <div class="av-loading">calculating auction budgets...</div>
+  </div>
+</main>
+
+<div class="watermark">razzle.lol</div>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  'use strict';
+
+
+  var state = {
+    budget: 200,
+    rosterSize: 15,
+    season: 0,
+    position: 'ALL',
+    search: '',
+    sortKey: 'auction_value',
+    sortDir: -1,
+    data: null,
+  };
+
+  var budgetSlider = document.getElementById('budget-slider');
+  var budgetDisplay = document.getElementById('budget-display');
+  var rosterInput = document.getElementById('roster-input');
+  var seasonSelect = document.getElementById('season-select');
+  var searchInput = document.getElementById('search-input');
+  var posTabs = document.getElementById('pos-tabs');
+  var tableWrap = document.getElementById('table-wrap');
+  var posSummary = document.getElementById('pos-summary');
+
+  // Restore URL state
+  var urlState = restorePageState({ pos: 'ALL', budget: '', roster: '', season: '' });
+  if (urlState.pos) {
+    state.position = urlState.pos;
+    posTabs.querySelectorAll('.av-pos-tab').forEach(function(t) {
+      t.classList.toggle('active', t.getAttribute('data-pos') === state.position);
+    });
+  }
+  if (urlState.budget) {
+    state.budget = parseInt(urlState.budget, 10) || 200;
+    budgetSlider.value = state.budget;
+    budgetDisplay.textContent = '$' + state.budget;
+  }
+  if (urlState.roster) {
+    state.rosterSize = parseInt(urlState.roster, 10) || 15;
+    rosterInput.value = state.rosterSize;
+  }
+  if (urlState.season) state.season = parseInt(urlState.season, 10) || 0;
+
+  function _saveAuctionState() {
+    savePageState({ pos: state.position, budget: state.budget, roster: state.rosterSize, season: state.season });
+  }
+
+  // Budget slider
+  budgetSlider.addEventListener('input', function() {
+    state.budget = parseInt(this.value, 10) || 200;
+    budgetDisplay.textContent = '$' + state.budget;
+  });
+  budgetSlider.addEventListener('change', function() {
+    _saveAuctionState();
+    fetchData();
+  });
+
+  // Roster size
+  rosterInput.addEventListener('change', function() {
+    state.rosterSize = Math.max(8, Math.min(25, parseInt(this.value, 10) || 15));
+    this.value = state.rosterSize;
+    _saveAuctionState();
+    fetchData();
+  });
+
+  // Season select
+  seasonSelect.addEventListener('change', function() {
+    state.season = parseInt(this.value, 10) || 0;
+    _saveAuctionState();
+    fetchData();
+  });
+
+  // Position tabs
+  posTabs.addEventListener('click', function(e) {
+    var tab = e.target.closest('.av-pos-tab');
+    if (!tab) return;
+    posTabs.querySelectorAll('.av-pos-tab').forEach(function(t) { t.classList.remove('active'); });
+    tab.classList.add('active');
+    state.position = tab.getAttribute('data-pos');
+    _saveAuctionState();
+    renderTable();
+  });
+
+  // Search
+  searchInput.addEventListener('input', function() {
+    state.search = this.value.toLowerCase();
+    renderTable();
+  });
+
+  // Export
+  document.getElementById('export-btn').addEventListener('click', function() {
+    var btn = this; btn.disabled = true; btn.textContent = 'Exporting...';
+    var el = document.getElementById('main-content');
+    loadHtml2Canvas().then(function(h2c) { return h2c(el, { backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf', scale: 2 }); }).then(function(canvas) {
+      var ctx = canvas.getContext('2d');
+      ctx.font = "600 24px Caveat, cursive";
+      ctx.fillStyle = document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.15)' : 'rgba(45,31,20,0.12)';
+      ctx.fillText('razzle.lol', canvas.width - 160, canvas.height - 20);
+      var link = document.createElement('a');
+      link.download = 'razzle-auction-values.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }).finally(function() { btn.disabled = false; btn.textContent = 'Export PNG'; });
+  });
+
+  function fetchData() {
+    tableWrap.innerHTML = '<div class="av-loading">' + razzleLoading() + '</div>';
+    var url = '/api/auction-values?budget=' + state.budget + '&roster_size=' + state.rosterSize;
+    if (state.season > 0) url += '&season=' + state.season;
+
+    fetch(url).then(function(resp) {
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      return resp.json();
+    }).then(function(data) {
+      state.data = data;
+
+      // Populate season selector
+      if (data.available_seasons && seasonSelect.options.length <= 1) {
+        seasonSelect.innerHTML = '';
+        data.available_seasons.forEach(function(s) {
+          var opt = document.createElement('option');
+          opt.value = s;
+          opt.textContent = s;
+          if (s === data.season) opt.selected = true;
+          seasonSelect.appendChild(opt);
+        });
+      }
+
+      renderSummary();
+      renderTable();
+    }).catch(function(err) {
+      tableWrap.innerHTML = '<div class="av-error">' + razzleError() + '</div>';
+    });
+  }
+
+  function renderSummary() {
+    if (!state.data) return;
+    var pt = state.data.position_totals || {};
+    var html = '';
+    ['QB', 'RB', 'WR', 'TE'].forEach(function(pos) {
+      var s = pt[pos] || { count: 0, total_value: 0, avg_value: 0, top_value: 0 };
+      html += '<div class="av-sum-card">';
+      html += '<div class="av-sum-pos ' + pos + '">' + pos + '</div>';
+      html += '<div class="av-sum-big">$' + escapeHtml(String(s.top_value)) + '</div>';
+      html += '<div class="av-sum-stat">top value</div>';
+      html += '<div class="av-sum-stat">' + escapeHtml(String(s.count)) + ' players &middot; avg $' + escapeHtml(String(s.avg_value)) + '</div>';
+      html += '</div>';
+    });
+    posSummary.innerHTML = html;
+  }
+
+  function renderTable() {
+    if (!state.data || !state.data.players) {
+      tableWrap.innerHTML = '<div class="av-loading">' + razzleEmpty() + '</div>';
+      return;
+    }
+
+    var players = state.data.players.slice();
+
+    // Position filter
+    if (state.position !== 'ALL') {
+      players = players.filter(function(p) { return p.position === state.position; });
+    }
+
+    // Search filter
+    if (state.search) {
+      players = players.filter(function(p) {
+        return (p.full_name || '').toLowerCase().indexOf(state.search) !== -1 ||
+               (p.team || '').toLowerCase().indexOf(state.search) !== -1;
+      });
+    }
+
+    // Sort
+    players.sort(function(a, b) {
+      var av = a[state.sortKey] || 0;
+      var bv = b[state.sortKey] || 0;
+      if (typeof av === 'string') {
+        return state.sortDir * av.localeCompare(bv);
+      }
+      return state.sortDir * (bv - av);
+    });
+
+    if (players.length === 0) {
+      tableWrap.innerHTML = '<div class="av-loading">' + razzleEmpty() + '</div>';
+      return;
+    }
+
+    var cols = [
+      { key: 'rank', label: '#', w: '40px' },
+      { key: 'full_name', label: 'Player' },
+      { key: 'position', label: 'Pos', w: '50px' },
+      { key: 'team', label: 'Team', w: '50px' },
+      { key: 'age', label: 'Age', w: '45px' },
+      { key: 'auction_value', label: 'Auction $' },
+      { key: 'trade_value', label: 'Trade Value' },
+      { key: 'ppg', label: 'PPG', w: '60px' },
+      { key: 'tier', label: 'Tier', w: '80px' },
+    ];
+
+    var html = '<table class="av-table"><caption class="sr-only">Auction values by player</caption><thead><tr>';
+    cols.forEach(function(col) {
+      var arrow = state.sortKey === col.key ? (state.sortDir > 0 ? ' &#9650;' : ' &#9660;') : '';
+      html += '<th data-sort="' + col.key + '"' + (col.w ? ' style="width:' + col.w + '"' : '') + '>' + col.label + arrow + '</th>';
+    });
+    html += '</tr></thead><tbody>';
+
+    players.forEach(function(p, i) {
+      html += '<tr>';
+      html += '<td>' + escapeHtml(String(i + 1)) + '</td>';
+      html += '<td>' + escapeHtml(p.full_name) + '</td>';
+      html += '<td><span class="av-pos-badge ' + escapeHtml(p.position) + '">' + escapeHtml(p.position) + '</span></td>';
+      html += '<td>' + escapeHtml(p.team) + '</td>';
+      html += '<td>' + (p.age != null ? escapeHtml(String(p.age)) : '-') + '</td>';
+      html += '<td><span class="av-dollar ' + tierClass(p.tier) + '">$' + escapeHtml(String(p.auction_value)) + '</span></td>';
+      html += '<td>';
+      html += '<div class="av-tv-bar"><div class="av-tv-fill" style="width:' + Math.min(100, p.trade_value) + '%"></div></div>';
+      html += escapeHtml(String(p.trade_value));
+      html += '</td>';
+      html += '<td>' + escapeHtml(String(p.ppg)) + '</td>';
+      html += '<td><span class="av-tier-badge ' + tierClass(p.tier) + '">' + escapeHtml(tierLabel(p.tier)) + '</span></td>';
+      html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    tableWrap.innerHTML = html;
+
+    // Sort click handlers
+    tableWrap.querySelectorAll('th[data-sort]').forEach(function(th) {
+      th.addEventListener('click', function() {
+        var key = this.getAttribute('data-sort');
+        if (state.sortKey === key) {
+          state.sortDir *= -1;
+        } else {
+          state.sortKey = key;
+          state.sortDir = -1;
+        }
+        renderTable();
+      });
+    });
+  }
+
+  function tierClass(tier) {
+    if (tier === 'dollar') return 'dollar-tier';
+    return tier || '';
+  }
+
+  function tierLabel(tier) {
+    var labels = { premium: 'Premium', starter: 'Starter', value: 'Value', bargain: 'Bargain', dollar: '$1 Filler' };
+    return labels[tier] || tier || '';
+  }
+
+  // Analytics
+  if (typeof fetch !== 'undefined') {
+    fetch('/api/analytics/pageview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ page: 'auction', referrer: document.referrer || '' })
+    }).catch(function() {});
+  }
+
+  // Init
+  fetchData();
+})();
+</script>
+</body>
+</html>

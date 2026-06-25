@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fourth Down Labs | Home</title>
+    <meta
+      name="description"
+      content="Fourth Down Labs is a Sleeper-first dynasty football lab for custom player screening and league intelligence."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="ambient-backdrop" aria-hidden="true"></div>
+
+    <header class="site-header">
+      <a class="brand" href="./home.html">
+        <span class="brand-dot"></span>
+        Fourth Down Labs
+      </a>
+      <nav class="main-nav" aria-label="Primary">
+        <a class="nav-link" data-nav-page="lab" href="./lab.html">Open the Lab</a>
+        <a class="nav-link" data-nav-page="intel" href="./league-intel.html">League Intel</a>
+        <a class="nav-link" data-nav-page="agents" href="./agents.html">Agents</a>
+        <button id="connect-sleeper-btn" class="nav-cta nav-connect-btn" type="button">Connect Sleeper</button>
+      </nav>
+    </header>
+
+    <main class="site-shell home-shell home-redo">
+      <section class="hero-panel fade-in home-kickoff">
+        <div class="home-kickoff-scene" aria-hidden="true">
+          <div class="chalk-grid"></div>
+          <div class="chalk-route c-route-a"></div>
+          <div class="chalk-route c-route-b"></div>
+          <div class="chalk-route c-route-c"></div>
+          <div class="chalk-ball c-ball-a"></div>
+          <div class="chalk-ball c-ball-b"></div>
+          <div class="chalk-ball c-ball-c"></div>
+        </div>
+        <p class="eyebrow">FANTASY FOOTBALL LAB CLASSROOM</p>
+        <h1>Built for the manager who doomscrolls Reddit, then wins waivers.</h1>
+        <p class="subhead">
+          Chalkboard strategy, post-it chaos, and one-click tools for lineup edges, trade leverage, and leaguemate scouting.
+        </p>
+        <div class="home-jump-row">
+          <a class="chip home-jump" href="#jump-lab">Start In The Lab</a>
+          <a class="chip home-jump" href="#jump-intel">Scout League Intel</a>
+          <a class="chip home-jump" href="#jump-connect">Connect Sleeper</a>
+        </div>
+      </section>
+
+      <div class="home-chaos-band band-one" aria-hidden="true">
+        <div class="band-route route-a"></div>
+        <div class="band-route route-b"></div>
+        <div class="band-football f1"></div>
+        <div class="band-football f2"></div>
+      </div>
+
+      <section id="jump-lab" class="panel home-lanes">
+        <h2>Pick Your Drive</h2>
+        <div class="feature-grid home-drive-grid">
+          <article class="feature-card sticky-card">
+            <p class="sticky-tag">FASTEST PATH</p>
+            <h3>Open The Lab</h3>
+            <p>Build filters in 30 seconds, save a view, and screenshot your board for league chat.</p>
+            <a class="primary-btn home-card-btn" href="./lab.html">Go To Lab</a>
+          </article>
+          <article class="feature-card sticky-card alt-note">
+            <p class="sticky-tag">SCOUT MODE</p>
+            <h3>League Intel</h3>
+            <p>Profile manager behavior, identify pressure points, and prep offers before rivals do.</p>
+            <a class="secondary-btn home-card-btn" href="./league-intel.html">Open Intel</a>
+          </article>
+          <article class="feature-card sticky-card chalk-note">
+            <p class="sticky-tag">WEEKLY FLOW</p>
+            <h3>Suggested Routine</h3>
+            <p>Tue: waivers. Thu: leverage check. Sat: lineup pivots. Sun: post results receipts.</p>
+            <p class="home-note-meta">Keep it simple. Repeat. Edge compounds.</p>
+          </article>
+        </div>
+      </section>
+
+      <div class="home-chaos-band band-two" aria-hidden="true">
+        <div class="band-route route-c"></div>
+        <div class="band-route route-d"></div>
+        <div class="band-football f3"></div>
+        <div class="band-football f4"></div>
+        <div class="band-callout">Breakout Lane</div>
+      </div>
+
+      <section id="jump-intel" class="panel home-board">
+        <h2>Locker-Room Board</h2>
+        <div class="home-board-grid">
+          <article class="mini-card board-note">
+            <h3>Trade Prep</h3>
+            <p>Check contenders who are thin at RB/TE before sending your first offer.</p>
+          </article>
+          <article class="mini-card board-note">
+            <h3>Waiver Angles</h3>
+            <p>Use filter combos to spot role growth before consensus rankings catch up.</p>
+          </article>
+          <article class="mini-card board-note">
+            <h3>Bye-Week Pain</h3>
+            <p>Find managers forced into short-term moves and buy long-term assets.</p>
+          </article>
+          <article class="mini-card board-note">
+            <h3>Receipts Folder</h3>
+            <p>Save shareable view links and keep evidence for every prediction you post.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="jump-connect" class="panel home-connect-panel">
+        <h2>Connect Sleeper</h2>
+        <p class="subhead">No auth wall. Drop your username and load your leagues instantly.</p>
+        <form id="home-connect-form" class="home-connect-form">
+          <label>
+            Sleeper Username
+            <input id="home-sleeper-username" placeholder="e.g. soham123" />
+          </label>
+          <button id="home-connect-btn" class="primary-btn" type="submit">Connect Sleeper</button>
+        </form>
+        <p id="home-connect-status" class="hint"></p>
+      </section>
+    </main>
+
+    <script src="./themes.js"></script>
+    <script type="module" src="./home.js"></script>
+  </body>
+</html>

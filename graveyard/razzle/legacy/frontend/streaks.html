@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Hot & Cold Streaks — Razzle</title>
+<meta property="og:title" content="Hot & Cold Streaks — Razzle">
+<meta property="og:description" content="Who's heating up and who's going cold? Recent performance vs season average reveals the streaks that change start/sit decisions.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Hot & Cold Streaks — Razzle">
+<meta name="twitter:description" content="Who's heating up and who's going cold? Recent performance vs season average reveals streaks that matter.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Hot and cold streak tracker on razzle.lol. Recent performance vs season average showing which players are on fire and which have gone cold.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=streaks">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=streaks">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .str-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+
+  .str-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .str-header h1 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    color: var(--ink);
+    margin: 0 0 4px;
+  }
+  .str-header .str-subtitle {
+    font-family: var(--font-hand);
+    font-size: 20px;
+    color: var(--ink-light);
+  }
+
+  .str-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .str-controls select {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 6px 10px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+  }
+  .str-controls .pos-tabs {
+    display: flex;
+    gap: 4px;
+  }
+  .str-controls .pos-tab {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 5px 12px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .str-controls .pos-tab.active {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .str-export {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 5px 14px;
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .str-export:hover { background: var(--ink); color: var(--bg); }
+
+  .str-loading {
+    text-align: center;
+    font-family: var(--font-hand);
+    font-size: 18px;
+    color: var(--ink-light);
+    padding: 60px 0;
+  }
+
+  /* Two-column layout */
+  .str-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 768px) {
+    .str-columns { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 480px) {
+    .str-page { padding: 16px 8px 40px; }
+    .str-header h1 { font-size: 20px; }
+    .str-header .str-subtitle { font-size: 16px; }
+    .str-controls { gap: 8px; }
+    .str-controls .pos-tab { padding: 4px 8px; font-size: 11px; }
+    .str-table { font-size: 11px; }
+    .str-table th, .str-table td { padding: 4px 5px; }
+    .str-section-header { font-size: 14px; padding: 8px 12px; }
+  }
+
+  .str-section {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: var(--radius-sm);
+    box-shadow: 4px 4px 0 var(--ink);
+    overflow: hidden;
+  }
+  .str-section-header {
+    font-family: var(--font-display);
+    font-size: 18px;
+    padding: 10px 16px;
+    color: var(--text-on-accent);
+  }
+  .str-section-header.hot { background: var(--semantic-green); }
+  .str-section-header.cold { background: var(--semantic-red); }
+
+  /* Table */
+  .str-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .str-table th {
+    background: var(--bg);
+    padding: 6px 8px;
+    text-align: right;
+    font-size: 11px;
+    font-weight: 700;
+    border-bottom: 2px solid var(--ink-faint);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .str-table th:first-child, .str-table th:nth-child(2) { text-align: left; }
+  .str-table td {
+    padding: 6px 8px;
+    text-align: right;
+    border-bottom: 2px dashed var(--border-dashed);
+  }
+  .str-table td:first-child, .str-table td:nth-child(2) { text-align: left; }
+  .str-table tbody tr:hover { background: var(--bg-warm); }
+
+  /* Badges */
+  .str-delta-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: var(--radius-sm);
+    border: 2px solid;
+    white-space: nowrap;
+  }
+  .str-delta-badge.hot {
+    background: var(--semantic-green-light);
+    color: var(--semantic-green);
+    border-color: var(--semantic-green);
+  }
+  .str-delta-badge.cold {
+    background: var(--semantic-red-light);
+    color: var(--semantic-red);
+    border-color: var(--semantic-red);
+  }
+  .str-pos-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: var(--radius-sm);
+    color: var(--text-on-accent);
+    margin-left: 4px;
+  }
+
+  /* Mini sparkline (recent scores) */
+  .str-recent {
+    display: flex;
+    gap: 2px;
+    align-items: flex-end;
+    height: 20px;
+  }
+  .str-recent-bar {
+    width: 8px;
+    border-radius: var(--radius-sm) 2px 0 0;
+    min-height: 2px;
+  }
+
+  .str-empty {
+    text-align: center;
+    font-family: var(--font-hand);
+    font-size: 14px;
+    color: var(--ink-light);
+    padding: 30px 16px;
+  }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div id="site-header" data-page="streaks"></div>
+
+<main class="str-page" id="main-content">
+  <div class="str-header">
+    <h1>Hot & Cold Streaks</h1>
+    <div class="str-subtitle">who's on fire and who's ice cold</div>
+  </div>
+
+  <div class="str-controls">
+    <select id="strSeason" aria-label="Season"></select>
+    <select id="strWindow" aria-label="Window">
+      <option value="3">Last 3 games</option>
+      <option value="4" selected>Last 4 games</option>
+      <option value="5">Last 5 games</option>
+    </select>
+    <div class="pos-tabs" role="tablist" aria-label="Position filter">
+      <button class="pos-tab active" data-pos="">ALL</button>
+      <button class="pos-tab" data-pos="QB">QB</button>
+      <button class="pos-tab" data-pos="RB">RB</button>
+      <button class="pos-tab" data-pos="WR">WR</button>
+      <button class="pos-tab" data-pos="TE">TE</button>
+    </div>
+    <button class="str-export" id="strExport">Export PNG</button>
+  </div>
+
+  <div id="strContent" style="overflow-x:auto">
+    <div class="str-loading">tracking hot and cold streaks...</div>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  'use strict';
+
+
+  function fmt(v, dec) {
+    if (v === null || v === undefined) return '-';
+    return Number(v).toFixed(dec === undefined ? 1 : dec);
+  }
+
+  var _cs = getComputedStyle(document.documentElement);
+  var POS_COLORS = {
+    QB: _cs.getPropertyValue('--pos-qb').trim() || '#5b7fff',
+    RB: _cs.getPropertyValue('--pos-rb').trim() || '#2ec4b6',
+    WR: _cs.getPropertyValue('--pos-wr').trim() || '#d97757',
+    TE: _cs.getPropertyValue('--pos-te').trim() || '#8b5cf6'
+  };
+
+  var currentPosition = '';
+  var currentData = null;
+
+  /* ---- URL state (uses shared helpers from app.js) ---- */
+
+  /* ---- Fetch ---- */
+  function load() {
+    var selSeason = document.getElementById('strSeason');
+    var selWindow = document.getElementById('strWindow');
+    var season = selSeason.value || '';
+    var win = selWindow.value || '4';
+    var pos = currentPosition;
+    savePageState({ season: season, pos: pos, window: win });
+
+    var url = '/api/streaks?window=' + encodeURIComponent(win);
+    if (season) url += '&season=' + encodeURIComponent(season);
+    if (pos) url += '&position=' + encodeURIComponent(pos);
+
+    document.getElementById('strContent').innerHTML = '<div class="str-loading">' + razzleLoading() + '</div>';
+
+    fetch(url).then(function(r) {
+      if (!r.ok) throw new Error('API error');
+      return r.json();
+    }).then(function(data) {
+      currentData = data;
+      populateSeasons(data.season);
+      render(data);
+    }).catch(function() {
+      document.getElementById('strContent').innerHTML = '<div class="panel-error">' + razzleError() + '<br><button onclick="location.reload()">retry</button></div>';
+    });
+  }
+
+  function populateSeasons(current) {
+    var sel = document.getElementById('strSeason');
+    if (sel.options.length <= 1) {
+      sel.innerHTML = '';
+      var now = new Date();
+      var latestSeason = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
+      for (var y = latestSeason; y >= 2015; y--) {
+        var opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        if (y === current) opt.selected = true;
+        sel.appendChild(opt);
+      }
+    }
+  }
+
+  /* ---- Render ---- */
+  function render(data) {
+    var hot = data.hot || [];
+    var cold = data.cold || [];
+
+    var html = '<div class="str-columns">';
+
+    // Hot section
+    html += '<div class="str-section">';
+    html += '<div class="str-section-header hot">On Fire</div>';
+    if (hot.length) {
+      html += renderTable(hot, 'hot');
+    } else {
+      html += '<div class="panel-empty">' + razzleEmpty() + '<span class="hint">try a different position or season</span></div>';
+    }
+    html += '</div>';
+
+    // Cold section
+    html += '<div class="str-section">';
+    html += '<div class="str-section-header cold">Ice Cold</div>';
+    if (cold.length) {
+      html += renderTable(cold, 'cold');
+    } else {
+      html += '<div class="panel-empty">' + razzleEmpty() + '<span class="hint">try a different position or season</span></div>';
+    }
+    html += '</div>';
+
+    html += '</div>';
+    document.getElementById('strContent').innerHTML = html;
+  }
+
+  function renderTable(players, type) {
+    var html = '<table class="str-table"><caption class="sr-only">Scoring streaks and trends by player</caption><thead><tr>';
+    html += '<th scope="col">Player</th><th scope="col">Pos</th><th scope="col">Szn Avg</th><th scope="col">Recent</th><th scope="col">Delta</th><th scope="col">Last ' + escapeHtml(String(currentData.window)) + '</th>';
+    html += '</tr></thead><tbody>';
+
+    for (var i = 0; i < players.length; i++) {
+      var p = players[i];
+      var posColor = POS_COLORS[p.position] || 'var(--ink-light)';
+      var badgeClass = type === 'hot' ? 'hot' : 'cold';
+      var sign = p.delta > 0 ? '+' : '';
+
+      html += '<tr>';
+      html += '<td>' + escapeHtml(p.name) + ' <span style="font-size:11px;color:var(--ink-light)">' + escapeHtml(p.team) + '</span></td>';
+      html += '<td><span class="str-pos-badge" style="background:' + posColor + '">' + escapeHtml(p.position) + '</span></td>';
+      html += '<td>' + escapeHtml(String(fmt(p.season_avg))) + '</td>';
+      html += '<td>' + escapeHtml(String(fmt(p.recent_avg))) + '</td>';
+      html += '<td><span class="str-delta-badge ' + badgeClass + '">' + sign + escapeHtml(String(fmt(p.delta))) + ' (' + sign + escapeHtml(String(fmt(p.delta_pct, 0))) + '%)</span></td>';
+
+      // Mini bar sparkline
+      var scores = p.recent_scores || [];
+      var maxScore = Math.max.apply(null, scores.concat([1]));
+      html += '<td><div class="str-recent">';
+      for (var j = 0; j < scores.length; j++) {
+        var sc = scores[j] || 0;
+        var h = Math.max(2, Math.round((sc / maxScore) * 20));
+        var barColor = sc >= p.season_avg ? 'var(--green)' : 'var(--orange)';
+        html += '<div class="str-recent-bar" style="height:' + h + 'px;background:' + barColor + '" title="Wk: ' + escapeHtml(String(fmt(scores[j]))) + '"></div>';
+      }
+      html += '</div></td>';
+      html += '</tr>';
+    }
+
+    html += '</tbody></table>';
+    return html;
+  }
+
+  /* ---- Position tabs ---- */
+  document.querySelectorAll('.pos-tab').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.pos-tab').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentPosition = btn.getAttribute('data-pos') || '';
+      load();
+    });
+  });
+
+  document.getElementById('strSeason').addEventListener('change', load);
+  document.getElementById('strWindow').addEventListener('change', load);
+
+  /* ---- PNG export ---- */
+  document.getElementById('strExport').addEventListener('click', function() {
+    var btn = this; btn.disabled = true; btn.textContent = 'Exporting...';
+    var root = document.getElementById('main-content');
+    loadHtml2Canvas().then(function(h2c) { return h2c(root, { backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf', scale: 2 }); }).then(function(canvas) {
+      var ctx = canvas.getContext('2d');
+      ctx.font = "600 24px Caveat, cursive";
+      ctx.fillStyle = document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.15)' : 'rgba(45,31,20,0.12)';
+      ctx.fillText('razzle.lol', canvas.width - 130, canvas.height - 16);
+      var link = document.createElement('a');
+      link.download = 'razzle-streaks.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }).finally(function() { btn.disabled = false; btn.textContent = 'Export PNG'; });
+  });
+
+  /* ---- Analytics ---- */
+  fetch('/api/analytics/pageview', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: '/streaks.html', referrer: document.referrer || '' })
+  }).catch(function() {});
+
+  /* ---- Init from URL ---- */
+  var init = restorePageState({ season: '', pos: '', window: '' });
+  if (init.pos) {
+    currentPosition = init.pos;
+    document.querySelectorAll('.pos-tab').forEach(function(b) {
+      b.classList.toggle('active', (b.getAttribute('data-pos') || '') === init.pos);
+    });
+  }
+  if (init.window) {
+    document.getElementById('strWindow').value = init.window;
+  }
+  if (init.season) {
+    var sel = document.getElementById('strSeason');
+    var opt = document.createElement('option');
+    opt.value = init.season;
+    opt.textContent = init.season;
+    opt.selected = true;
+    sel.appendChild(opt);
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>

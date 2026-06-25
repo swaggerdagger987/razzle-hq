@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Dynasty Rankings — Razzle</title>
+<meta property="og:title" content="Dynasty Rankings — Razzle">
+<meta property="og:description" content="Data-driven dynasty rankings in 8 tiers. No vibes, no consensus groupthink — just production, age, and scarcity. Exportable as PNG.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Dynasty Rankings — Razzle">
+<meta name="twitter:description" content="Data-driven dynasty rankings in 8 tiers. No vibes, no consensus groupthink — just production, age, and scarcity.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Dynasty fantasy football rankings on razzle.lol. 8 tiers of player cards ranked by composite trade value. Filter by position, export as PNG.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=rankings">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=rankings">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="standalone-common.css">
+<style>
+
+  .rankings-header .rankings-season {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-light);
+    margin-top: 4px;
+  }
+
+  /* Position filter tabs */
+  .rankings-filters {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 24px;
+  }
+  .rankings-filter-btn {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    padding: 8px 18px;
+    border: 2px solid var(--ink);
+    background: var(--bg-card);
+    color: var(--ink);
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .rankings-filter-btn:first-child { border-radius: 8px 0 0 8px; }
+  .rankings-filter-btn:last-child { border-radius: 0 8px 8px 0; }
+  .rankings-filter-btn:not(:first-child) { border-left: none; }
+  .rankings-filter-btn:hover { background: var(--bg-warm); }
+  .rankings-filter-btn.active {
+    background: var(--ink);
+    color: var(--bg-card);
+  }
+  .rankings-filter-btn.active.pos-qb { background: var(--pos-qb); border-color: var(--pos-qb); }
+  .rankings-filter-btn.active.pos-rb { background: var(--pos-rb); border-color: var(--pos-rb); }
+  .rankings-filter-btn.active.pos-wr { background: var(--pos-wr); border-color: var(--pos-wr); }
+  .rankings-filter-btn.active.pos-te { background: var(--pos-te); border-color: var(--pos-te); }
+
+  /* Tier section */
+  .rankings-tier {
+    margin-bottom: 48px;
+    position: relative;
+  }
+
+  /* Dashed divider between tier sections */
+  .rankings-tier-divider {
+    height: 3px;
+    margin: 8px 0 40px 0;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--ink-faint) 0,
+      var(--ink-faint) 8px,
+      transparent 8px,
+      transparent 16px
+    );
+    border-radius: 2px;
+  }
+
+  .rankings-tier-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    border: 3px solid var(--ink);
+    border-radius: var(--radius-sm);
+    box-shadow: 4px 4px 0 var(--ink);
+    background: var(--bg-card);
+    position: relative;
+    overflow: hidden;
+  }
+  /* Colored left stripe on tier header */
+  .rankings-tier-header::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+  }
+  .tier-1 .rankings-tier-header::before { background: var(--orange); }
+  .tier-2 .rankings-tier-header::before { background: var(--blue); }
+  .tier-3 .rankings-tier-header::before { background: var(--green); }
+  .tier-4 .rankings-tier-header::before { background: var(--purple); }
+  .tier-5 .rankings-tier-header::before { background: var(--yellow); }
+  .tier-6 .rankings-tier-header::before { background: var(--ink-faint); }
+  .tier-7 .rankings-tier-header::before { background: var(--ink-faint); }
+  .tier-8 .rankings-tier-header::before { background: var(--ink-faint); }
+
+  .rankings-tier-badge {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border: 2px solid var(--ink);
+    border-radius: 20px;
+    background: var(--bg-card);
+    box-shadow: 2px 2px 0 var(--ink);
+    transform: rotate(-2deg);
+    white-space: nowrap;
+  }
+  .rankings-tier-label {
+    font-family: var(--font-hand);
+    font-size: 22px;
+    color: var(--ink);
+  }
+  .rankings-tier-range {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-light);
+    padding: 2px 8px;
+    background: var(--bg-warm);
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+  }
+  .rankings-tier-count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-light);
+    margin-left: auto;
+  }
+
+  /* Tier colors */
+  .tier-1 .rankings-tier-badge { background: var(--orange); color: var(--text-on-accent); }
+  .tier-2 .rankings-tier-badge { background: var(--blue); color: var(--text-on-accent); }
+  .tier-3 .rankings-tier-badge { background: var(--green); color: var(--text-on-accent); }
+  .tier-4 .rankings-tier-badge { background: var(--purple); color: var(--text-on-accent); }
+  .tier-5 .rankings-tier-badge { background: var(--yellow); color: var(--ink); }
+  .tier-6 .rankings-tier-badge { background: var(--bg-warm); }
+  .tier-7 .rankings-tier-badge { background: var(--bg-warm); color: var(--ink-light); }
+  .tier-8 .rankings-tier-badge { background: var(--bg-warm); color: var(--ink-light); }
+
+  /* Player card grid */
+  .rankings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+
+  .rankings-card {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: var(--radius-sm);
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    position: relative;
+  }
+  .rankings-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+
+  /* Rank number */
+  .rankings-rank {
+    font-family: var(--font-display);
+    font-size: 16px;
+    color: var(--ink-light);
+    min-width: 28px;
+    text-align: center;
+  }
+  .tier-1 .rankings-rank { color: var(--orange); }
+  .tier-2 .rankings-rank { color: var(--blue); }
+
+  /* Player headshot in card */
+  .rankings-card .player-headshot,
+  .rankings-card .player-headshot-fallback {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .rankings-card .player-headshot-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-on-accent);
+  }
+
+  /* Player info */
+  .rankings-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .rankings-name {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .rankings-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+  }
+
+  .rankings-age {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 1px 5px;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+  }
+  .rankings-age.young { background: var(--green-light); color: var(--green); }
+  .rankings-age.prime { background: var(--yellow-light); color: var(--ink-medium); }
+  .rankings-age.aging { background: var(--red-light); color: var(--red); }
+
+  /* Value + PPG on the right */
+  .rankings-scores {
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .rankings-value {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .rankings-ppg {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-light);
+  }
+
+  @media (max-width: 768px) {
+    .rankings-grid { grid-template-columns: 1fr; }
+    
+    .rankings-filter-btn { padding: 6px 12px; font-size: 12px; }
+  }
+  @media (max-width: 480px) {
+    .rankings-card { padding: 10px 8px; gap: 8px; }
+    .rankings-rank { font-size: 13px; min-width: 22px; }
+    .rankings-name { font-size: 13px; }
+    .rankings-value { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- NAV -->
+<div id="site-header" data-page="rankings"></div>
+
+<main class="rankings-page" id="main-content">  <div class="rankings-header">
+    <h1>Dynasty Rankings</h1>
+    <div class="rankings-subtitle">who's worth the most in your league</div>
+    <div style="font-family:var(--font-mono); font-size:11px; color:var(--ink-light); margin-top:4px;">ranked by DVS (Dynasty Value Score) — production x age curve</div>
+    <div class="rankings-season" id="rankingsSeason"></div>
+  </div>
+
+  <div class="rankings-filters" id="rankingsFilters" role="tablist" aria-label="Position filter">
+    <button class="rankings-filter-btn active" data-pos="" role="tab" aria-selected="true">All</button>
+    <button class="rankings-filter-btn pos-qb" data-pos="QB" role="tab" aria-selected="false">QB</button>
+    <button class="rankings-filter-btn pos-rb" data-pos="RB" role="tab" aria-selected="false">RB</button>
+    <button class="rankings-filter-btn pos-wr" data-pos="WR" role="tab" aria-selected="false">WR</button>
+    <button class="rankings-filter-btn pos-te" data-pos="TE" role="tab" aria-selected="false">TE</button>
+  </div>
+
+  <div class="rankings-actions">
+    <button class="btn-chunky" id="rankingsExportBtn" title="Export as PNG">Export PNG</button>
+  </div>
+
+  <div id="rankingsContent" role="status" aria-live="polite">
+    <div class="rankings-loading">ranking the dynasty board...
+      <div class="loading-skeleton">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card" style="height:150px"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  var state = { position: "", data: null, loading: false };
+
+  var content = document.getElementById("rankingsContent");
+  var seasonEl = document.getElementById("rankingsSeason");
+
+  // ---- Fetch rankings ----
+  async function loadRankings(pos) {
+    state.loading = true;
+    state.position = pos || "";
+    content.innerHTML = '<div class="rankings-loading">' + razzleLoading() + '</div>';
+
+    try {
+      var url = "/api/dynasty-rankings?limit=200";
+      if (pos) url += "&position=" + encodeURIComponent(pos);
+      var data = await apiFetch(url);
+      state.data = data;
+      state.loading = false;
+      seasonEl.textContent = data.season ? data.season + " season" : "";
+      renderTiers(data.tiers || []);
+    } catch (err) {
+      state.loading = false;
+      content.innerHTML = '<div class="rankings-empty">' + razzleError() + '</div>';
+    }
+  }
+
+  // ---- Render tiered cards ----
+  function renderTiers(tiers) {
+    if (!tiers.length) {
+      content.innerHTML = '<div class="rankings-empty">no ranked players found</div>';
+      return;
+    }
+
+    var html = "";
+    var overallRank = 1;
+
+    for (var i = 0; i < tiers.length; i++) {
+      var tier = tiers[i];
+
+      // Dashed divider between tier sections (not before the first)
+      if (i > 0) {
+        html += '<div class="rankings-tier-divider" aria-hidden="true"></div>';
+      }
+
+      var rankStart = overallRank;
+      var rankEnd = overallRank + tier.players.length - 1;
+      var rangeStr = "#" + rankStart + " — #" + rankEnd;
+
+      html += '<div class="rankings-tier tier-' + tier.tier + '">';
+      html += '<div class="rankings-tier-header">';
+      html += '<div class="rankings-tier-badge">Tier ' + tier.tier + '</div>';
+      html += '<div class="rankings-tier-label">' + escapeHtml(tier.label) + '</div>';
+      html += '<div class="rankings-tier-range">' + rangeStr + '</div>';
+      html += '<div class="rankings-tier-count">' + tier.players.length + ' players</div>';
+      html += '</div>';
+      html += '<div class="rankings-grid">';
+
+      for (var j = 0; j < tier.players.length; j++) {
+        var p = tier.players[j];
+        var posLc = (p.position || "").toLowerCase();
+        var ageCls = !p.age ? "" : p.age <= 25 ? "young" : p.age <= 28 ? "prime" : "aging";
+
+        html += '<div class="rankings-card pos-stripe-' + posLc + '" data-pid="' + escapeAttr(p.player_id) + '">';
+        html += '<div class="rankings-rank">#' + overallRank + '</div>';
+        html += playerHeadshot(p, p.position);
+        html += '<div class="rankings-info">';
+        html += '<div class="rankings-name">' + escapeHtml(p.full_name) + '</div>';
+        html += '<div class="rankings-meta">';
+        html += '<span class="rankings-pos-badge ' + posLc + '">' + escapeHtml(p.position) + '</span>';
+        html += '<span class="rankings-team">' + escapeHtml(p.team) + '</span>';
+        if (p.age) {
+          html += '<span class="rankings-age ' + ageCls + '">Age ' + p.age + '</span>';
+        }
+        html += '</div></div>';
+        html += '<div class="rankings-scores">';
+        html += '<div class="rankings-value">' + formatStat(p.dynasty_value, 1) + ' <span style="font-size:11px; font-weight:400; color:var(--ink-light);">DVS</span></div>';
+        html += '<div class="rankings-ppg">' + formatStat(p.ppg, 1) + ' ppg</div>';
+        html += '</div>';
+        html += '</div>';
+
+        overallRank++;
+      }
+
+      html += '</div></div>';
+    }
+
+    content.innerHTML = html;
+
+    // Click handlers — navigate to player profile
+    content.querySelectorAll(".rankings-card").forEach(function(card) {
+      card.addEventListener("click", function() {
+        var pid = this.getAttribute("data-pid");
+        if (pid) window.location.href = "/player/" + encodeURIComponent(pid);
+      });
+    });
+  }
+
+  // ---- Position filter buttons ----
+  document.getElementById("rankingsFilters").addEventListener("click", function(e) {
+    var btn = e.target.closest(".rankings-filter-btn");
+    if (!btn) return;
+    document.querySelectorAll(".rankings-filter-btn").forEach(function(b) { b.classList.remove("active"); });
+    btn.classList.add("active");
+    var pos = btn.getAttribute("data-pos") || "";
+    savePageState({ pos: pos });
+    loadRankings(pos);
+  });
+
+  // ---- PNG Export ----
+  document.getElementById("rankingsExportBtn").addEventListener("click", function() {
+    var btn = this; btn.disabled = true; btn.textContent = 'Exporting...';
+    doExport(btn);
+  });
+
+  function doExport(btn) {
+    var el = document.getElementById("main-content");
+    if (!el) { if (btn) { btn.disabled = false; btn.textContent = 'Export PNG'; } return; }
+    loadHtml2Canvas().then(function(h2c) { return h2c(el, {
+      backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf',
+      scale: 2,
+      useCORS: true,
+      logging: false,
+    }); }).then(function(canvas) {
+      // Add watermark
+      var ctx = canvas.getContext("2d");
+      ctx.font = "600 24px Caveat, cursive";
+      ctx.fillStyle = document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.25)' : 'rgba(45,31,20,0.25)';
+      ctx.textAlign = "right";
+      ctx.fillText("razzle.lol", canvas.width - 20, canvas.height - 16);
+
+      var link = document.createElement("a");
+      link.download = "razzle-dynasty-rankings.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }).finally(function() { if (btn) { btn.disabled = false; btn.textContent = 'Export PNG'; } });
+  }
+
+  // ---- Restore URL state ----
+  var urlState = restorePageState({ pos: '' });
+  if (urlState.pos) {
+    document.querySelectorAll(".rankings-filter-btn").forEach(function(b) {
+      b.classList.toggle("active", (b.getAttribute("data-pos") || "") === urlState.pos);
+    });
+  }
+
+  // ---- Initial load ----
+  loadRankings(urlState.pos || "");
+})();
+</script>
+<script>fetch("/api/analytics/pageview",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({page:location.pathname})}).catch(function(){});</script>
+</body>
+</html>

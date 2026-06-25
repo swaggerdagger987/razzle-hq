@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Draft Cheat Sheet — Razzle</title>
+<meta property="og:title" content="Draft Cheat Sheet — Razzle">
+<meta property="og:description" content="Printable draft cheat sheet. 4-column position grid with tier breaks and trade values. Print it, bring it to draft night, dominate.">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Draft Cheat Sheet — Razzle">
+<meta name="twitter:description" content="Printable draft cheat sheet. 4-column position grid with tier breaks and trade values. Print it and dominate draft night.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Fantasy draft cheat sheet on razzle.lol. Printable 4-column position rankings with tier breaks, trade values, and format tabs for PPR, Half-PPR, and Standard.">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=cheatsheet">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=cheatsheet">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .cs-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+  .cs-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .cs-header h1 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    color: var(--ink);
+    margin: 0 0 4px;
+  }
+  .cs-header .cs-subtitle {
+    font-family: var(--font-hand);
+    font-size: 20px;
+    color: var(--ink-light);
+  }
+
+  /* Controls */
+  .cs-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .cs-fmt-tabs {
+    display: flex;
+    gap: 6px;
+  }
+  .cs-fmt-tab {
+    padding: 6px 16px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    border: 2px solid var(--ink);
+    border-radius: 20px;
+    background: var(--bg-card);
+    color: var(--ink);
+    cursor: pointer;
+    transition: background-color 0.15s, transform 0.15s, box-shadow 0.15s;
+  }
+  .cs-fmt-tab:hover {
+    background: var(--bg-warm);
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .cs-fmt-tab.active {
+    background: var(--ink);
+    color: var(--bg-card);
+  }
+  .cs-season-select {
+    padding: 5px 12px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    background: var(--bg-card);
+    cursor: pointer;
+  }
+
+  /* 4-column grid */
+  .cs-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    align-items: start;
+  }
+
+  /* Position column */
+  .cs-col {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 var(--ink);
+    overflow: hidden;
+  }
+  .cs-col-header {
+    padding: 10px 12px;
+    font-family: var(--font-display);
+    font-size: 16px;
+    color: var(--text-on-accent);
+    text-align: center;
+    font-weight: 700;
+  }
+  .cs-col-header.QB { background: var(--pos-qb); }
+  .cs-col-header.RB { background: var(--pos-rb); }
+  .cs-col-header.WR { background: var(--pos-wr); }
+  .cs-col-header.TE { background: var(--pos-te); }
+
+  /* Tier break */
+  .cs-tier-break {
+    padding: 4px 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: var(--bg-warm);
+    color: var(--ink-medium);
+    border-top: 2px dashed var(--border-dashed);
+    border-bottom: 2px dashed var(--border-dashed);
+  }
+
+  /* Player row */
+  .cs-player {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-bottom: 2px dashed var(--border-dashed);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .cs-player:hover { background: var(--bg-warm); }
+  .cs-player:last-child { border-bottom: none; }
+  .cs-rank {
+    font-weight: 700;
+    color: var(--ink-light);
+    min-width: 18px;
+    text-align: right;
+  }
+  .cs-pname {
+    flex: 1;
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cs-team {
+    color: var(--ink-light);
+    font-size: 11px;
+  }
+  .cs-ppg {
+    font-weight: 700;
+    color: var(--orange);
+    min-width: 32px;
+    text-align: right;
+  }
+
+  /* Loading */
+  .cs-loading {
+    text-align: center;
+    padding: 60px 20px;
+    font-family: var(--font-hand);
+    font-size: 20px;
+    color: var(--ink-light);
+  }
+
+  /* Actions */
+  .cs-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .cs-actions button {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 8px 18px;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--ink);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .cs-actions button:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+
+  /* Watermark — uses shared .watermark from styles.css */
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .cs-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 480px) {
+    .cs-grid { grid-template-columns: 1fr; }
+    .cs-header h1 { font-size: 24px; }
+  }
+
+  /* Print */
+  @media print {
+    .topnav, footer, .cs-controls, .cs-actions, .watermark { display: none !important; }
+    .cs-page { padding: 0; max-width: 100%; }
+    .cs-grid { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .cs-col { box-shadow: none; border-width: 2px; }
+    .cs-header { margin-bottom: 10px; }
+    .cs-header h1 { font-size: 24px; }
+    .cs-player { padding: 3px 6px; font-size: 11px; }
+    body { background: #fff; } /* print: intentional white paper */
+  }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div id="site-header" data-page="cheatsheet"></div>
+
+<main class="cs-page" id="main-content">
+  <div class="cs-header">
+    <h1>Draft Cheat Sheet</h1>
+    <div class="cs-subtitle">print it, screenshot it, win your draft</div>
+  </div>
+
+  <div class="cs-controls">
+    <div class="cs-fmt-tabs" id="fmt-tabs">
+      <button class="cs-fmt-tab active" data-fmt="ppr">PPR</button>
+      <button class="cs-fmt-tab" data-fmt="half">Half-PPR</button>
+      <button class="cs-fmt-tab" data-fmt="std">Standard</button>
+    </div>
+    <select class="cs-season-select" id="season-select" aria-label="Season"></select>
+  </div>
+
+  <div class="cs-loading" id="cs-loading">building the draft board...</div>
+  <div class="cs-grid" id="cs-grid" style="display:none;"></div>
+
+  <div class="cs-actions">
+    <button onclick="window.print()">Print</button>
+    <button onclick="exportPng(this)">Export PNG</button>
+  </div>
+</main>
+
+<div class="watermark">razzle.lol</div>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  'use strict';
+
+
+  function fmt(v) {
+    if (v === null || v === undefined) return '-';
+    return Number(v).toFixed(1);
+  }
+
+  var POS_ORDER = ['QB', 'RB', 'WR', 'TE'];
+
+  var state = {
+    season: 0,
+    format: 'ppr',
+    data: null
+  };
+
+  function init() {
+    fetch('/api/analytics/pageview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ page: '/cheatsheet.html', referrer: document.referrer || '' })
+    }).catch(function() {});
+
+    // Restore URL state
+    var urlState = restorePageState({ fmt: 'ppr', season: '' });
+    if (urlState.fmt) {
+      state.format = urlState.fmt;
+      document.querySelectorAll('.cs-fmt-tab').forEach(function(t) {
+        t.classList.toggle('active', t.getAttribute('data-fmt') === state.format);
+      });
+    }
+    if (urlState.season) state.season = parseInt(urlState.season, 10) || 0;
+
+    document.querySelectorAll('.cs-fmt-tab').forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        state.format = this.getAttribute('data-fmt');
+        document.querySelectorAll('.cs-fmt-tab').forEach(function(t) { t.classList.remove('active'); });
+        this.classList.add('active');
+        savePageState({ fmt: state.format, season: state.season });
+        fetchData();
+      });
+    });
+
+    document.getElementById('season-select').addEventListener('change', function() {
+      state.season = parseInt(this.value) || 0;
+      savePageState({ fmt: state.format, season: state.season });
+      fetchData();
+    });
+
+    fetchData();
+  }
+
+  function fetchData() {
+    document.getElementById('cs-loading').style.display = 'block';
+    document.getElementById('cs-grid').style.display = 'none';
+
+    var url = '/api/cheat-sheet?format=' + state.format;
+    if (state.season) url += '&season=' + state.season;
+
+    fetch(url)
+      .then(function(r) {
+        if (!r.ok) throw new Error('Failed');
+        return r.json();
+      })
+      .then(function(data) {
+        state.data = data;
+        var sel = document.getElementById('season-select');
+        if (sel.options.length <= 1) {
+          sel.innerHTML = '';
+          (data.available_seasons || []).forEach(function(s) {
+            var opt = document.createElement('option');
+            opt.value = s;
+            opt.textContent = s;
+            if (s === data.season) opt.selected = true;
+            sel.appendChild(opt);
+          });
+        }
+        state.season = data.season;
+        render();
+      })
+      .catch(function() {
+        document.getElementById('cs-loading').textContent = razzleError();
+      });
+  }
+
+  function render() {
+    document.getElementById('cs-loading').style.display = 'none';
+    var grid = document.getElementById('cs-grid');
+    grid.style.display = 'grid';
+
+    var positions = state.data.positions || {};
+    var html = '';
+
+    POS_ORDER.forEach(function(pos) {
+      var players = positions[pos] || [];
+      html += '<div class="cs-col">';
+      html += '<div class="cs-col-header ' + pos + '">' + escapeHtml(pos) + ' (' + players.length + ')</div>';
+
+      var currentTier = '';
+      players.forEach(function(p) {
+        // Tier break
+        if (p.tier !== currentTier) {
+          currentTier = p.tier;
+          html += '<div class="cs-tier-break">' + escapeHtml(currentTier) + '</div>';
+        }
+        html += '<div class="cs-player" data-pid="' + escapeAttr(p.player_id) + '" style="cursor:pointer">';
+        html += '<span class="cs-rank">' + escapeHtml(String(p.rank)) + '</span>';
+        html += '<span class="cs-pname">' + escapeHtml(p.full_name) + '</span>';
+        html += '<span class="cs-team">' + escapeHtml(p.team) + '</span>';
+        html += '<span class="cs-ppg">' + fmt(p.ppg) + '</span>';
+        html += '</div>';
+      });
+
+      html += '</div>';
+    });
+
+    grid.innerHTML = html;
+    grid.addEventListener('click', function(e) {
+      var el = e.target.closest('[data-pid]');
+      if (el) window.location.href = '/player.html?id=' + encodeURIComponent(el.dataset.pid);
+    });
+  }
+
+  window.exportPng = function(btn) {
+    if (btn) { btn.disabled = true; btn.textContent = 'Exporting...'; }
+    var el = document.getElementById('main-content');
+    loadHtml2Canvas().then(function(h2c) { return h2c(el, { backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf', scale: 2 }); }).then(function(canvas) {
+      var ctx = canvas.getContext('2d');
+      ctx.font = '24px Caveat, cursive';
+      ctx.fillStyle = document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.2)' : 'rgba(45,31,20,0.18)';
+      ctx.fillText('razzle.lol', canvas.width - 160, canvas.height - 20);
+      var link = document.createElement('a');
+      link.download = 'razzle-cheat-sheet.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }).finally(function() { if (btn) { btn.disabled = false; btn.textContent = 'Export PNG'; } });
+  };
+
+  init();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,53 @@
+# Razzle V2 — root .gitignore
+
+# Data — SQLite lives on the persistent disk, never in git
+data/*.db
+data/*.db-shm
+data/*.db-wal
+data/terminal*.db
+data/users*.db
+
+# Secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.venv-*/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Node / Next
+node_modules/
+.next/
+.turbo/
+out/
+dist/
+.cache/
+
+# Editor + OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Coverage + test outputs
+coverage/
+.nyc_output/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+npm-debug.log*
+docs/v2/.board-lock
+docs/v2/.loop.lock.d
+docs/v2/recovery.log
+apps/web/tsconfig.tsbuildinfo

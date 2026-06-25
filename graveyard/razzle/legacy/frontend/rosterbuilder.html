@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ede0cf">
+<title>Roster Builder — Razzle</title>
+<meta property="og:title" content="Roster Builder — Razzle">
+<meta property="og:description" content="Build your dynasty roster and get an instant grade. Trade value, VORP, age balance, and positional depth scored A+ to F. Are you competing, retooling, or rebuilding?">
+<meta property="og:site_name" content="razzle.lol">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://razzle.lol/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@razzle_lol">
+<meta name="twitter:title" content="Roster Builder — Razzle">
+<meta name="twitter:description" content="Build your dynasty roster and get an instant grade. Trade value, VORP, age balance, and depth scored A+ to F.">
+<meta name="twitter:image" content="https://razzle.lol/assets/og-image.png">
+<meta name="twitter:image:alt" content="Razzle — Free Fantasy Football Research Lab">
+<meta name="description" content="Dynasty roster builder on razzle.lol. Add your players, get instant grades on trade value, VORP, age balance, and positional depth. Competing, retooling, or rebuilding?">
+<link rel="canonical" href="https://razzle.lol/lab.html?panel=rosterbuilder">
+<meta property="og:url" content="https://razzle.lol/lab.html?panel=rosterbuilder">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Mono:wght@400;700&family=Caveat:wght@500;600;700&display=swap"></noscript>
+<link rel="stylesheet" href="styles.css">
+<style>
+  .rb-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+  .rb-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .rb-header h1 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    color: var(--ink);
+    margin: 0 0 4px;
+  }
+  .rb-header .rb-subtitle {
+    font-family: var(--font-hand);
+    font-size: 20px;
+    color: var(--ink-light);
+  }
+
+  /* Search area */
+  .rb-search-area {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .rb-search {
+    padding: 10px 14px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    background: var(--bg-card);
+    width: 340px;
+    outline: none;
+  }
+  .rb-search:focus { box-shadow: 4px 4px 0 var(--ink); }
+  .rb-search:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+  .rb-autocomplete {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 340px;
+    background: var(--bg-card);
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    box-shadow: 4px 4px 0 var(--ink);
+    max-height: 240px;
+    overflow-y: auto;
+    z-index: 100;
+    display: none;
+  }
+  .rb-ac-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 2px dashed var(--border-dashed);
+  }
+  .rb-ac-item:hover { background: var(--bg-warm); }
+  .rb-ac-item:last-child { border-bottom: none; }
+  .rb-ac-pos {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 8px;
+    border: 2px solid var(--ink);
+    color: var(--text-on-accent);
+  }
+  .rb-ac-pos.QB { background: var(--pos-qb); }
+  .rb-ac-pos.RB { background: var(--pos-rb); }
+  .rb-ac-pos.WR { background: var(--pos-wr); }
+  .rb-ac-pos.TE { background: var(--pos-te); }
+  .rb-ac-team { color: var(--ink-light); font-size: 11px; }
+
+  /* Layout: two columns */
+  .rb-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 20px;
+    align-items: start;
+  }
+
+  /* Roster list (left) */
+  .rb-roster-card {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 16px;
+  }
+  .rb-roster-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--ink);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .rb-slot-count {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-light);
+    background: var(--bg-warm);
+    padding: 3px 10px;
+    border-radius: 12px;
+    border: 2px solid var(--ink-faint);
+  }
+  .rb-roster-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .rb-player-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 2px dashed var(--border-dashed);
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+  .rb-player-row:last-child { border-bottom: none; }
+  .rb-player-headshot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid var(--ink);
+    object-fit: cover;
+    background: var(--bg-warm);
+  }
+  .rb-player-name {
+    flex: 1;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .rb-player-team {
+    color: var(--ink-light);
+    font-size: 11px;
+  }
+  .rb-player-age {
+    color: var(--ink-light);
+    font-size: 11px;
+  }
+  .rb-player-tv {
+    font-weight: 700;
+    color: var(--orange);
+  }
+  .rb-player-vorp {
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 8px;
+    border: 2px solid var(--ink);
+    font-weight: 700;
+  }
+  .rb-player-vorp.positive { background: var(--green-light); color: var(--green); }
+  .rb-player-vorp.negative { background: var(--red-light); color: var(--red); }
+  .rb-remove-btn {
+    background: none;
+    border: none;
+    color: var(--red);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+  }
+  .rb-remove-btn:hover { background: var(--red-light); }
+  .rb-empty-roster {
+    text-align: center;
+    padding: 30px 16px;
+    font-family: var(--font-hand);
+    font-size: 18px;
+    color: var(--ink-light);
+  }
+
+  /* Grade panel (right) */
+  .rb-grade-panel {
+    position: sticky;
+    top: 80px;
+  }
+  .rb-grade-card {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .rb-grade-label {
+    font-family: var(--font-hand);
+    font-size: 16px;
+    color: var(--ink-light);
+    margin-bottom: 4px;
+  }
+  .rb-grade-letter {
+    font-family: var(--font-display);
+    font-size: 72px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .rb-grade-score {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--ink-medium);
+    margin-bottom: 12px;
+  }
+  .rb-total-tv {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--bg-warm);
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 2px solid var(--ink-faint);
+    display: inline-block;
+  }
+
+  /* Dimension bars */
+  .rb-dimensions {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .rb-dim-title {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+  .rb-dim-row {
+    margin-bottom: 10px;
+  }
+  .rb-dim-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-medium);
+    margin-bottom: 3px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .rb-dim-bar {
+    height: 14px;
+    background: var(--bg-warm);
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--ink);
+    overflow: hidden;
+  }
+  .rb-dim-fill {
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.4s ease;
+  }
+  .rb-dim-fill.tv { background: var(--orange); }
+  .rb-dim-fill.vorp { background: var(--green); }
+  .rb-dim-fill.age { background: var(--blue); }
+  .rb-dim-fill.depth { background: var(--purple); }
+
+  /* Position summary */
+  .rb-pos-summary {
+    background: var(--bg-card);
+    border: 3px solid var(--ink);
+    border-radius: 12px;
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 16px;
+  }
+  .rb-pos-title {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+  .rb-pos-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .rb-pos-item {
+    padding: 8px 10px;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    text-align: center;
+  }
+  .rb-pos-item.QB { border-top: 4px solid var(--pos-qb); }
+  .rb-pos-item.RB { border-top: 4px solid var(--pos-rb); }
+  .rb-pos-item.WR { border-top: 4px solid var(--pos-wr); }
+  .rb-pos-item.TE { border-top: 4px solid var(--pos-te); }
+  .rb-pos-item-label {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .rb-pos-item-count {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .rb-pos-item-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-light);
+  }
+
+  /* Grade empty state */
+  .rb-grade-empty {
+    text-align: center;
+    padding: 40px 16px;
+    font-family: var(--font-hand);
+    font-size: 18px;
+    color: var(--ink-light);
+  }
+
+  /* Export + share */
+  .rb-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .rb-actions button {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 8px 18px;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--ink);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .rb-actions button:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+
+  /* Watermark — uses shared .watermark from styles.css */
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .rb-layout {
+      grid-template-columns: 1fr;
+    }
+    .rb-grade-panel { position: static; }
+    .rb-search { width: 260px; }
+  }
+  @media (max-width: 480px) {
+    .rb-header h1 { font-size: 24px; }
+    .rb-search { width: 100%; }
+    .rb-grade-letter { font-size: 56px; }
+    .rb-pos-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<noscript><div style="text-align:center;padding:40px;font-family:Space Mono,monospace;color:#2d1f14;"><h2>Razzle needs JavaScript</h2><p>Enable JavaScript to use the fantasy football research lab.</p></div></noscript>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<div id="site-header" data-page="rosterbuilder"></div>
+
+<main class="rb-page" id="main-content">
+  <div class="rb-header">
+    <h1>Roster Builder</h1>
+    <div class="rb-subtitle">build a roster, get it graded</div>
+  </div>
+
+  <div class="rb-search-area">
+    <input type="text" class="rb-search" id="rb-search" placeholder="search players to add..." autocomplete="off" aria-label="Search players" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="rb-autocomplete">
+    <div class="rb-autocomplete" id="rb-autocomplete" role="listbox"></div>
+  </div>
+
+  <div class="rb-layout">
+    <div>
+      <div class="rb-roster-card">
+        <div class="rb-roster-title">
+          <span>Your Roster</span>
+          <span class="rb-slot-count" id="slot-count">0 / 25</span>
+        </div>
+        <ul class="rb-roster-list" id="roster-list">
+          <li class="rb-empty-roster" id="roster-empty">add players to start building</li>
+        </ul>
+      </div>
+      <div class="rb-actions">
+        <button onclick="clearRoster()">Clear Roster</button>
+        <button onclick="exportPng(this)">Export PNG</button>
+        <button onclick="copyShareUrl()">Copy Share URL</button>
+      </div>
+    </div>
+
+    <div class="rb-grade-panel">
+      <div class="rb-grade-card" id="grade-card">
+        <div class="rb-grade-empty" id="grade-empty">add players to see your grade</div>
+        <div id="grade-content" style="display:none;">
+          <div class="rb-grade-label">roster grade</div>
+          <div class="rb-grade-letter" id="grade-letter">-</div>
+          <div class="rb-grade-score" id="grade-score">-</div>
+          <div class="rb-total-tv" id="total-tv">-</div>
+        </div>
+      </div>
+      <div class="rb-dimensions" id="dimensions-card" style="display:none;">
+        <div class="rb-dim-title">Breakdown</div>
+        <div id="dim-bars"></div>
+      </div>
+      <div class="rb-pos-summary" id="pos-summary-card" style="display:none;">
+        <div class="rb-pos-title">Position Groups</div>
+        <div class="rb-pos-grid" id="pos-grid"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="watermark">razzle.lol</div>
+
+<!-- FOOTER -->
+<div id="site-footer"></div>
+
+<script src="app.js" defer></script>
+<script>
+(function() {
+  'use strict';
+
+
+  function fmt(v, dec) {
+    if (v === null || v === undefined) return '-';
+    return Number(v).toFixed(dec === undefined ? 1 : dec);
+  }
+
+  var _cs = getComputedStyle(document.documentElement);
+  var POS_COLORS = {
+    QB: _cs.getPropertyValue('--pos-qb').trim() || '#5b7fff',
+    RB: _cs.getPropertyValue('--pos-rb').trim() || '#2ec4b6',
+    WR: _cs.getPropertyValue('--pos-wr').trim() || '#d97757',
+    TE: _cs.getPropertyValue('--pos-te').trim() || '#8b5cf6'
+  };
+
+  var state = {
+    rosterIds: [],  // player IDs on roster
+    gradeData: null,
+    searchTimeout: null
+  };
+
+  function init() {
+    if (window.__razzleAnalytics) window.__razzleAnalytics('rosterbuilder');
+
+    // Load from URL params
+    var params = new URLSearchParams(window.location.search);
+    var ids = params.get('players');
+    if (ids) {
+      state.rosterIds = ids.split(',').filter(Boolean).slice(0, 25);
+      if (state.rosterIds.length > 0) fetchGrade();
+    }
+
+    // Search input
+    var searchInput = document.getElementById('rb-search');
+    searchInput.addEventListener('input', function() {
+      clearTimeout(state.searchTimeout);
+      var q = this.value.trim();
+      if (q.length < 2) {
+        document.getElementById('rb-autocomplete').style.display = 'none';
+        document.getElementById('rb-search').setAttribute('aria-expanded', 'false');
+        return;
+      }
+      state.searchTimeout = setTimeout(function() { searchPlayers(q); }, 200);
+    });
+
+    // Close autocomplete on outside click
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.rb-search-area')) {
+        document.getElementById('rb-autocomplete').style.display = 'none';
+        document.getElementById('rb-search').setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  function searchPlayers(query) {
+    apiFetch('/api/players/quick-search?q=' + encodeURIComponent(query) + '&limit=8')
+      .then(function(players) {
+        var ac = document.getElementById('rb-autocomplete');
+        if (!players || players.length === 0) {
+          ac.style.display = 'none';
+          return;
+        }
+        var html = '';
+        players.forEach(function(p) {
+          // Skip if already on roster
+          if (state.rosterIds.indexOf(p.player_id) !== -1) return;
+          html += '<div class="rb-ac-item" role="option" data-pid="' + escapeHtml(p.player_id) + '">';
+          html += '<span class="rb-ac-pos ' + escapeHtml(p.position) + '">' + escapeHtml(p.position) + '</span>';
+          html += '<span>' + escapeHtml(p.full_name || p.display_name || '') + '</span>';
+          html += '<span class="rb-ac-team">' + escapeHtml(p.team || '') + '</span>';
+          html += '</div>';
+        });
+        ac.innerHTML = html;
+        ac.style.display = html ? 'block' : 'none';
+        document.getElementById('rb-search').setAttribute('aria-expanded', html ? 'true' : 'false');
+
+        // Click handlers
+        ac.querySelectorAll('.rb-ac-item').forEach(function(item) {
+          item.addEventListener('click', function() {
+            var pid = this.getAttribute('data-pid');
+            addPlayer(pid);
+            ac.style.display = 'none';
+            document.getElementById('rb-search').setAttribute('aria-expanded', 'false');
+            document.getElementById('rb-search').value = '';
+          });
+        });
+      })
+      .catch(function() {
+        document.getElementById('rb-autocomplete').style.display = 'none';
+        document.getElementById('rb-search').setAttribute('aria-expanded', 'false');
+      });
+  }
+
+  function addPlayer(playerId) {
+    if (state.rosterIds.length >= 25) return;
+    if (state.rosterIds.indexOf(playerId) !== -1) return;
+    state.rosterIds.push(playerId);
+    updateUrl();
+    fetchGrade();
+  }
+
+  function removePlayer(playerId) {
+    state.rosterIds = state.rosterIds.filter(function(id) { return id !== playerId; });
+    updateUrl();
+    if (state.rosterIds.length === 0) {
+      state.gradeData = null;
+      renderEmpty();
+    } else {
+      fetchGrade();
+    }
+  }
+
+  function updateUrl() {
+    var params = new URLSearchParams(window.location.search);
+    if (state.rosterIds.length > 0) {
+      params.set('players', state.rosterIds.join(','));
+    } else {
+      params.delete('players');
+    }
+    var newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+    window.history.replaceState({}, '', newUrl);
+  }
+
+  function fetchGrade() {
+    if (state.rosterIds.length === 0) return;
+
+    apiFetch('/api/roster-grade', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ player_ids: state.rosterIds })
+    })
+    .then(function(data) {
+      if (data.error) {
+        renderEmpty();
+        return;
+      }
+      state.gradeData = data;
+      render();
+    })
+    .catch(function(err) {
+      // 401/403 from apiFetch means user needs Pro — show upgrade prompt
+      var el = document.getElementById('gradeResult');
+      if (el) el.innerHTML =
+        '<div style="text-align:center; padding:32px;">' +
+        '<div style="font-family:var(--font-display); font-size:20px; margin-bottom:8px;">Roster Grading is a Pro Feature</div>' +
+        '<p style="font-family:var(--font-mono); font-size:12px; color:var(--ink-light); margin-bottom:16px;">Build your roster here for free. Unlock grading with Pro.</p>' +
+        '<a href="/pricing.html" class="btn-primary" style="font-size:14px; padding:10px 24px; text-decoration:none;">Subscribe to Pro</a>' +
+        '</div>';
+    });
+  }
+
+  function gradeColor(grade) {
+    if (!grade) return 'var(--ink-light)';
+    var g = grade.charAt(0);
+    if (g === 'A') return 'var(--green)';
+    if (g === 'B') return 'var(--blue)';
+    if (g === 'C') return 'var(--orange)';
+    if (g === 'D') return 'var(--red)';
+    return 'var(--red)';
+  }
+
+  function renderEmpty() {
+    document.getElementById('slot-count').textContent = state.rosterIds.length + ' / 25';
+    document.getElementById('roster-list').innerHTML = '<li class="rb-empty-roster">add players to start building</li>';
+    document.getElementById('grade-empty').style.display = 'block';
+    document.getElementById('grade-content').style.display = 'none';
+    document.getElementById('dimensions-card').style.display = 'none';
+    document.getElementById('pos-summary-card').style.display = 'none';
+  }
+
+  function render() {
+    var d = state.gradeData;
+    if (!d || !d.players) return renderEmpty();
+
+    // Slot count
+    document.getElementById('slot-count').textContent = d.player_count + ' / 25';
+
+    // Roster list
+    var html = '';
+    d.players.forEach(function(p) {
+      var vorpClass = p.vorp >= 0 ? 'positive' : 'negative';
+      html += '<li class="rb-player-row">';
+      html += '<img class="rb-player-headshot" src="' + escapeHtml(p.headshot_url || '') + '" alt="Player headshot" onerror="this.onerror=null;this.src=\'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><circle cx=%2220%22 cy=%2220%22 r=%2220%22 fill=%22%23d97757%22/><text x=%2220%22 y=%2225%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2216%22>?</text></svg>\'">';
+      html += '<span class="rb-ac-pos ' + escapeHtml(p.position) + '">' + escapeHtml(p.position) + '</span>';
+      html += '<span class="rb-player-name">' + escapeHtml(p.full_name) + '</span>';
+      html += '<span class="rb-player-team">' + escapeHtml(p.team) + '</span>';
+      html += '<span class="rb-player-age">' + (p.age != null ? escapeHtml(String(p.age)) : '-') + '</span>';
+      html += '<span class="rb-player-tv">' + fmt(p.trade_value) + '</span>';
+      html += '<span class="rb-player-vorp ' + vorpClass + '">' + (p.vorp >= 0 ? '+' : '') + fmt(p.vorp) + '</span>';
+      html += '<button class="rb-remove-btn" data-pid="' + escapeHtml(p.player_id) + '" title="Remove">&times;</button>';
+      html += '</li>';
+    });
+    document.getElementById('roster-list').innerHTML = html;
+
+    // Remove button handlers
+    document.querySelectorAll('.rb-remove-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        removePlayer(this.getAttribute('data-pid'));
+      });
+    });
+
+    // Grade card
+    document.getElementById('grade-empty').style.display = 'none';
+    document.getElementById('grade-content').style.display = 'block';
+    document.getElementById('grade-letter').textContent = d.overall_grade;
+    document.getElementById('grade-letter').style.color = gradeColor(d.overall_grade);
+    document.getElementById('grade-score').textContent = d.overall_score + ' / 100';
+    document.getElementById('total-tv').textContent = 'Total Trade Value: ' + fmt(d.total_trade_value);
+
+    // Dimension bars
+    document.getElementById('dimensions-card').style.display = 'block';
+    var dims = d.dimensions || {};
+    var dimLabels = [
+      { key: 'trade_value', label: 'Trade Value', cls: 'tv', tip: 'Composite dynasty value of your roster based on production, age, and scarcity' },
+      { key: 'vorp', label: 'VORP', cls: 'vorp', tip: 'Value Over Replacement — how much your players score above replacement level' },
+      { key: 'age_balance', label: 'Age Balance', cls: 'age', tip: 'Mix of prime-age players with a healthy age spread for long-term sustainability' },
+      { key: 'positional_depth', label: 'Positional Depth', cls: 'depth', tip: 'Coverage across QB, RB, WR, and TE — penalizes rosters missing key positions' }
+    ];
+    var dimHtml = '';
+    dimLabels.forEach(function(dim) {
+      var val = dims[dim.key] || 0;
+      dimHtml += '<div class="rb-dim-row">';
+      dimHtml += '<div class="rb-dim-label" title="' + escapeHtml(dim.tip) + '"><span>' + escapeHtml(dim.label) + '</span><span>' + fmt(val, 0) + '</span></div>';
+      dimHtml += '<div class="rb-dim-bar"><div class="rb-dim-fill ' + dim.cls + '" style="width:' + Math.min(100, val) + '%"></div></div>';
+      dimHtml += '</div>';
+    });
+    document.getElementById('dim-bars').innerHTML = dimHtml;
+
+    // Position summary
+    document.getElementById('pos-summary-card').style.display = 'block';
+    var posSummary = d.position_summary || {};
+    var posHtml = '';
+    ['QB', 'RB', 'WR', 'TE'].forEach(function(pos) {
+      var ps = posSummary[pos] || { count: 0, avg_trade_value: 0, total_vorp: 0 };
+      posHtml += '<div class="rb-pos-item ' + pos + '">';
+      posHtml += '<div class="rb-pos-item-label">' + escapeHtml(pos) + '</div>';
+      posHtml += '<div class="rb-pos-item-count">' + ps.count + '</div>';
+      posHtml += '<div class="rb-pos-item-meta">Avg TV: ' + fmt(ps.avg_trade_value) + '</div>';
+      posHtml += '<div class="rb-pos-item-meta">VORP: ' + (ps.total_vorp >= 0 ? '+' : '') + fmt(ps.total_vorp) + '</div>';
+      posHtml += '</div>';
+    });
+    document.getElementById('pos-grid').innerHTML = posHtml;
+  }
+
+  window.clearRoster = function() {
+    state.rosterIds = [];
+    state.gradeData = null;
+    updateUrl();
+    renderEmpty();
+  };
+
+  window.exportPng = function(btn) {
+    if (btn) { btn.disabled = true; btn.textContent = 'Exporting...'; }
+    var el = document.getElementById('main-content');
+    loadHtml2Canvas().then(function(h2c) { return h2c(el, { backgroundColor: document.documentElement.dataset.theme === 'dark' ? '#2d1f14' : '#ede0cf', scale: 2 }); }).then(function(canvas) {
+      var ctx = canvas.getContext('2d');
+      ctx.font = '24px Caveat, cursive';
+      ctx.fillStyle = document.documentElement.dataset.theme === 'dark' ? 'rgba(237,224,207,0.2)' : 'rgba(45,31,20,0.18)';
+      ctx.fillText('razzle.lol', canvas.width - 160, canvas.height - 20);
+      var link = document.createElement('a');
+      link.download = 'razzle-roster-grade.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }).finally(function() { if (btn) { btn.disabled = false; btn.textContent = 'Export PNG'; } });
+  };
+
+  window.copyShareUrl = function() {
+    var url = window.location.href;
+    navigator.clipboard.writeText(url).then(function() {
+      var btn = document.querySelector('.rb-actions button:last-child');
+      btn.textContent = 'copied.';
+      setTimeout(function() { btn.textContent = 'Copy Share URL'; }, 1500);
+    });
+  };
+
+  init();
+})();
+</script>
+
+</body>
+</html>
