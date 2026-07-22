@@ -15,7 +15,7 @@ pnpm --filter web build
 
 ## Reading order
 
-1. `spec/NORTH_STAR.md` — what we're building and how work is scored (T1–T7).
+1. `spec/NORTH_STAR.md` — what we're building and how work is scored (T0–T7).
 2. `factory/STATE.md` — what's active, what's next, what's done.
 3. The one slice you're doing (`factory/SLICE.md` for the contract).
 

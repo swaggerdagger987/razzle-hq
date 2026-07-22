@@ -110,6 +110,8 @@ Every slice that ships a surface passes:
 3. **Bureau (free to connect)** — the hook; summary odds free, deep-dive Pro.
 4. **Situation Room (Pro)** — the upgrade; never hero-positioned, earns attention through Screener and Bureau.
 
+**How the line is browsed before billing exists (Milestone Zero):** one entitlement registry (feature key → minimum tier) on the API, seeded dev users at Free/Pro/Elite, and a localhost tier switcher in the shell. Every gated surface renders its real gated state — visible payoff, chunky lock treatment per `spec/DESIGN.md` — so the Founder can walk the whole product as any tier. Stripe later assigns tiers to real users; it adds nothing else.
+
 ## Explicitly deprioritized
 
 V1's 76 HTML pages (never port horizontally) · ESPN/Yahoo import (post-Sleeper-plateau) · non-Reddit channels · Elite tier and monthly pricing (flagged off) · auth/billing polish before there's product worth paying for.

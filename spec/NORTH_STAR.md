@@ -4,9 +4,11 @@
 
 ## The one number
 
-**1,000 paid users.** During BUILD, chase the Trust Score (T1–T7) below. Everything else is a leading indicator.
+**1,000 paid users.** During BUILD, chase the Trust Score (T0–T7) below. Everything else is a leading indicator.
 
 **The one date: July 28, 2026.** The product is live and Reddit-shareable before draft season. Zero negotiation. Scope bends; the date does not.
+
+**Milestone Zero (2026-07-22): the perfect localhost.** The gate between here and the date. Everything the product *is* — four rooms, Player Sheet hub, real tiers, dense data, established visualizations — exists and is flawless on localhost **with zero credentials**: no Stripe, no LLM keys, no deploy. Integrations decide who can reach the product; they never decide what it is. Work that only matters in production is out of scope until Milestone Zero passes. The Founder must be able to browse the finished product as any tier before a single external service is wired.
 
 ## The ambition
 
@@ -61,6 +63,8 @@ The main way people explore, not a modal. Land on Saquon, switch to CMC, instant
 - **Elite = the obsessive tier:** everything in Pro plus the Room at full power — proactive staff nudges, included model usage (no BYOK needed), first access to new Lab instruments.
 - **League option (not a tier — a purchase mode):** any league can buy Razzle for the *whole league* — every manager gets access, and the weekly Bureau Briefing lands in front of all twelve. One sale = twelve funnel entries; the group chat becomes a distribution surface. Individual tiers and the league option coexist.
 
+**Tiers are product objects from Milestone Zero, not Stripe artifacts.** Free/Pro/Elite exist now as entitlements with seeded dev users and a localhost tier switcher; every gated surface is designed as its tier's *real experience* from day one — a Pro gate is an invitation with a visible payoff, never an error page. Billing later changes who may hold a tier; it never changes what a tier is.
+
 Free must be generous enough that fans fall in love — they pay when their **league** is on the line.
 
 ## The staff
@@ -80,15 +84,16 @@ Razzle says **"start him."** Other tools say "consider starting." Orchestration 
 
 1. **League-relative decision quality** — your league, your rules, your picks.
 2. **Compounding context** — more seasons → richer profiles → harder to leave.
-3. **Data density done right** — in service of trust, not feature count.
+3. **Data density done right** — more verified sources on one player than any competitor surface (`spec/DATA.md` runs eighteen, all keyless), in service of trust, not feature count.
 4. **Community recognition** — r/DynastyFF knows the screenshots; switching mid-season hurts.
 
 The moat is **not** "we use Claude." Anyone can rent a model. We're the context layer with a personality.
 
-## Trust pillars (T1–T7) — how work is scored
+## Trust pillars (T0–T7) — how work is scored
 
 | ID | Pillar | Pass question | Fail smell |
 |----|--------|---------------|------------|
+| **T0** | Player accuracy | Is every number on screen traceable to a source row, resolved through the one identity crosswalk? | Wrong player, stale team, off-by-one week, silent NA→0 on identity |
 | **T1** | Decision trust | Would a serious manager act on this for a real decision? | Generic ranking noise |
 | **T2** | League-relative | Customized to *this* league's rules, rosters, picks? | Static trade calc / redraft brain |
 | **T3** | Player Sheet | Does the hub get better — land, switch, own, ask, link? | Dead-end page |
@@ -97,10 +102,11 @@ The moat is **not** "we use Claude." Anyone can rent a model. We're the context 
 | **T6** | Screenshot gravity | Helpful in a group chat; Razzle colors + watermark recognizable? | Generic SaaS gray |
 | **T7** | Free-tier obsession | Free deepens love without giving away paid trust? | Paywall rage / empty free tier |
 
-**Minimum to ship a slice:** T1 + at least one of T3–T5, plus gates in `factory/GATES.md`.
+**Minimum to ship a slice:** T1 + at least one of T3–T5, plus gates in `factory/GATES.md`. **T0 is a floor, not a pillar to trade:** one player-accuracy mistake is stop-ship no matter what else the slice advances (gate G6, `spec/DATA.md` accuracy law). We sell trust; a single wrong stat spends all of it.
 
 ## Instant VETO (do not merge)
 
+- A player number that fails traceback to its source row (T0) — one wrong stat outranks ten shipped features
 - User-facing copy leads with "AI" (`spec/VOICE.md`)
 - Generic advice that ignores league context when context exists
 - Silo with zero Player Sheet or cross-room path

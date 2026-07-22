@@ -6,7 +6,7 @@ A **slice** is one vertical cut — API + UI + wiring — completable in one ses
 
 The prior repos died of horizontal sprawl: 76 ported pages, panels returning JSON scaffolds, process docs outnumbering features 3:1. A slice forces the opposite: one thing, all the way down (data → API → rendered surface → hallway wire), proven on localhost before the next thing starts.
 
-Horizontal work (cross-cutting refactors, dependency bumps, polish passes) is legal only as an explicit card with a stated Trust-pillar justification (`spec/NORTH_STAR.md` T1–T7).
+Horizontal work (cross-cutting refactors, dependency bumps, polish passes) is legal only as an explicit card with a stated Trust-pillar justification (`spec/NORTH_STAR.md` T0–T7).
 
 ## Card format
 
