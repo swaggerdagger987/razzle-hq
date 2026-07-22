@@ -4,7 +4,7 @@
 
 - **Mode:** constitution locked 2026-07-22 — backlog below is the **stage plan to Milestone Zero** (`spec/NORTH_STAR.md`), run by the captain loop (`factory/ROUTING.md`). Founder ignites with **"go"**; **"continue"** resumes at a checkpoint.
 - **Run lock:** no active run. If a captain starts and finds ACTIVE leases below, it resumes them from their cards — never parallel copies.
-- **Checkpoint:** Stage 0 complete; Founder walkthrough pending. Reply **"continue"** to begin Stage 1 or redirect.
+- **Checkpoint:** Stage 1 complete; Founder kernel walkthrough pending. Reply **"continue"** to begin the parallel Stage 2 room wave or redirect.
 - **Milestone Zero:** the perfect localhost, zero credentials. Every source is keyless (verified live 2026-07-22) — **no CLIENT blockers exist on this path.**
 - **Launch deadline:** **2026-07-28** (unchanged; Milestone Zero gates it).
 - **Recovery source:** branch `origin/claude/jolly-turing-l4muhb` holds the S-002→S-004 train (screener, player sheet, custom scoring; +2,884 lines, forked from 199eba5, own ledger marked done 2026-06-13). **Recover, never blind-merge** — verified defects listed on R-02. `origin/claude/affectionate-dirac-vbnwzz` has nothing ahead of main; ignore.
@@ -18,6 +18,14 @@
 - **Cost vs pyramid:** 17 Grok writer/auditor invocations, 3 CTO/Fable interventions, one continuous Sol captain. The harness lease's second failure escalated to CTO and was not sent to a third writer. Exact token percentages are not exposed in repo evidence; verify the dashboard before certifying the 70/20/10 target.
 - **Asks:** Founder walks `/scratchpad` in the cloud remote desktop (Free surface + Player Sheet context). No CLIENT blockers or credentials needed.
 - **Next:** on **"continue"**, Stage 1 starts with captain-serialized K-01, then frozen-contract K-02/K-03 lanes; R-03's `--require freshness` / `--require identity` make those handoffs mechanical.
+
+## STAGE 1 CHECKPOINT — CONTEXT KERNEL
+
+- **Shipped:** complete Milestone-Zero schema + provenance/freshness; fail-closed Sleeper rules compiler; hermetic keyless Sleeper client/cache/cassettes; canonical-spine identity crosswalk; immutable owned-league connect/refresh/revision API; `/connect` kernel demo screen.
+- **Proof:** fresh migration + health; 252 tests; Ruff check/76-file format and web lint/build green (8 routes). Live sync: 8,363 players, 11,869 weekly rows, 13,170 crosswalk rows; G6 freshness + identity required PASS 25/25. Public live smoke: `fantasyfootballers` → owned `Sparty League` → 14-roster immutable revision, partial coverage with six unsupported rules, offline GET replay. Browser reload made exactly one revision GET and zero connect POSTs; 1440/375 revision screenshots passed.
+- **Cost vs pyramid:** 41 Grok writer/auditor invocations across parallel compiler, Sleeper, crosswalk, context API and UI lanes; 3 CTO/Fable interventions for repeated T0/architecture failures; Sol retained serialized migration/registry/spec locks. Exact token percentages remain dashboard-only.
+- **Asks:** no credentials or CLIENT blocker. Founder can type their own Sleeper username at `/connect` to walk their leagues; the public smoke account remains available for a reproducible proof.
+- **Next:** on **"continue"**, run the six-lane Stage 2 wave (Player Sheet, Scratchpad workbench, Line, War Room, chart kit, tiers) against the now-frozen context/cassette contracts.
 
 ## THE STAGE PLAN (dependency graph)
 
@@ -120,7 +128,7 @@ Frozen contracts land at the end of Stage 1 (`/api/context/connect` · `/api/con
 - **Pitfalls:** K-01 schema/module names are frozen; K-03b starts only after dependencies merge; every refresh rechecks user leagues; cassettes are the only committed league JSON; no partial revision on upstream failure.
 - **Stage-end freeze:** these three context endpoints, provenance envelope, compiled coverage shape, `GET /api/me` stub, and `POST /api/scenarios` stub. Kernel demo = Founder username → their league → revision with compiled rules + coverage.
 
-### K-04 kernel-demo-surface [ACTIVE] · M · Grok writer + auditors
+### K-04 kernel-demo-surface [DONE] · M · Grok writer + auditors
 - **Pillar / Trust:** T1/T2 context holy moment and T6 warm, screenshot-readable proof.
 - **Goal:** a localhost screen lets the Founder enter a Sleeper username, see only that user's current leagues, choose one, create an immutable revision, and visibly inspect format/rules/coverage/source freshness.
 - **File plan:** NEW `apps/web/src/app/connect/page.tsx`, `apps/web/src/features/context-kernel/{api,ContextKernelDemo}.ts{x,}`; EDIT `apps/web/src/app/page.tsx` for one Connect Sleeper entry. No API/schema/root provider/package/token/factory/spec changes.
@@ -177,3 +185,4 @@ All web lanes consume the frozen contracts; fences never overlap (isolation law)
 | K-02 | 2026-07-22 | 572c5bf…7a6c473 | G1–G5 | Writer/Grok 4.5 High + Auditor/Grok 4.5 High Fast + CTO/Fable Max | L + audits + escalation | Pure Sleeper compiler, full/partial coverage, two league goldens, exact range/bonus boundaries; second failed audit escalated to CTO |
 | K-03a | 2026-07-22 | 3ec683f + f033fe3 | G1–G5 | Writer/Grok 4.5 High + Auditor/Grok 4.5 High Fast | M + 4S audits | Keyless Sleeper graph, 30 synthetic cassettes, hermetic network tests, atomic 24h player cache; focused and full gates green |
 | K-03b | 2026-07-22 | 162a337…e1017e7 | G1–G6 | 2 Writers/Grok 4.5 High + Auditors/Grok 4.5 High Fast + CTO/Fable Max | L + parallel sublease + audits | Canonical-spine crosswalk + immutable context API; 252 tests, typed contract, 13,170 ids, live identity/freshness 25/25 PASS |
+| K-04 | 2026-07-22 | 8001923 + 69e7e36 | G1–G5 | Writer/Grok 4.5 High + Auditors/Grok 4.5 High Fast | M + 4S audits | `/connect` holy-moment UI; live owned-league revision, GET-only reload, partial coverage, 1440/375 screenshots, build/lint green |
