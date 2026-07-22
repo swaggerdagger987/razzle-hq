@@ -65,7 +65,7 @@ Frozen contracts land at the end of Stage 1 (`/api/context/connect` · `/api/con
 
 ### ═══ STAGE 1 — CONTEXT KERNEL (after R-02, R-03) ═══
 
-### K-01 migrations-and-provenance [ACTIVE] · L · **captain-authored** (serialized lock)
+### K-01 migrations-and-provenance [DONE] · L · **captain-authored** (serialized lock)
 - **Pillar / Trust:** context-kernel infrastructure; T0 traceability and T2 shared league truth.
 - **Goal:** one Alembic wave creates the complete Milestone-Zero schema; `main.py` reaches its final router registry; sync becomes lazy-adapter based and stamps freshness; one provenance envelope contract is ready for every room.
 - **File plan:** NEW `apps/api/migrations/versions/0002_context_kernel_tables.py`, `apps/api/src/razzle_api/ingest/report.py`, `apps/api/src/razzle_api/core/provenance.py`, `apps/api/src/razzle_api/api/schemas/provenance.py`, router shells `api/routers/{context,me,scenarios,scratchpad,line,war_room,values}.py`, tests `unit/test_{provenance,sync_registry}.py` and `integration/test_router_preregistration.py`; EDIT `apps/api/src/razzle_api/main.py`, `apps/api/src/razzle_api/ingest/nflverse.py`, `scripts/sync_data.py`, `apps/api/tests/integration/test_migrations.py`, and narrowly `unit/test_verify_data.py` for a stamped freshness integration. No domain, web, package, spec, or other factory edits.
@@ -81,7 +81,7 @@ Frozen contracts land at the end of Stage 1 (`/api/context/connect` · `/api/con
 - **Out of scope:** populating crosswalk/context, implementing stub bodies, new source adapters, changing existing player/week schema, FTN attribution, web, K-02 domain logic.
 - **Pitfalls:** migrations/cross-cutting files are captain-only; SQLite NULL uniqueness needs partial indexes; `player_ids` cannot FK to the fantasy-only players spine; no ad-hoc DDL/autogenerate; source stamp rows are mapped counts, not raw counts; never weaken R-03 to pass.
 
-### K-02 rules-compiler [ACTIVE] · L · Grok writer + auditors
+### K-02 rules-compiler [DONE] · L · Grok writer + auditors
 - **Pillar / Trust:** T0 fail-closed scoring and T1/T2 league-relative decisions.
 - **Goal:** pure `compile_league(sleeper_json) -> CompiledRules` maps Sleeper scoring and league settings onto existing `LeagueConfig`, detects dynasty/redraft/keeper/best-ball, superflex, TE premium, median, playoffs and tiebreakers, and exposes honest coverage.
 - **File plan:** NEW `domain/scoring/compiler.py`, `tests/unit/test_rules_compiler.py`, and cassettes `tests/fixtures/cassettes/sleeper_league_{tep_median_dynasty,standard_redraft}.json`; EDIT `domain/scoring/__init__.py` exports only. No network/DB/API/ingest/migration/main/shared fixtures.
@@ -94,7 +94,7 @@ Frozen contracts land at the end of Stage 1 (`/api/context/connect` · `/api/con
 - **Out of scope:** Sleeper HTTP/persistence, standings math, web chip, expanding engine for unsupported keys, migrations/shared locks.
 - **Pitfalls:** `int` is DST interception, not pass INT; DST `fum_rec` only when DEF rostered; no silent unsupported nonzero; domain stays pure; never import graveyard.
 
-### K-03a sleeper-client-cassettes [ACTIVE] · M · Grok writer + auditors
+### K-03a sleeper-client-cassettes [DONE] · M · Grok writer + auditors
 - **Pillar / Trust:** T0 source honesty and T2 live-only league acquisition.
 - **Goal:** keyless Sleeper client fetches one user's current-season leagues and complete league snapshots; the 14MB player dump uses a 24h disk cache; all CI league JSON is cassette-only.
 - **File plan:** NEW `apps/api/src/razzle_api/ingest/sleeper.py`, `tests/unit/test_sleeper_client.py`, and trimmed files under `tests/fixtures/cassettes/sleeper/` for state, user, leagues, league, users, rosters, traded picks, and per-week matchup/transaction responses. No DB/router/service/domain/main/sync/migration/shared locks.
@@ -161,3 +161,6 @@ All web lanes consume the frozen contracts; fences never overlap (isolation law)
 | lock | 2026-07-22 | (this PR) | G1–G4 | CTO/Fable | — | Constitution: razzle.hq north star, context kernel, accuracy law, command structure + budgets, stage plan. Verified live: 18 sources keyless, NFL weekly 1999+, college 2014+, draft_picks bridge keyed, jolly-turing defects confirmed in code |
 | R-02 | 2026-07-22 | 8811713 + 865c3f3 | G1–G6 | Writer/Grok 4.5 High + Auditor/Grok 4.5 High Fast | L + 6S audits | Recovered Scratchpad + Player Sheet; 56 passed, fresh migrate/health/build/lint green; eight 2025 goldens, four-preset live replay, URL paging/context browser replay, 1440/375 screenshots |
 | R-03 | 2026-07-22 | ce4b6a1…02f6601 | G1–G6 | Writer/Grok 4.5 High + Auditor/Grok 4.5 High Fast + CTO/Fable Max | M + audits + escalation | Read-only verifier; 22 focused / 78 total tests, deterministic bidirectional live replay, exhaustive filter leaks, capability handoff flags; two failed writer gates escalated to CTO |
+| K-01 | 2026-07-22 | 48d94de + 31f291d | G1–G6 | Captain/Sol Max + Auditor/Grok 4.5 High Fast | L + 2S audits | 19-table kernel migration, frozen routers, lazy sync, provenance and freshness; 167 tests, migration roundtrip, live freshness required PASS |
+| K-02 | 2026-07-22 | 572c5bf…7a6c473 | G1–G5 | Writer/Grok 4.5 High + Auditor/Grok 4.5 High Fast + CTO/Fable Max | L + audits + escalation | Pure Sleeper compiler, full/partial coverage, two league goldens, exact range/bonus boundaries; second failed audit escalated to CTO |
+| K-03a | 2026-07-22 | 3ec683f + f033fe3 | G1–G5 | Writer/Grok 4.5 High + Auditor/Grok 4.5 High Fast | M + 4S audits | Keyless Sleeper graph, 30 synthetic cassettes, hermetic network tests, atomic 24h player cache; focused and full gates green |
