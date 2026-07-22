@@ -1,9 +1,10 @@
 """Provenance envelope shared by decision-bearing API responses."""
 
 from datetime import datetime
-from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from razzle_api.domain.scoring.compiler import CoverageReport
 
 
 class ProvenanceSource(BaseModel):
@@ -19,6 +20,6 @@ class ProvenanceMeta(BaseModel):
 
     revision: str | None = None
     sources: list[ProvenanceSource] = Field(default_factory=list)
-    coverage: dict[str, Any] | None = None
+    coverage: CoverageReport | None = None
     assumptions: list[str] = Field(default_factory=list)
     model_version: str | None = None

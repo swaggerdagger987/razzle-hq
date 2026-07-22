@@ -8,6 +8,7 @@ Run from repo root:
 
 import argparse
 import importlib
+import sys
 from collections.abc import Callable
 from pathlib import Path
 from typing import cast
@@ -81,19 +82,24 @@ def _sqlite_path(database_url: str) -> Path | None:
     return Path(database_url.removeprefix(prefix))
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--quick", action="store_true", help="sync current + prior season")
     group.add_argument("--seasons", nargs="+", type=int, help="explicit seasons to sync")
     group.add_argument("--status", action="store_true", help="print row counts and db size")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
-    if args.status:
-        status()
-    else:
-        sync(QUICK_SEASONS if args.quick else args.seasons)
+    try:
+        if args.status:
+            status()
+        else:
+            sync(QUICK_SEASONS if args.quick else args.seasons)
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

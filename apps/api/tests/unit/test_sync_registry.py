@@ -253,3 +253,15 @@ def test_report_printing_preserves_existing_lines(capsys) -> None:
         "players: upserted 2",
         "player_week_stats 2025: upserted 3",
     ]
+
+
+def test_cli_maps_adapter_precondition_failure_to_exit_two(monkeypatch, capsys) -> None:
+    sync_data = _load_sync_script()
+
+    def fail_sync(_seasons: list[int]) -> None:
+        raise ValueError("players table is empty; refuse to build crosswalk")
+
+    monkeypatch.setattr(sync_data, "sync", fail_sync)
+
+    assert sync_data.main(["--quick"]) == 2
+    assert "players table is empty" in capsys.readouterr().err

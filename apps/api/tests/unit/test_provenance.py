@@ -1,19 +1,13 @@
 from datetime import UTC, datetime
 
 import pytest
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import ValidationError
 
 from razzle_api.api.schemas.provenance import ProvenanceMeta, ProvenanceSource
 from razzle_api.core.provenance import build_meta
+from razzle_api.domain.scoring.compiler import CoverageReport
 
 AS_OF = datetime(2026, 7, 22, 12, 30, tzinfo=UTC)
-
-
-class CoverageModel(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    status: str
-    supported_keys: list[str]
 
 
 def test_build_meta_is_json_ready_and_omits_unset_optionals() -> None:
@@ -23,7 +17,7 @@ def test_build_meta_is_json_ready_and_omits_unset_optionals() -> None:
             ProvenanceSource(name="nflverse", as_of=AS_OF, version="2026.07"),
             {"name": "sleeper", "as_of": AS_OF},
         ),
-        coverage=CoverageModel(status="full", supported_keys=["rec", "pass_yd"]),
+        coverage=CoverageReport(status="full", supported_keys=["rec", "pass_yd"]),
         assumptions=("regular season only",),
     )
 
@@ -39,6 +33,8 @@ def test_build_meta_is_json_ready_and_omits_unset_optionals() -> None:
     assert payload["coverage"] == {
         "status": "full",
         "supported_keys": ["rec", "pass_yd"],
+        "unsupported_keys": [],
+        "ignored_zero_keys": [],
     }
     assert payload["assumptions"] == ["regular season only"]
     assert "model_version" not in payload
@@ -63,6 +59,9 @@ def test_provenance_models_and_builder_forbid_extras() -> None:
 
     with pytest.raises(ValidationError):
         ProvenanceMeta.model_validate({"sources": [], "invented": True})
+
+    with pytest.raises(ValidationError):
+        build_meta(coverage={"status": "full", "invented": True})
 
     with pytest.raises(ValidationError):
         build_meta(
