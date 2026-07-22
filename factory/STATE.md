@@ -106,7 +106,7 @@ Frozen contracts land at the end of Stage 1 (`/api/context/connect` · `/api/con
 - **Out of scope:** DB writes/crosswalk/context API/compiler/web/live credential flow.
 - **Pitfalls:** live product only but tests never live; 24h cache under gitignored data only; use Sleeper state season, not calendar year; no demo league or graveyard import.
 
-### K-03b context-and-crosswalk [OPEN — execution-ready] · L · Grok writer + auditors · after K-01, K-02, K-03a
+### K-03b context-and-crosswalk [ACTIVE] · L · Grok writer + auditors · after K-01, K-02, K-03a
 - **Pillar / Trust:** T0 identity substrate and T2 immutable shared league context.
 - **Goal:** canonical spine seed + DynastyProcess + Sleeper builds `player_ids` with `player_ids ⊇ players`; username returns only their leagues; refresh persists a new immutable revision with snapshot, compiled rules, coverage and provenance; revision reads are offline.
 - **File plan:** NEW `ingest/crosswalk.py`, `services/context_service.py`, `api/schemas/context.py`, unit tests for crosswalk/service, integration `test_context_api.py`, and trimmed crosswalk fixtures; EDIT the K-01-owned router shell `api/routers/context.py` only. Captain adds the sole crosswalk registry row between waves, ordered after nflverse. No migrations/main/sync script/core/domain/web.
