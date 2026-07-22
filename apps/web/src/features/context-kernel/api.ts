@@ -1,5 +1,7 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
+const REQUEST_REJECTED = "Request was rejected.";
+
 export class ApiError extends Error {
   readonly status: number;
   readonly detail: string;
@@ -23,44 +25,51 @@ export type LeagueSummary = {
   league_id: string;
   name: string;
   season: number;
-  sport?: string;
+  sport: string;
   total_rosters?: number | null;
 };
 
+export type CoverageStatus = "full" | "partial";
+export type UnsupportedReason = "unmapped" | "exclusive_range_unrepresentable" | "conflict";
+export type UnsupportedValue = boolean | number | string | null;
+export type LeagueFormat = "dynasty" | "redraft" | "keeper" | "best_ball";
+export type MatchupStyle = "h2h" | "h2h_median";
+
 export type UnsupportedKey = {
   key: string;
-  value: boolean | number | string | null;
-  reason: string;
+  value: UnsupportedValue;
+  reason: UnsupportedReason;
 };
 
 export type CoverageReport = {
-  status: "full" | "partial";
+  status: CoverageStatus;
   supported_keys: string[];
   unsupported_keys: UnsupportedKey[];
   ignored_zero_keys: string[];
 };
 
+/** Projection of frozen CompiledRules fields this surface displays. */
 export type CompiledRules = {
   league_id: string;
   name: string;
   season: string;
   league: {
-    format?: string;
-    playoff_teams?: number;
-    playoff_start_week?: number;
-    scoring?: {
-      receiving?: {
-        te_premium?: number;
+    format: LeagueFormat;
+    playoff_teams: number;
+    playoff_start_week: number;
+    scoring: {
+      receiving: {
+        te_premium: number;
       };
     };
   };
   matchup: {
-    style: "h2h" | "h2h_median";
-    median_enabled?: boolean;
+    style: MatchupStyle;
+    median_enabled: boolean;
   };
   te_premium: boolean;
   superflex: boolean;
-  best_ball?: boolean;
+  best_ball: boolean;
   coverage: CoverageReport;
 };
 
@@ -102,16 +111,24 @@ export type ContextRevisionResponse = {
   meta: ProvenanceMeta;
 };
 
-function detailFromBody(body: unknown, fallback: string): string {
+function detailMsgsFromArray(detail: unknown[]): string[] {
+  const msgs: string[] = [];
+  for (const item of detail) {
+    if (typeof item !== "object" || item === null || !("msg" in item)) continue;
+    const msg = (item as { msg: unknown }).msg;
+    if (typeof msg === "string" && msg.length > 0) msgs.push(msg);
+  }
+  return msgs;
+}
+
+export function detailFromBody(body: unknown, fallback: string): string {
   if (typeof body === "object" && body !== null && "detail" in body) {
     const detail = (body as { detail: unknown }).detail;
     if (typeof detail === "string" && detail.length > 0) return detail;
     if (Array.isArray(detail)) {
-      try {
-        return JSON.stringify(detail);
-      } catch {
-        return fallback;
-      }
+      const msgs = detailMsgsFromArray(detail);
+      if (msgs.length > 0) return msgs.join("; ");
+      return REQUEST_REJECTED;
     }
   }
   return fallback;

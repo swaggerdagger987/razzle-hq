@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { parseAsString, useQueryStates } from "nuqs";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
 import {
   ApiError,
   connectContext,
@@ -13,14 +13,15 @@ import {
   type ContextRevisionResponse,
   type CoverageReport,
   type LeagueSummary,
+  type MatchupStyle,
 } from "./api";
 
-function formatLabel(format: string | undefined): string {
+function formatLabel(format: CompiledRules["league"]["format"] | undefined): string {
   if (!format) return "—";
   return format.replace(/_/g, " ");
 }
 
-function matchupLabel(style: CompiledRules["matchup"]["style"] | undefined): string {
+function matchupLabel(style: MatchupStyle | undefined): string {
   if (style === "h2h_median") return "H2H + median";
   if (style === "h2h") return "H2H";
   return "—";
@@ -28,7 +29,7 @@ function matchupLabel(style: CompiledRules["matchup"]["style"] | undefined): str
 
 function tePremiumLabel(rules: CompiledRules): string {
   if (!rules.te_premium) return "none";
-  const value = rules.league.scoring?.receiving?.te_premium;
+  const value = rules.league.scoring.receiving.te_premium;
   if (typeof value === "number") return String(value);
   return "yes";
 }
@@ -73,6 +74,17 @@ function formatAsOf(iso: string): string {
   });
 }
 
+function disabledControlStyle(disabled: boolean): CSSProperties {
+  if (!disabled) return {};
+  return {
+    opacity: 0.55,
+    cursor: "not-allowed",
+    transform: "none",
+    boxShadow: "none",
+    pointerEvents: "none",
+  };
+}
+
 export function ContextKernelDemo() {
   const queryClient = useQueryClient();
   const [params, setParams] = useQueryStates({
@@ -88,10 +100,12 @@ export function ContextKernelDemo() {
     setDraftUsername(username ?? "");
   }, [username]);
 
+  const connectEnabled = Boolean(username) && !revision;
+
   const connectQuery = useQuery({
     queryKey: ["context-connect", username],
     queryFn: () => connectContext(username!),
-    enabled: Boolean(username),
+    enabled: connectEnabled,
     retry: false,
   });
 
@@ -125,11 +139,14 @@ export function ContextKernelDemo() {
     const next = draftUsername.trim();
     if (!next) return;
     refreshMutation.reset();
+    // Clear league/revision first so reload-GET law re-enables connect.
     await setParams({
       username: next,
       league_id: null,
       revision: null,
     });
+    // Same-username retry: invalidate so a prior 404/502 is not a stale no-op.
+    await queryClient.invalidateQueries({ queryKey: ["context-connect", next] });
   }
 
   async function onChooseLeague(league: LeagueSummary) {
@@ -144,20 +161,33 @@ export function ContextKernelDemo() {
     refreshMutation.mutate({ leagueId: league_id, user: username });
   }
 
-  const leagues = connectQuery.data?.leagues ?? [];
-  const connectPending = Boolean(username) && connectQuery.isPending;
-  const connectError = connectQuery.isError ? errorVoice(connectQuery.error) : null;
+  const leagues = connectEnabled ? (connectQuery.data?.leagues ?? []) : [];
+  const connectPending = connectEnabled && connectQuery.isFetching;
+  const connectError =
+    connectEnabled && connectQuery.isError ? errorVoice(connectQuery.error) : null;
   const refreshPending = refreshMutation.isPending;
-  const refreshError = refreshMutation.isError ? errorVoice(refreshMutation.error) : null;
-  const revisionPending = Boolean(revision) && revisionQuery.isPending;
+  const refreshError = refreshMutation.isError
+    ? errorVoice(refreshMutation.error)
+    : null;
+  const revisionPending = Boolean(revision) && revisionQuery.isFetching;
   const revisionError = revisionQuery.isError ? errorVoice(revisionQuery.error) : null;
   const revisionData = revisionQuery.data ?? null;
   const canPullFresh = Boolean(username && league_id) && !refreshPending;
 
-  const statusLive =
-    connectPending || refreshPending || revisionPending
-      ? "checking the tape..."
-      : connectError || refreshError || revisionError || null;
+  // With a revision in URL, ignore stale connect errors; revision GET is critical.
+  // Refresh errors still surface (choose league / pull fresh).
+  const criticalError = revision
+    ? revisionError || refreshError
+    : refreshError || connectError;
+  const loadingStatus =
+    connectPending || refreshPending || revisionPending ? "checking the tape..." : null;
+
+  const connectDisabled = !draftUsername.trim() || connectPending || refreshPending;
+  const showEmptyLeagues =
+    connectEnabled &&
+    !connectPending &&
+    connectQuery.isSuccess &&
+    leagues.length === 0;
 
   return (
     <div
@@ -250,15 +280,11 @@ export function ContextKernelDemo() {
           <button
             type="submit"
             className="btn-chunky"
-            data-active="true"
-            disabled={!draftUsername.trim() || connectPending || refreshPending}
+            data-active={connectDisabled ? undefined : "true"}
+            disabled={connectDisabled}
             style={{
               flex: "0 0 auto",
-              opacity: !draftUsername.trim() || connectPending || refreshPending ? 0.55 : 1,
-              cursor:
-                !draftUsername.trim() || connectPending || refreshPending
-                  ? "not-allowed"
-                  : "pointer",
+              ...disabledControlStyle(connectDisabled),
             }}
           >
             {connectPending ? "checking the tape..." : "Connect"}
@@ -266,22 +292,59 @@ export function ContextKernelDemo() {
         </div>
       </form>
 
-      <div
-        aria-live="polite"
-        style={{
-          minHeight: "1.5rem",
-          fontFamily: "var(--font-hand)",
-          fontSize: "22px",
-          color:
-            connectError || refreshError || revisionError
-              ? "var(--semantic-red)"
-              : "var(--ink-light)",
-        }}
-      >
-        {statusLive}
-      </div>
+      {loadingStatus ? (
+        <p
+          aria-live="polite"
+          style={{
+            fontFamily: "var(--font-hand)",
+            fontSize: "22px",
+            color: "var(--ink-light)",
+            margin: 0,
+            minHeight: "1.5rem",
+          }}
+        >
+          {loadingStatus}
+        </p>
+      ) : null}
 
-      {username && !connectPending && !connectError && leagues.length === 0 ? (
+      {criticalError ? (
+        <div
+          className="card-chunky"
+          role="alert"
+          aria-live="assertive"
+          style={{
+            padding: "16px 18px",
+            background: "var(--red-light)",
+            display: "flex",
+            flexDirection: "column",
+            gap: "6px",
+          }}
+        >
+          <p
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: "14px",
+              lineHeight: 1.45,
+              color: "var(--ink)",
+              margin: 0,
+            }}
+          >
+            {criticalError}
+          </p>
+          <p
+            style={{
+              fontFamily: "var(--font-hand)",
+              fontSize: "20px",
+              color: "var(--ink-medium)",
+              margin: 0,
+            }}
+          >
+            ball up top — try again when the tape clears
+          </p>
+        </div>
+      ) : null}
+
+      {showEmptyLeagues ? (
         <div
           className="card-chunky"
           style={{ padding: "28px 20px", textAlign: "center" }}
@@ -333,6 +396,7 @@ export function ContextKernelDemo() {
           >
             {leagues.map((league) => {
               const selected = league_id === league.league_id;
+              const chooseDisabled = refreshPending || !username;
               const choosing =
                 refreshPending && league_id === league.league_id && !revision;
               return (
@@ -377,16 +441,16 @@ export function ContextKernelDemo() {
                   <button
                     type="button"
                     className="btn-chunky"
-                    data-active={selected ? "true" : undefined}
-                    disabled={refreshPending || !username}
+                    data-active={selected && !chooseDisabled ? "true" : undefined}
+                    aria-pressed={selected}
+                    disabled={chooseDisabled}
                     onClick={() => void onChooseLeague(league)}
                     style={{
                       marginTop: "auto",
-                      opacity: refreshPending || !username ? 0.55 : 1,
-                      cursor: refreshPending || !username ? "not-allowed" : "pointer",
+                      ...disabledControlStyle(chooseDisabled),
                     }}
                   >
-                    {choosing ? "checking the tape..." : "Choose"}
+                    {choosing ? "checking the tape..." : selected ? "Selected" : "Choose"}
                   </button>
                 </article>
               );
@@ -447,18 +511,38 @@ function RevisionCard({
   const playoffStart = rules.league.playoff_start_week;
   const isPartial = coverage.status === "partial";
   const scratchpadHref = `/scratchpad?revision=${encodeURIComponent(revision.revision_id)}`;
+  const pullDisabled = !canPullFresh;
 
   return (
     <section
       className="card-chunky"
       style={{
+        position: "relative",
         padding: "20px",
         display: "flex",
         flexDirection: "column",
         gap: "16px",
+        overflow: "hidden",
       }}
       aria-label="League context revision"
     >
+      <span
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          right: "16px",
+          bottom: "12px",
+          fontFamily: "var(--font-hand)",
+          fontSize: "22px",
+          color: "var(--ink-faint)",
+          opacity: 0.55,
+          pointerEvents: "none",
+          userSelect: "none",
+        }}
+      >
+        razzle.lol
+      </span>
+
       <div
         style={{
           display: "flex",
@@ -515,11 +599,27 @@ function RevisionCard({
             padding: "8px 12px",
             background: isPartial ? "var(--yellow-light)" : "var(--green-light)",
             color: isPartial ? "var(--semantic-yellow)" : "var(--semantic-green)",
+            transform: "rotate(-2deg)",
           }}
         >
           Coverage {coverage.status.toUpperCase()}
         </span>
       </div>
+
+      {isPartial ? (
+        <p
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: "13px",
+            lineHeight: 1.45,
+            color: "var(--ink-medium)",
+            margin: 0,
+          }}
+        >
+          Scoring coverage is incomplete for the listed rules — those keys are not mapped
+          into Razzle yet.
+        </p>
+      ) : null}
 
       <dl
         style={{
@@ -532,19 +632,10 @@ function RevisionCard({
         <Fact label="Format" value={format} />
         <Fact label="Superflex" value={rules.superflex ? "yes" : "no"} />
         <Fact label="TE premium" value={tePremiumLabel(rules)} />
-        <Fact label="Matchup" value={matchupLabel(rules.matchup?.style)} />
+        <Fact label="Matchup" value={matchupLabel(rules.matchup.style)} />
         <Fact
           label="Playoffs"
-          value={
-            typeof playoffTeams === "number" || typeof playoffStart === "number"
-              ? [
-                  typeof playoffTeams === "number" ? `${playoffTeams} teams` : null,
-                  typeof playoffStart === "number" ? `start week ${playoffStart}` : null,
-                ]
-                  .filter(Boolean)
-                  .join(" · ")
-              : "—"
-          }
+          value={`${playoffTeams} teams · start week ${playoffStart}`}
         />
       </dl>
 
@@ -635,18 +726,15 @@ function RevisionCard({
           data-active="true"
           style={{ textDecoration: "none", display: "inline-block" }}
         >
-          Open Scratchpad with this revision
+          Open Scratchpad · carry revision in URL
         </Link>
         <button
           type="button"
           className="btn-chunky"
           onClick={onPullFresh}
-          disabled={!canPullFresh}
+          disabled={pullDisabled}
           title="Creates a new immutable revision from a fresh Sleeper pull"
-          style={{
-            opacity: canPullFresh ? 1 : 0.55,
-            cursor: canPullFresh ? "pointer" : "not-allowed",
-          }}
+          style={disabledControlStyle(pullDisabled)}
         >
           {pullPending ? "checking the tape..." : "Pull fresh revision"}
         </button>
@@ -660,6 +748,7 @@ function RevisionCard({
         }}
       >
         Pull fresh creates a new revision — reopening this URL only GETs the saved one.
+        Scratchpad support for the carried revision is next.
       </p>
     </section>
   );
