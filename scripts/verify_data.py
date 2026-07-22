@@ -77,6 +77,9 @@ class CheckResult:
     source_to_db_ok: int = 0
     source_to_db_total: int = 0
     mismatch_count: int = 0
+    filter_leaks: int = 0
+    integrity_mismatches: int = 0
+    total_failures: int = 0
     warnings: list[str] = field(default_factory=list)
     season: int | None = None
 
@@ -87,6 +90,7 @@ class SourceEvidence:
     location: str
     raw_row_count: int
     mapped_row_count: int
+    db_row_count: int
     fetched_at: datetime
     canonical_rows_sha256: str
 
@@ -177,6 +181,7 @@ def _report_to_dict(report: VerificationReport) -> dict[str, Any]:
                 "location": source.location,
                 "raw_row_count": source.raw_row_count,
                 "mapped_row_count": source.mapped_row_count,
+                "db_row_count": source.db_row_count,
                 "fetched_at": _ensure_utc(source.fetched_at).isoformat(),
                 "canonical_rows_sha256": source.canonical_rows_sha256,
             }
@@ -196,6 +201,9 @@ def _report_to_dict(report: VerificationReport) -> dict[str, Any]:
                 "source_to_db_ok": result.source_to_db_ok,
                 "source_to_db_total": result.source_to_db_total,
                 "mismatch_count": result.mismatch_count,
+                "filter_leaks": result.filter_leaks,
+                "integrity_mismatches": result.integrity_mismatches,
+                "total_failures": result.total_failures,
                 "warnings": list(result.warnings),
                 "season": result.season,
             }
@@ -219,6 +227,9 @@ def _promote_required(result: CheckResult, required_checks: set[str]) -> CheckRe
             source_to_db_ok=result.source_to_db_ok,
             source_to_db_total=result.source_to_db_total,
             mismatch_count=result.mismatch_count,
+            filter_leaks=result.filter_leaks,
+            integrity_mismatches=result.integrity_mismatches,
+            total_failures=result.total_failures,
             warnings=list(result.warnings),
             season=result.season,
         )
@@ -431,18 +442,26 @@ def _index_weeks(
     rejected_keys: list[tuple[str, int]] = []
 
     for row in source_rows:
-        if "season" in row and row.get("season") not in (None, ""):
-            try:
-                row_season = int(float(str(row["season"])))
-            except (TypeError, ValueError):
-                errors.append(f"key=season field=season db={season} source={row.get('season')!r}")
-                continue
-            if row_season != season:
-                errors.append(
-                    f"key=({row.get('player_id')!r},{row.get('week')!r}) "
-                    f"field=season db={season} source={row_season}"
-                )
-                continue
+        # Season is mandatory on every raw week row: a source row that cannot
+        # prove its season must never enter the accepted/rejected surfaces.
+        season_raw = row.get("season")
+        if season_raw in (None, ""):
+            errors.append(
+                f"key=({row.get('player_id')!r},{row.get('week')!r}) "
+                f"field=season db={season} source=missing"
+            )
+            continue
+        try:
+            row_season = int(float(str(season_raw)))
+        except (TypeError, ValueError):
+            errors.append(f"key=season field=season db={season} source={row.get('season')!r}")
+            continue
+        if row_season != season:
+            errors.append(
+                f"key=({row.get('player_id')!r},{row.get('week')!r}) "
+                f"field=season db={season} source={row_season}"
+            )
+            continue
 
         mapped = map_week_row(dict(row))
         player_id = (row.get("player_id") or "").strip()
@@ -559,7 +578,6 @@ def _verify_players(
     seed: int,
 ) -> CheckResult:
     accepted, warnings, errors, rejected_keys = _index_players(source_rows)
-    details = list(errors)
     db_keys = list(db_players.keys())
     source_keys = list(accepted.keys())
 
@@ -568,7 +586,8 @@ def _verify_players(
             name="players",
             status=CheckStatus.FAIL,
             message=f"player source index errors={len(errors)}",
-            details=details,
+            details=list(errors),
+            total_failures=len(errors),
             warnings=warnings,
         )
 
@@ -590,6 +609,7 @@ def _verify_players(
                 f"db_count={len(db_keys)} source_accepted={len(source_keys)} "
                 f"sample_size={sample_size}"
             ],
+            total_failures=1,
             warnings=warnings,
         )
 
@@ -600,24 +620,25 @@ def _verify_players(
         source_keys, sample_size, derive_seed(seed, "players", "source_to_db")
     )
 
+    replay_details: list[str] = []
     for key in db_sample:
-        details.extend(_compare_player_fields(key, db_players.get(key), accepted.get(key)))
+        replay_details.extend(_compare_player_fields(key, db_players.get(key), accepted.get(key)))
     for key in source_sample:
-        details.extend(_compare_player_fields(key, db_players.get(key), accepted.get(key)))
+        replay_details.extend(_compare_player_fields(key, db_players.get(key), accepted.get(key)))
 
-    if rejected_keys:
-        neg_sample = sample_sorted_keys(
-            sorted(set(rejected_keys)),
-            sample_size,
-            derive_seed(seed, "players", "negative_filter"),
-        )
-        for key in neg_sample:
-            if key in db_players:
-                details.append(f"key={key} field=filter_leak db=present source=rejected")
-    else:
-        warnings.append("no negative player filter rows available for audit")
+    # Filter-leak audit is exhaustive: every rejected source key present in
+    # the DB fails, independent of the accepted replay sample.
+    leaked_keys = sorted(set(rejected_keys) & set(db_keys))
+    leak_details = [
+        f"key={key} field=filter_leak db=present source=rejected" for key in leaked_keys
+    ]
+    surface_details = (
+        []
+        if rejected_keys
+        else ["key=players field=filter_surface_missing db=unaudited source=no_rejected_rows"]
+    )
 
-    mismatch_count = len(details)
+    details = [*replay_details, *leak_details, *surface_details]
     db_mismatches = [
         key
         for key in db_sample
@@ -630,13 +651,16 @@ def _verify_players(
     ]
     db_ok = sample_size - len(db_mismatches)
     source_ok = sample_size - len(source_mismatches)
-    status = CheckStatus.PASS if mismatch_count == 0 else CheckStatus.FAIL
+    identity_mismatches = len(replay_details)
+    total_failures = len(details)
+    status = CheckStatus.PASS if total_failures == 0 else CheckStatus.FAIL
     return CheckResult(
         name="players",
         status=status,
         message=(
             f"db->source={db_ok}/{sample_size} source->db={source_ok}/{sample_size} "
-            f"identity_mismatches={mismatch_count}"
+            f"identity_mismatches={identity_mismatches} filter_leaks={len(leaked_keys)} "
+            f"total_failures={total_failures}"
         ),
         details=details,
         sample_keys=[*db_sample, *source_sample],
@@ -646,7 +670,9 @@ def _verify_players(
         db_to_source_total=sample_size,
         source_to_db_ok=source_ok,
         source_to_db_total=sample_size,
-        mismatch_count=mismatch_count,
+        mismatch_count=identity_mismatches,
+        filter_leaks=len(leaked_keys),
+        total_failures=total_failures,
         warnings=warnings,
     )
 
@@ -661,7 +687,6 @@ def _verify_weeks(  # noqa: PLR0913
     seed: int,
 ) -> CheckResult:
     accepted, raw_by_key, warnings, errors, rejected_keys = _index_weeks(source_rows, season)
-    details = list(errors)
     name = "player_week_stats"
 
     if errors:
@@ -669,7 +694,8 @@ def _verify_weeks(  # noqa: PLR0913
             name=name,
             status=CheckStatus.FAIL,
             message=f"week source index errors={len(errors)}",
-            details=details,
+            details=list(errors),
+            total_failures=len(errors),
             warnings=warnings,
             season=season,
         )
@@ -694,6 +720,7 @@ def _verify_weeks(  # noqa: PLR0913
                 f"season={season} db_count={len(db_keys)} "
                 f"source_accepted={len(source_keys)} sample_size={sample_size}"
             ],
+            total_failures=1,
             warnings=warnings,
             season=season,
         )
@@ -705,40 +732,49 @@ def _verify_weeks(  # noqa: PLR0913
         source_keys, sample_size, derive_seed(seed, "weeks", season, "source_to_db")
     )
 
+    replay_details: list[str] = []
     for key in db_sample:
-        details.extend(_compare_week_fields(key, db_weeks.get(key), accepted.get(key), season))
+        replay_details.extend(
+            _compare_week_fields(key, db_weeks.get(key), accepted.get(key), season)
+        )
     for key in source_sample:
-        details.extend(_compare_week_fields(key, db_weeks.get(key), accepted.get(key), season))
+        replay_details.extend(
+            _compare_week_fields(key, db_weeks.get(key), accepted.get(key), season)
+        )
 
+    integrity_details: list[str] = []
     integrity_keys = list(dict.fromkeys([*db_sample, *source_sample]))
     for key in integrity_keys:
         player_id, _week = key
         player = db_players.get(player_id)
         if player is None:
-            details.append(f"key={key} field=player_id db=missing source={player_id}")
+            integrity_details.append(f"key={key} field=player_id db=missing source={player_id}")
             continue
         raw = raw_by_key.get(key)
         if raw is None:
             continue
         raw_position = (raw.get("position") or "").strip()
         if player.get("position") != raw_position:
-            details.append(
+            integrity_details.append(
                 f"key={key} field=position db={player.get('position')!r} source={raw_position!r}"
             )
 
-    if rejected_keys:
-        neg_sample = sample_sorted_keys(
-            sorted(set(rejected_keys)),
-            sample_size,
-            derive_seed(seed, "weeks", season, "negative_filter"),
-        )
-        for key in neg_sample:
-            if key in db_weeks:
-                details.append(f"key={key} field=filter_leak db=present source=rejected")
-    else:
-        warnings.append(f"no negative week filter rows available for audit season={season}")
+    # Filter-leak audit is exhaustive: every rejected source key present in
+    # the DB fails, independent of the accepted replay sample.
+    leaked_keys = sorted(set(rejected_keys) & set(db_keys))
+    leak_details = [
+        f"key={key} field=filter_leak db=present source=rejected" for key in leaked_keys
+    ]
+    surface_details = (
+        []
+        if rejected_keys
+        else [
+            f"key=player_week_stats:{season} "
+            "field=filter_surface_missing db=unaudited source=no_rejected_rows"
+        ]
+    )
 
-    mismatch_count = len(details)
+    details = [*replay_details, *integrity_details, *leak_details, *surface_details]
     db_mismatches = [
         key
         for key in db_sample
@@ -751,13 +787,17 @@ def _verify_weeks(  # noqa: PLR0913
     ]
     db_ok = sample_size - len(db_mismatches)
     source_ok = sample_size - len(source_mismatches)
-    status = CheckStatus.PASS if mismatch_count == 0 else CheckStatus.FAIL
+    stat_mismatches = len(replay_details)
+    total_failures = len(details)
+    status = CheckStatus.PASS if total_failures == 0 else CheckStatus.FAIL
     return CheckResult(
         name=name,
         status=status,
         message=(
             f"season={season} db->source={db_ok}/{sample_size} "
-            f"source->db={source_ok}/{sample_size} stat_mismatches={mismatch_count}"
+            f"source->db={source_ok}/{sample_size} stat_mismatches={stat_mismatches} "
+            f"integrity_mismatches={len(integrity_details)} filter_leaks={len(leaked_keys)} "
+            f"total_failures={total_failures}"
         ),
         details=details,
         sample_keys=[*db_sample, *source_sample],
@@ -767,7 +807,10 @@ def _verify_weeks(  # noqa: PLR0913
         db_to_source_total=sample_size,
         source_to_db_ok=source_ok,
         source_to_db_total=sample_size,
-        mismatch_count=mismatch_count,
+        mismatch_count=stat_mismatches,
+        filter_leaks=len(leaked_keys),
+        integrity_mismatches=len(integrity_details),
+        total_failures=total_failures,
         warnings=warnings,
         season=season,
     )
@@ -799,6 +842,9 @@ def verify(  # noqa: PLR0913
     sources: list[SourceEvidence] = []
     sample_keys: dict[str, list[Any]] = {}
 
+    db_players = _load_db_players(session)
+    db_weeks_by_season = {season: _load_db_weeks(session, season) for season in seasons}
+
     player_mapped = [
         mapped for mapped in (map_player_row(row) for row in player_source_rows) if mapped
     ]
@@ -808,6 +854,7 @@ def verify(  # noqa: PLR0913
             location=locations.get("players", PLAYERS_URL),
             raw_row_count=len(player_source_rows),
             mapped_row_count=len(player_mapped),
+            db_row_count=len(db_players),
             fetched_at=as_of,
             canonical_rows_sha256=canonical_rows_sha256(player_source_rows),
         )
@@ -824,12 +871,12 @@ def verify(  # noqa: PLR0913
                 location=locations.get(f"week_{season}", WEEK_STATS_URL.format(season=season)),
                 raw_row_count=len(week_rows),
                 mapped_row_count=len(mapped_weeks),
+                db_row_count=len(db_weeks_by_season[season]),
                 fetched_at=as_of,
                 canonical_rows_sha256=canonical_rows_sha256(week_rows),
             )
         )
 
-    db_players = _load_db_players(session)
     players_result = _verify_players(
         db_players=db_players,
         source_rows=player_source_rows,
@@ -841,11 +888,22 @@ def verify(  # noqa: PLR0913
     results.append(players_result)
     warnings.extend(players_result.warnings)
 
+    if not seasons:
+        # An empty week surface must never pass vacuously: with no seasons,
+        # nothing was replayed, so the required check fails outright.
+        results.append(
+            CheckResult(
+                name="player_week_stats",
+                status=CheckStatus.FAIL,
+                message="no player_week_stats seasons found",
+                details=["key=player_week_stats field=seasons db=empty source=required"],
+                total_failures=1,
+            )
+        )
     for season in seasons:
-        db_weeks = _load_db_weeks(session, season)
         week_result = _verify_weeks(
             season=season,
-            db_weeks=db_weeks,
+            db_weeks=db_weeks_by_season[season],
             db_players=db_players,
             source_rows=week_source_rows_by_season.get(season, []),
             sample_size=sample_size,
@@ -918,6 +976,7 @@ def format_human_report(report: VerificationReport) -> str:
         lines.append(
             f"SOURCE {source.name} location={source.location} "
             f"raw_rows={source.raw_row_count} mapped_rows={source.mapped_row_count} "
+            f"db_rows={source.db_row_count} "
             f"canonical_rows_sha256={source.canonical_rows_sha256} "
             f"fetched_at={fetched}"
         )
@@ -928,14 +987,19 @@ def format_human_report(report: VerificationReport) -> str:
                 f"{result.status.value} players "
                 f"db->source={result.db_to_source_ok}/{result.db_to_source_total} "
                 f"source->db={result.source_to_db_ok}/{result.source_to_db_total} "
-                f"identity_mismatches={result.mismatch_count}"
+                f"identity_mismatches={result.mismatch_count} "
+                f"filter_leaks={result.filter_leaks} "
+                f"total_failures={result.total_failures}"
             )
-        elif result.name == "player_week_stats":
+        elif result.name == "player_week_stats" and result.season is not None:
             lines.append(
                 f"{result.status.value} player_week_stats season={result.season} "
                 f"db->source={result.db_to_source_ok}/{result.db_to_source_total} "
                 f"source->db={result.source_to_db_ok}/{result.source_to_db_total} "
-                f"stat_mismatches={result.mismatch_count}"
+                f"stat_mismatches={result.mismatch_count} "
+                f"integrity_mismatches={result.integrity_mismatches} "
+                f"filter_leaks={result.filter_leaks} "
+                f"total_failures={result.total_failures}"
             )
         elif result.status == CheckStatus.UNAVAILABLE:
             lines.append(f"UNAVAILABLE {result.name}: {result.message}")

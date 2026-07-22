@@ -311,6 +311,11 @@ def test_happy_bidirectional_replay_with_pinned_map_fields(db_env):
     assert weeks_result.db_to_source_ok == SAMPLE
     assert weeks_result.source_to_db_ok == SAMPLE
     assert weeks_result.mismatch_count == 0
+    assert players_result.filter_leaks == 0
+    assert players_result.total_failures == 0
+    assert weeks_result.filter_leaks == 0
+    assert weeks_result.integrity_mismatches == 0
+    assert weeks_result.total_failures == 0
     assert _result(report, "identity").status == CheckStatus.UNAVAILABLE
     assert _result(report, "freshness").status == CheckStatus.UNAVAILABLE
     assert _result(report, "cross_source").status == CheckStatus.UNAVAILABLE
@@ -476,8 +481,10 @@ def test_season_mismatch_and_filter_leaks_fail(db_env):
         session.commit()
     report = _run_verify(db_env["factory"], players, weeks, sample_size=5)
     assert report.status == CheckStatus.FAIL
-    details = "\n".join(_result(report, "players").details)
-    assert "filter_leak" in details or "source=missing" in details
+    players_result = _result(report, "players")
+    details = "\n".join(players_result.details)
+    assert "filter_leak" in details
+    assert players_result.filter_leaks == 1
 
 
 def test_duplicate_keys_conflict_fail_identical_warn(db_env):
@@ -654,6 +661,12 @@ def test_offline_happy_cli_and_require_flags(db_env, monkeypatch, capsys):
     assert code == 0
     assert "PASS players" in out
     assert "PASS player_week_stats" in out
+    assert "identity_mismatches=0" in out
+    assert "stat_mismatches=0" in out
+    assert "integrity_mismatches=0" in out
+    assert "filter_leaks=0" in out
+    assert "total_failures=0" in out
+    assert "db_rows=6" in out
     assert "UNAVAILABLE identity:" in out
     assert "UNAVAILABLE freshness:" in out
     assert "UNAVAILABLE cross_source:" in out
@@ -681,7 +694,8 @@ def test_offline_happy_cli_and_require_flags(db_env, monkeypatch, capsys):
     )
     out = capsys.readouterr().out
     assert code == 1
-    assert "FAIL identity" in out or "RESULT FAIL" in out
+    assert "FAIL identity:" in out
+    assert "RESULT FAIL" in out
 
     code = run_cli(
         [
@@ -704,7 +718,8 @@ def test_offline_happy_cli_and_require_flags(db_env, monkeypatch, capsys):
     )
     out = capsys.readouterr().out
     assert code == 1
-    assert "FAIL freshness" in out or "RESULT FAIL" in out
+    assert "FAIL freshness:" in out
+    assert "RESULT FAIL" in out
 
 
 def test_csv_roundtrip_preserves_old_stat_aliases(tmp_path):
@@ -736,6 +751,202 @@ def test_csv_roundtrip_preserves_old_stat_aliases(tmp_path):
     assert mapped_old["pass_sack"] == 3.0
     assert mapped_new["pass_int"] == 1.0
     assert mapped_new["pass_sack"] == 3.0
+
+
+def test_empty_week_surface_fails_core_and_cli(db_env, monkeypatch, capsys):
+    players = _fixture_players()
+    _seed_from_source(db_env["factory"], players, [])
+    _block_network(monkeypatch)
+
+    with db_env["factory"]() as session:
+        report = verify(
+            session,
+            sample_size=SAMPLE,
+            seed=SEED,
+            seasons=[],
+            player_source_rows=players,
+            week_source_rows_by_season={},
+            required_checks=set(),
+            max_age_hours=36.0,
+            fetched_at=datetime(2026, 7, 22, tzinfo=UTC),
+        )
+    assert report.status == CheckStatus.FAIL
+    weeks_result = _result(report, "player_week_stats")
+    assert weeks_result.status == CheckStatus.FAIL
+    assert weeks_result.message == "no player_week_stats seasons found"
+    assert _result(report, "players").status == CheckStatus.PASS
+
+    players_csv = _write_csv(db_env["tmp_path"] / "players.csv", players)
+    code = run_cli(
+        [
+            "--offline",
+            "--database-url",
+            db_env["db_url"],
+            "--players-csv",
+            str(players_csv),
+            "--sample",
+            str(SAMPLE),
+            "--seed",
+            str(SEED),
+        ]
+    )
+    out = capsys.readouterr().out
+    assert code == 1
+    assert "FAIL player_week_stats: no player_week_stats seasons found" in out
+    assert "RESULT FAIL" in out
+
+
+def test_filter_leak_exhaustive_with_clean_sample_replay(db_env):
+    players = _fixture_players()
+    weeks = _fixture_weeks()
+    _seed_from_source(db_env["factory"], players, weeks)
+
+    # Leak the rejected POST key into the DB. With SEED/SAMPLE the seeded
+    # db->source draw over the 7 DB keys excludes ('00-0000001', 18), so the
+    # accepted replay stays N/N while the exhaustive rejected-set/DB
+    # intersection still fails the leak deterministically.
+    with db_env["factory"]() as session:
+        upsert_week_stats(
+            session,
+            SEASON,
+            [
+                {
+                    "player_id": "00-0000001",
+                    "week": 18,
+                    **{column: 0.0 for column in STAT_COLUMNS},
+                }
+            ],
+        )
+        session.commit()
+
+    report = _run_verify(db_env["factory"], players, weeks)
+    assert report.status == CheckStatus.FAIL
+    weeks_result = _result(report, "player_week_stats", season=SEASON)
+    assert weeks_result.status == CheckStatus.FAIL
+    assert ("00-0000001", 18) not in weeks_result.db_to_source_keys
+    assert weeks_result.db_to_source_ok == SAMPLE
+    assert weeks_result.db_to_source_total == SAMPLE
+    assert weeks_result.source_to_db_ok == SAMPLE
+    assert weeks_result.source_to_db_total == SAMPLE
+    assert weeks_result.mismatch_count == 0
+    assert weeks_result.integrity_mismatches == 0
+    assert weeks_result.filter_leaks == 1
+    assert weeks_result.total_failures == 1
+    assert "filter_leaks=1" in weeks_result.message
+    details = "\n".join(weeks_result.details)
+    assert "field=filter_leak" in details
+    assert "00-0000001" in details
+
+    human = format_human_report(report)
+    assert "filter_leaks=1" in human
+
+
+def test_no_negative_player_rows_fail(db_env):
+    players_no_neg = [row for row in _fixture_players() if row["gsis_id"] != "00-0099991"]
+    weeks = _fixture_weeks()
+    _seed_from_source(db_env["factory"], players_no_neg, weeks)
+
+    report = _run_verify(db_env["factory"], players_no_neg, weeks)
+    assert report.status == CheckStatus.FAIL
+    players_result = _result(report, "players")
+    assert players_result.status == CheckStatus.FAIL
+    assert "filter_surface_missing" in "\n".join(players_result.details)
+    assert players_result.total_failures == 1
+    assert _result(report, "player_week_stats", season=SEASON).status == CheckStatus.PASS
+
+
+def test_no_negative_week_rows_fail(db_env):
+    players = _fixture_players()
+    weeks_no_neg = [row for row in _fixture_weeks() if map_week_row(row)]
+    _seed_from_source(db_env["factory"], players, weeks_no_neg)
+
+    report = _run_verify(db_env["factory"], players, weeks_no_neg)
+    assert report.status == CheckStatus.FAIL
+    weeks_result = _result(report, "player_week_stats", season=SEASON)
+    assert weeks_result.status == CheckStatus.FAIL
+    assert "filter_surface_missing" in "\n".join(weeks_result.details)
+    assert weeks_result.total_failures == 1
+    assert _result(report, "players").status == CheckStatus.PASS
+
+
+def test_week_source_missing_season_fails(db_env):
+    players = _fixture_players()
+    weeks = _fixture_weeks()
+    _seed_from_source(db_env["factory"], players, weeks)
+
+    no_season = _week_raw_new("00-0000002", week=1, position="RB", attempts="0", completions="0")
+    no_season.pop("season")
+    report = _run_verify(db_env["factory"], players, weeks + [no_season])
+    assert report.status == CheckStatus.FAIL
+    weeks_result = _result(report, "player_week_stats", season=SEASON)
+    assert "index errors" in weeks_result.message
+    details = "\n".join(weeks_result.details)
+    assert "field=season" in details
+    assert "source=missing" in details
+    assert "00-0000002" in details
+
+
+def test_offline_blank_season_roundtrip_fails(db_env, monkeypatch, capsys):
+    players = _fixture_players()
+    weeks = _fixture_weeks()
+    _seed_from_source(db_env["factory"], players, weeks)
+    _block_network(monkeypatch)
+
+    blank_season = [dict(row) for row in weeks]
+    blank_season[1]["season"] = ""
+    players_csv = _write_csv(db_env["tmp_path"] / "players.csv", players)
+    weeks_csv = _write_csv(db_env["tmp_path"] / "weeks_blank_season.csv", blank_season)
+
+    code = run_cli(
+        [
+            "--offline",
+            "--database-url",
+            db_env["db_url"],
+            "--players-csv",
+            str(players_csv),
+            "--week-csv",
+            f"{SEASON}={weeks_csv}",
+            "--sample",
+            str(SAMPLE),
+            "--seed",
+            str(SEED),
+            "--seasons",
+            str(SEASON),
+        ]
+    )
+    out = capsys.readouterr().out
+    assert code == 1
+    assert "field=season" in out
+    assert "source=missing" in out
+    assert "00-0000002" in out
+    assert "RESULT FAIL" in out
+
+
+def test_week_duplicate_conflict_fail_identical_warn(db_env):
+    players = _fixture_players()
+    weeks = _fixture_weeks()
+    _seed_from_source(db_env["factory"], players, weeks)
+
+    conflict_weeks = weeks + [
+        _week_raw_new(
+            "00-0000002", week=1, position="RB", attempts="0", completions="0", rushing_yards="99"
+        )
+    ]
+    report = _run_verify(db_env["factory"], players, conflict_weeks)
+    assert report.status == CheckStatus.FAIL
+    weeks_result = _result(report, "player_week_stats", season=SEASON)
+    assert "index errors" in weeks_result.message
+    details = "\n".join(weeks_result.details)
+    assert "duplicate" in details
+    assert "00-0000002" in details
+
+    identical_weeks = weeks + [
+        _week_raw_new("00-0000002", week=1, position="RB", attempts="0", completions="0")
+    ]
+    report = _run_verify(db_env["factory"], players, identical_weeks)
+    assert report.status == CheckStatus.PASS
+    warnings = "\n".join(_result(report, "player_week_stats", season=SEASON).warnings)
+    assert "identical duplicate week" in warnings
 
 
 def test_pure_capability_comparators():
@@ -902,14 +1113,33 @@ def test_report_json_and_human_output(db_env):
     assert "sample_keys" in encoded
     assert payload["sample_keys"]["players.db_to_source"]
 
+    # DB counts are actual queried rows: 6 accepted players (K rejected) and
+    # 6 accepted weeks (POST and K rejected) out of 7/8 raw fixture rows.
+    sources_by_name = {source["name"]: source for source in payload["sources"]}
+    assert sources_by_name["players"]["raw_row_count"] == 7
+    assert sources_by_name["players"]["mapped_row_count"] == 6
+    assert sources_by_name["players"]["db_row_count"] == 6
+    assert sources_by_name[f"player_week_stats_{SEASON}"]["raw_row_count"] == 8
+    assert sources_by_name[f"player_week_stats_{SEASON}"]["mapped_row_count"] == 6
+    assert sources_by_name[f"player_week_stats_{SEASON}"]["db_row_count"] == 6
+    assert payload["known_unmapped"] == [
+        "return_yd,return_td,pat_made,pat_missed,fg_made,fg_missed: "
+        "not source-complete (adapter zeros)"
+    ]
+
     human = format_human_report(report)
     assert "PASS players" in human
     assert "PASS player_week_stats" in human
     assert "UNAVAILABLE identity:" in human
     assert "UNAVAILABLE freshness:" in human
     assert "UNAVAILABLE cross_source:" in human
-    assert "KNOWN_UNMAPPED" in human
+    assert (
+        "KNOWN_UNMAPPED return_yd,return_td,pat_made,pat_missed,fg_made,fg_missed: "
+        "not source-complete (adapter zeros)" in human
+    )
     assert "SOURCE players" in human
+    assert "raw_rows=7 mapped_rows=6 db_rows=6" in human
+    assert "raw_rows=8 mapped_rows=6 db_rows=6" in human
     assert "canonical_rows_sha256=" in human
     assert "RESULT PASS" in human
 
