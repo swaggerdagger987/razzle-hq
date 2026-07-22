@@ -36,11 +36,8 @@ def test_empty_room_routers_hold_their_final_prefixes() -> None:
     assert values_router.prefix == "/api/values"
 
 
-async def test_preregistered_stubs_return_explicit_501() -> None:
+async def test_remaining_preregistered_stubs_return_explicit_501() -> None:
     requests = (
-        ("POST", "/api/context/connect", {}),
-        ("POST", "/api/context/leagues/league-1/refresh", {}),
-        ("GET", "/api/context/revision/revision-1", None),
         ("GET", "/api/me", None),
         ("POST", "/api/scenarios", {}),
     )

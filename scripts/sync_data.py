@@ -23,7 +23,10 @@ from razzle_api.ingest.report import SyncReport, stamp_source_syncs
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 QUICK_SEASONS = [2024, 2025]
-ADAPTERS: dict[str, str] = {"nflverse": "razzle_api.ingest.nflverse"}
+ADAPTERS: dict[str, str] = {
+    "nflverse": "razzle_api.ingest.nflverse",
+    "crosswalk": "razzle_api.ingest.crosswalk",
+}
 AdapterSync = Callable[[Session, list[int]], SyncReport]
 
 

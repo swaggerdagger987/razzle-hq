@@ -55,7 +55,11 @@ def test_registry_is_lazy_and_unknown_adapters_fail_closed(monkeypatch) -> None:
 
     monkeypatch.setattr(sync_data.importlib, "import_module", fake_import)
 
-    assert sync_data.ADAPTERS == {"nflverse": "razzle_api.ingest.nflverse"}
+    assert sync_data.ADAPTERS == {
+        "nflverse": "razzle_api.ingest.nflverse",
+        "crosswalk": "razzle_api.ingest.crosswalk",
+    }
+    assert list(sync_data.ADAPTERS) == ["nflverse", "crosswalk"]
     assert "nflverse" not in sync_data.__dict__
     with pytest.raises(ValueError, match="unknown adapter"):
         sync_data._load_adapter("not-registered")
