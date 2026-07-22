@@ -15,7 +15,7 @@ pnpm --filter web build
 
 ## Reading order
 
-1. `spec/NORTH_STAR.md` — what we're building and how work is scored (T1–T7).
+1. `spec/NORTH_STAR.md` — what we're building and how work is scored (T0–T7).
 2. `factory/STATE.md` — what's active, what's next, what's done.
 3. The one slice you're doing (`factory/SLICE.md` for the contract).
 
@@ -35,7 +35,7 @@ Nothing else is required reading. Pull in other `spec/` files when your slice to
 
 ## Session protocol
 
-**Engagement runs:** when the Founder says "start" or "go", the session is the engagement lead — it loops the protocol below across consecutive slices, delegating each slice's implementation to a subagent seat per `factory/ROUTING.md` (Engagement runs), reviewing gates between slices, until usage limits, client deliverables, or "stop" end the run. "One slice per session" then applies per implementing agent, not to the lead. Client-only needs are logged as `CLIENT:` blockers in STATE.md and batched into one ask at run end.
+**Captain runs:** when the Founder says **"go"** (or "continue" at a checkpoint), the session is the **Release Captain** (GPT Sol Max seat, `factory/ROUTING.md`) — it runs the loop: read STATE, select ready nodes from the stage plan, detail leases, fan out to writer/auditor subagents with **models pinned per the seat table and budgets per the lease**, merge lanes, run gates, update STATE, commit, push, repeat — stopping at stage boundaries with a checkpoint memo (Shipped · Proof · Cost vs pyramid · Asks · Next). The isolation law governs every fence: two live seats never share a file; serialized locks (migrations, main.py, root layout, lockfiles, tokens, CI, spec/, factory/) are captain-only. CTO reviews (Fable Max seat) run before the Stage 2 and Stage 4 checkpoints and on escalation. "One slice per session" applies per writer subagent, not to the captain. Client-only needs are logged as `CLIENT:` blockers in STATE.md and batched into one ask at the checkpoint.
 
 1. `git status` must be clean. Read `factory/STATE.md`. Claim the topmost OPEN **execution-ready** slice (`factory/SLICE.md`): mark it ACTIVE, commit that one-line change (`S-00X: start`). If no card is execution-ready, this session's job is detailing the top sketches (frontier work per `factory/ROUTING.md`), not improvising.
 2. Implement inside the slice's scope fence. Touching files outside it requires a one-line logged reason on the card.
