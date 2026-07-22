@@ -81,7 +81,7 @@ Frozen contracts land at the end of Stage 1 (`/api/context/connect` · `/api/con
 - **Out of scope:** populating crosswalk/context, implementing stub bodies, new source adapters, changing existing player/week schema, FTN attribution, web, K-02 domain logic.
 - **Pitfalls:** migrations/cross-cutting files are captain-only; SQLite NULL uniqueness needs partial indexes; `player_ids` cannot FK to the fantasy-only players spine; no ad-hoc DDL/autogenerate; source stamp rows are mapped counts, not raw counts; never weaken R-03 to pass.
 
-### K-02 rules-compiler [OPEN — execution-ready] · L · Grok writer + auditors
+### K-02 rules-compiler [ACTIVE] · L · Grok writer + auditors
 - **Pillar / Trust:** T0 fail-closed scoring and T1/T2 league-relative decisions.
 - **Goal:** pure `compile_league(sleeper_json) -> CompiledRules` maps Sleeper scoring and league settings onto existing `LeagueConfig`, detects dynasty/redraft/keeper/best-ball, superflex, TE premium, median, playoffs and tiebreakers, and exposes honest coverage.
 - **File plan:** NEW `domain/scoring/compiler.py`, `tests/unit/test_rules_compiler.py`, and cassettes `tests/fixtures/cassettes/sleeper_league_{tep_median_dynasty,standard_redraft}.json`; EDIT `domain/scoring/__init__.py` exports only. No network/DB/API/ingest/migration/main/shared fixtures.
