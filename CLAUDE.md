@@ -37,6 +37,8 @@ Nothing else is required reading. Pull in other `spec/` files when your slice to
 
 **Engagement runs:** when the Founder says "start" or "go", the session is the engagement lead — it loops the protocol below across consecutive slices, delegating each slice's implementation to a subagent seat per `factory/ROUTING.md` (Engagement runs), reviewing gates between slices, until usage limits, client deliverables, or "stop" end the run. "One slice per session" then applies per implementing agent, not to the lead. Client-only needs are logged as `CLIENT:` blockers in STATE.md and batched into one ask at run end.
 
+**Swarm runs:** when the Founder says "swarm", the session is the architect — it executes the wave plan in `factory/STATE.md` per `factory/ROUTING.md` (Swarm runs): land Wave 0 itself, then fan each wave's cards out to parallel fleet seats (Grok 4.5-class), merge, gate, review, repeat. The isolation law (two live seats never share a file) governs every fence.
+
 1. `git status` must be clean. Read `factory/STATE.md`. Claim the topmost OPEN **execution-ready** slice (`factory/SLICE.md`): mark it ACTIVE, commit that one-line change (`S-00X: start`). If no card is execution-ready, this session's job is detailing the top sketches (frontier work per `factory/ROUTING.md`), not improvising.
 2. Implement inside the slice's scope fence. Touching files outside it requires a one-line logged reason on the card.
 3. Run gates G1–G4 plus the card's G5 (`factory/GATES.md`). Fix until green, or mark the card BLOCKED with the failing output and stop.
