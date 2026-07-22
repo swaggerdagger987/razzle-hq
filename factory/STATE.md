@@ -120,7 +120,7 @@ Frozen contracts land at the end of Stage 1 (`/api/context/connect` · `/api/con
 - **Pitfalls:** K-01 schema/module names are frozen; K-03b starts only after dependencies merge; every refresh rechecks user leagues; cassettes are the only committed league JSON; no partial revision on upstream failure.
 - **Stage-end freeze:** these three context endpoints, provenance envelope, compiled coverage shape, `GET /api/me` stub, and `POST /api/scenarios` stub. Kernel demo = Founder username → their league → revision with compiled rules + coverage.
 
-### K-04 kernel-demo-surface [OPEN — execution-ready] · M · Grok writer + auditors
+### K-04 kernel-demo-surface [ACTIVE] · M · Grok writer + auditors
 - **Pillar / Trust:** T1/T2 context holy moment and T6 warm, screenshot-readable proof.
 - **Goal:** a localhost screen lets the Founder enter a Sleeper username, see only that user's current leagues, choose one, create an immutable revision, and visibly inspect format/rules/coverage/source freshness.
 - **File plan:** NEW `apps/web/src/app/connect/page.tsx`, `apps/web/src/features/context-kernel/{api,ContextKernelDemo}.ts{x,}`; EDIT `apps/web/src/app/page.tsx` for one Connect Sleeper entry. No API/schema/root provider/package/token/factory/spec changes.
