@@ -42,9 +42,21 @@ The slice card defines G5: concrete assertions a reviewer can replay. Examples:
 
 When the slice ships a user-facing surface, G5 includes the hallway checklist from `spec/PRODUCT.md` (no dead-end pages) and the screenshot question: **would r/DynastyFF screenshot this for the data?**
 
+## G6 — accuracy (any slice that ingests or displays player data)
+
+```bash
+uv run python scripts/verify_data.py --sample 25    # exit 0; zero identity mismatches
+```
+
+The harness (built in the Wave-0/W1 accuracy slice; until it lands, the same checks run as card-level G5 assertions) verifies per synced source:
+
+- **Random-sample replay** — N random DB rows re-fetched from the source file and compared field-by-field.
+- **Identity** — sampled players' gsis_id/name/position/team agree with the crosswalk (`player_ids`). Tolerance: **zero**. One wrong player fails the gate and the slice (`spec/DATA.md` accuracy law, NORTH_STAR T0).
+- **Cross-source reconciliation** — where two sources cover the same fact, values agree within the tolerance stated on the card; documented source discrepancies are listed in the card, never silently absorbed.
+
 ## Ship bar
 
-From `spec/NORTH_STAR.md`: a slice ships only with **T1 plus at least one of T3–T5**, and none of the instant-VETO conditions. Cite the pillars in the commit body.
+From `spec/NORTH_STAR.md`: a slice ships only with **T1 plus at least one of T3–T5**, none of the instant-VETO conditions, and **T0 green wherever player data moved or rendered**. Cite the pillars in the commit body.
 
 ## On failure
 
