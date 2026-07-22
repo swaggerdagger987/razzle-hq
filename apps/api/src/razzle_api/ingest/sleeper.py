@@ -14,7 +14,7 @@ import urllib.parse
 import urllib.request
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 SLEEPER_BASE = "https://api.sleeper.app/v1"
 USER_AGENT = "razzle-sync/1.0"
@@ -24,7 +24,9 @@ _PLAYERS_CACHE_NAME = "sleeper_players_nfl.json"
 _PLAYERS_META_NAME = "sleeper_players_nfl.meta.json"
 _PLAYERS_TIMEOUT = 120.0
 
-_utc_now: Callable[[], datetime] = lambda: datetime.now(UTC)
+
+def _utc_now() -> datetime:
+    return datetime.now(UTC)
 
 
 class SleeperUpstreamError(Exception):
@@ -40,10 +42,19 @@ def _default_cache_dir() -> Path:
 
 
 def _require_relative_path(path: str) -> str:
-    if not path or not path.startswith("/") or path.startswith("//"):
+    """Accept only a canonical relative API path (leading ``/``, no traversal)."""
+    if not path or not isinstance(path, str):
         raise SleeperUpstreamError(f"Sleeper path must be relative (got {path!r})")
-    if "://" in path:
+    if "://" in path or path.startswith("//"):
         raise SleeperUpstreamError(f"Sleeper path must be relative (got {path!r})")
+    if "\\" in path:
+        raise SleeperUpstreamError(f"Sleeper path must be relative (got {path!r})")
+    if not path.startswith("/") or path.startswith("//"):
+        raise SleeperUpstreamError(f"Sleeper path must be relative (got {path!r})")
+
+    segments = path[1:].split("/")
+    if not segments or any(segment in ("", ".", "..") for segment in segments):
+        raise SleeperUpstreamError(f"Sleeper path must be canonical relative (got {path!r})")
     return path
 
 
@@ -264,6 +275,15 @@ def _players_paths(cache_dir: Path) -> tuple[Path, Path]:
     return cache_dir / _PLAYERS_CACHE_NAME, cache_dir / _PLAYERS_META_NAME
 
 
+def _players_payload_or_none(payload: Any) -> dict[str, dict] | None:
+    if not isinstance(payload, dict):
+        return None
+    for key, value in payload.items():
+        if not isinstance(key, str) or not isinstance(value, dict):
+            return None
+    return payload
+
+
 def _read_players_cache(cache_dir: Path) -> dict[str, dict] | None:
     data_path, meta_path = _players_paths(cache_dir)
     if not data_path.is_file() or not meta_path.is_file():
@@ -282,17 +302,21 @@ def _read_players_cache(cache_dir: Path) -> dict[str, dict] | None:
         payload = json.loads(data_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError, TypeError, ValueError):
         return None
-    if not isinstance(payload, dict):
-        return None
-    for key, value in payload.items():
-        if not isinstance(key, str) or not isinstance(value, dict):
-            return None
-    return payload
+    return _players_payload_or_none(payload)
 
 
 def _atomic_write_text(path: Path, text: str) -> None:
+    """Write ``path`` via same-directory temp + ``os.replace``.
+
+    Each file is replaced atomically on its own. Data and metadata are written
+    sequentially; the pair is not one transaction.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
-    fd, tmp_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+    fd, tmp_name = tempfile.mkstemp(
+        prefix=f".{path.name}.",
+        suffix=".tmp",
+        dir=path.parent,
+    )
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as handle:
             handle.write(text)
@@ -312,7 +336,7 @@ def _write_players_cache(cache_dir: Path, players: dict[str, dict]) -> None:
     fetched_at = _utc_now().astimezone(UTC).isoformat()
     data_text = json.dumps(players, separators=(",", ":"), ensure_ascii=False)
     meta_text = json.dumps({"fetched_at": fetched_at}, separators=(",", ":"))
-    # Data first, then metadata — never leave a partial main file.
+    # Data first, then metadata — each file is atomic; the pair is not one txn.
     _atomic_write_text(data_path, data_text)
     _atomic_write_text(meta_path, meta_text)
 
@@ -335,13 +359,12 @@ def get_players_nfl(
             f"Sleeper expected object for {path}, got {type(payload).__name__}",
             status_code=None,
         )
-    for key, value in payload.items():
-        if not isinstance(key, str) or not isinstance(value, dict):
-            raise SleeperUpstreamError(
-                f"Sleeper players dump has non-dict entry at {key!r}",
-                status_code=None,
-            )
+    players = _players_payload_or_none(payload)
+    if players is None:
+        raise SleeperUpstreamError(
+            f"Sleeper players dump has non-dict entry for {path}",
+            status_code=None,
+        )
 
-    players = payload
     _write_players_cache(root, players)
     return players
