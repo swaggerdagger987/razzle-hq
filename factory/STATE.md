@@ -29,9 +29,10 @@ Frozen contracts land at the end of Stage 1 (`/api/context/connect` · `/api/con
 ### R-01 ci-scope-repair [DONE — landed in the constitution PR]
 - graveyard/ excluded from pytest collection and ruff (pyproject.toml). Repo-root gates green again: 18 passed; all checks passed.
 
-### R-02 recover-screener-train [ACTIVE] · L · writer + auditors
+### R-02 recover-screener-train [DONE] · L · writer + auditors
 - **Goal:** the jolly-turing S-002→S-004 train (screener, player sheet, custom scoring) recovered onto a lane branch, defects fixed, gated, merged — the free layer of Scratchpad live over real data.
 - **Method:** reviewed cherry-pick from `origin/claude/jolly-turing-l4muhb` (merge-base 199eba5) — never blind merge. Its factory/* changes are superseded by this constitution; take product code + tests only.
+- **Scope note:** the inherited card lacked a file plan; the captain fenced recovery to the three product commits' API/web/tests plus root router/provider/dependency wiring, then allowed only G5 audit fixes for pagination, mobile Pts visibility, custom-scoring honesty, and hallway links.
 - **Verified defects to fix (read 2026-07-22):**
   1. `services/screener_service.py` `SCREENER_STAT_COLS` scores from a 13-column subset — **omits `pass_two_pt`/`rush_two_pt`/`rec_two_pt`, `pass_sack`, `fumble` (non-lost), `special_teams_td`**; any player with a two-point conversion scores wrong (a verified 2025 player differs by 2.0). Align the aggregation set with the engine fields the DB actually stores; the two-pt case becomes golden regression test #1.
   2. `sort=fantasy_points` loads every row into Python and sorts there — push into SQL or bound it; keep pagination `total` consistent.
@@ -93,3 +94,4 @@ All web lanes consume the frozen contracts; fences never overlap (isolation law)
 | S-001 | 2026-06-09 | (prior) | G1–G5 | — | — | nflverse adapter + sync CLI; 8,363 players, 11,869 week rows (2024–25), idempotent, 1.6MB; GET /api/players live |
 | R-01 | 2026-07-22 | (this PR) | G2, G4 | CTO/Fable | S | graveyard excluded from pytest+ruff; repo-root gates green (18 passed / all checks passed) |
 | lock | 2026-07-22 | (this PR) | G1–G4 | CTO/Fable | — | Constitution: razzle.hq north star, context kernel, accuracy law, command structure + budgets, stage plan. Verified live: 18 sources keyless, NFL weekly 1999+, college 2014+, draft_picks bridge keyed, jolly-turing defects confirmed in code |
+| R-02 | 2026-07-22 | 8811713 + 865c3f3 | G1–G6 | Writer/Grok 4.5 High + Auditor/Grok 4.5 High Fast | L + 6S audits | Recovered Scratchpad + Player Sheet; 56 passed, fresh migrate/health/build/lint green; eight 2025 goldens, four-preset live replay, URL paging/context browser replay, 1440/375 screenshots |
