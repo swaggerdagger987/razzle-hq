@@ -29,6 +29,9 @@ ignore = ["PLR2004"]
 [tool.ruff.lint.per-file-ignores]
 "**/tests/**" = ["PLR2004"]
 "**/migrations/versions/*" = ["E501"]
+"apps/api/src/razzle_api/api/routers/screener.py" = ["PLR0913"]
+"apps/api/src/razzle_api/services/screener_service.py" = ["PLR0913"]
+
 
 [tool.ruff.format]
 quote-style = "double"

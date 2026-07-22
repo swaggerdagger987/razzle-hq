@@ -7,6 +7,8 @@ const positions = [
   { label: "TE", token: "var(--pos-te)" },
 ];
 
+const rooms = ["Scratchpad", "The Line", "War Room"];
+
 export default function Home() {
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center gap-8 px-6 py-16">
@@ -21,15 +23,36 @@ export default function Home() {
       </div>
 
       <div className="card-chunky p-6">
-        <p className="font-display text-base uppercase">The film room is under construction</p>
+        <p className="font-display text-base uppercase">The film room is open</p>
         <p className="mt-3 text-sm leading-6 text-ink-medium">
-          Explore, Lab, Bureau, Situation Room. One operation, four doors. The scoring engine is
-          already on —{" "}
-          <Link href="/scoring" className="font-bold text-orange underline">
-            try the scoring preview
+          Scratchpad, The Line, War Room. One operation, three doors. Start in the{" "}
+          <Link href="/scratchpad" className="font-bold text-orange underline">
+            Scratchpad
           </Link>
           .
         </p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          {rooms.map((room) =>
+            room === "Scratchpad" ? (
+              <Link
+                key={room}
+                href="/scratchpad"
+                className="rounded-lg border-2 border-ink px-3 py-1 text-xs font-bold"
+                style={{ background: "var(--bg-card)", color: "var(--ink)" }}
+              >
+                {room}
+              </Link>
+            ) : (
+              <span
+                key={room}
+                className="rounded-lg border-2 border-ink px-3 py-1 text-xs font-bold"
+                style={{ background: "var(--bg-card)", color: "var(--ink)" }}
+              >
+                {room}
+              </span>
+            ),
+          )}
+        </div>
         <div className="mt-5 flex gap-2">
           {positions.map((position) => (
             <span
