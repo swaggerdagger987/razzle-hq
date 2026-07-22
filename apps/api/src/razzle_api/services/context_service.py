@@ -284,7 +284,19 @@ def _fetch_owned_leagues(username: str) -> tuple[dict, dict, list[dict]]:
     except sleeper.SleeperUpstreamError as exc:
         raise ContextUpstreamError(exc.message) from exc
 
-    return user, state, leagues
+    return user, state, _require_owned_leagues(leagues)
+
+
+def _require_owned_leagues(leagues: Any) -> list[dict]:
+    if not isinstance(leagues, list):
+        raise ContextUpstreamError("owned leagues payload is not a list")
+    for index, league in enumerate(leagues):
+        if not isinstance(league, dict):
+            raise ContextUpstreamError(f"owned league at index {index} is not an object")
+        league_id = league.get("league_id")
+        if not isinstance(league_id, str) or not league_id.strip():
+            raise ContextUpstreamError(f"owned league at index {index} has no league_id")
+    return leagues
 
 
 def _persist_revision(

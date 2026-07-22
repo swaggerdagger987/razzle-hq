@@ -265,3 +265,15 @@ def test_cli_maps_adapter_precondition_failure_to_exit_two(monkeypatch, capsys) 
 
     assert sync_data.main(["--quick"]) == 2
     assert "players table is empty" in capsys.readouterr().err
+
+
+def test_cli_maps_adapter_runtime_failure_to_exit_two(monkeypatch, capsys) -> None:
+    sync_data = _load_sync_script()
+
+    def fail_sync(_seasons: list[int]) -> None:
+        raise RuntimeError("crosswalk lost spine gsis_id values: ['00-0001']")
+
+    monkeypatch.setattr(sync_data, "sync", fail_sync)
+
+    assert sync_data.main(["--quick"]) == 2
+    assert "crosswalk lost spine gsis_id values" in capsys.readouterr().err

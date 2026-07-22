@@ -140,9 +140,19 @@ def build_crosswalk_rows(
 
 
 def upsert_player_ids(session: Session, rows: list[dict]) -> int:
-    """Write authoritative final rows. Contested NULL clears prior stored IDs."""
+    """Write authoritative final rows in two phases inside the caller's transaction.
+
+    Phase one pre-clears all external fields + merge_name on every incoming
+    gsis_id and evicts any stored holder of an external value claimed non-NULL
+    by a final row (even holders outside the incoming set), so a unique external
+    ID can move between rows regardless of write order. Phase two writes the
+    final values. Nothing commits here; if phase two raises, the caller's
+    rollback also undoes the pre-clear.
+    """
     if not rows:
         return 0
+    _preclear_incoming_rows(session, rows)
+    _preclear_claimed_external_values(session, rows)
     for chunk in _chunks(rows):
         statement = sqlite_insert(player_ids_table)
         statement = statement.on_conflict_do_update(
@@ -162,6 +172,35 @@ def upsert_player_ids(session: Session, rows: list[dict]) -> int:
         )
         session.execute(statement, chunk)
     return len(rows)
+
+
+def _preclear_incoming_rows(session: Session, rows: list[dict]) -> None:
+    """Null out externals + merge_name on every incoming gsis_id before final writes."""
+    cleared = dict.fromkeys((*EXTERNAL_FIELDS, "merge_name"))
+    gsis_ids = [row["gsis_id"] for row in rows]
+    for chunk in _chunks(gsis_ids):
+        session.execute(
+            sa.update(player_ids_table)
+            .where(player_ids_table.c.gsis_id.in_(chunk))
+            .values(**cleared)
+        )
+
+
+def _preclear_claimed_external_values(session: Session, rows: list[dict]) -> None:
+    """Evict stored holders of any external value claimed non-NULL by a final row.
+
+    Old holders may not be in the incoming set; only the contested field is
+    cleared, so their unrelated mappings survive.
+    """
+    for field in EXTERNAL_FIELDS:
+        claimed = sorted({row[field] for row in rows if row.get(field) is not None})
+        if not claimed:
+            continue
+        column = player_ids_table.c[field]
+        for chunk in _chunks(claimed):
+            session.execute(
+                sa.update(player_ids_table).where(column.in_(chunk)).values({field: None})
+            )
 
 
 def sync(session: Session, seasons: list[int] | None = None) -> SyncReport:
@@ -511,5 +550,5 @@ def _sleeper_cache_fetched_at() -> datetime | None:
         return None
 
 
-def _chunks(rows: list[dict], size: int = 500) -> list[list[dict]]:
-    return [rows[start : start + size] for start in range(0, len(rows), size)]
+def _chunks[T](items: list[T], size: int = 500) -> list[list[T]]:
+    return [items[start : start + size] for start in range(0, len(items), size)]

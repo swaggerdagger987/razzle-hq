@@ -21,6 +21,7 @@ from sqlalchemy.orm import Session
 from razzle_api.config import get_settings
 from razzle_api.core.db import SessionLocal
 from razzle_api.ingest.report import SyncReport, stamp_source_syncs
+from razzle_api.ingest.sleeper import SleeperUpstreamError
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 QUICK_SEASONS = [2024, 2025]
@@ -95,7 +96,10 @@ def main(argv: list[str] | None = None) -> int:
             status()
         else:
             sync(QUICK_SEASONS if args.quick else args.seasons)
-    except ValueError as exc:
+    # Operational failures only (bad preconditions, network, upstream). SleeperUpstreamError
+    # subclasses Exception directly, so it is named here; urllib errors are OSError.
+    # SQLAlchemy integrity/programming errors are bugs and must escape as tracebacks.
+    except (SleeperUpstreamError, ValueError, OSError, RuntimeError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
     return 0

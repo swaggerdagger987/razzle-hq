@@ -443,6 +443,129 @@ def test_durable_withholding_clears_prior_ids_on_external_collision(seeded_sessi
     assert stored["00-0008"]["espn_id"] == "3800"
 
 
+def _row(gsis_id: str, name: str, **overrides) -> dict:
+    row = {
+        "gsis_id": gsis_id,
+        "sleeper_id": None,
+        "espn_id": None,
+        "pfr_id": None,
+        "cfb_player_id": None,
+        "mfl_id": None,
+        "fantasycalc_id": None,
+        "name": name,
+        "merge_name": None,
+        "position": None,
+        "team": None,
+    }
+    row.update(overrides)
+    return row
+
+
+def test_unique_reassignment_to_earlier_sorted_holder(seeded_session) -> None:
+    """sleeper_id moves from 00-0002 to 00-0001; new holder writes first in sorted order."""
+    first_dp = [{"gsis_id": "00-0002", "sleeper_id": "5000", "name": "Canonical Two"}]
+    first = build_crosswalk_rows(CANONICAL_PLAYERS, first_dp, {})
+    upsert_player_ids(seeded_session, list(first.rows))
+    seeded_session.commit()
+    assert _stored_player_ids(seeded_session)["00-0002"]["sleeper_id"] == "5000"
+
+    second_dp = [{"gsis_id": "00-0001", "sleeper_id": "5000", "name": "Historical Only"}]
+    second = build_crosswalk_rows(CANONICAL_PLAYERS, second_dp, {})
+    upsert_player_ids(seeded_session, list(second.rows))
+    seeded_session.commit()
+
+    stored = _stored_player_ids(seeded_session)
+    assert stored["00-0001"]["sleeper_id"] == "5000"
+    assert stored["00-0002"]["sleeper_id"] is None
+    assert stored["00-0002"]["name"] == "Canonical Two"
+
+
+def test_unique_reassignment_old_holder_omitted_from_incoming(seeded_session) -> None:
+    """Eviction clears only the contested field on a holder outside the incoming set."""
+    upsert_player_ids(
+        seeded_session,
+        [
+            _row("00-0001", "Historical Only"),
+            _row("00-0002", "Canonical Two", sleeper_id="6000", espn_id="8000"),
+        ],
+    )
+    seeded_session.commit()
+
+    upsert_player_ids(seeded_session, [_row("00-0001", "Historical Only", sleeper_id="6000")])
+    seeded_session.commit()
+
+    stored = _stored_player_ids(seeded_session)
+    assert stored["00-0001"]["sleeper_id"] == "6000"
+    assert stored["00-0002"]["sleeper_id"] is None
+    assert stored["00-0002"]["espn_id"] == "8000"
+    assert stored["00-0002"]["name"] == "Canonical Two"
+
+
+def test_unrelated_external_mapping_survives_partial_upsert(seeded_session) -> None:
+    upsert_player_ids(
+        seeded_session,
+        [
+            _row("00-0001", "Historical Only", sleeper_id="6001"),
+            _row(
+                "00-0003",
+                "Conflict Stub",
+                sleeper_id="7000",
+                espn_id="7777",
+                merge_name="conflict stub",
+            ),
+        ],
+    )
+    seeded_session.commit()
+    untouched = _stored_player_ids(seeded_session)["00-0003"]
+
+    upsert_player_ids(
+        seeded_session,
+        [_row("00-0001", "Historical Only", sleeper_id="6100", espn_id="6200")],
+    )
+    seeded_session.commit()
+
+    stored = _stored_player_ids(seeded_session)
+    assert stored["00-0001"]["sleeper_id"] == "6100"
+    assert stored["00-0001"]["espn_id"] == "6200"
+    assert stored["00-0003"] == untouched
+
+
+def test_second_phase_failure_rolls_back_preclear(seeded_session, monkeypatch) -> None:
+    upsert_player_ids(
+        seeded_session,
+        [
+            _row("00-0001", "Historical Only"),
+            _row(
+                "00-0002",
+                "Canonical Two",
+                sleeper_id="5000",
+                espn_id="3002",
+                merge_name="canonical two",
+            ),
+        ],
+    )
+    seeded_session.commit()
+    before = _stored_player_ids(seeded_session)
+
+    def boom_insert(table):
+        raise RuntimeError("phase two failed")
+
+    monkeypatch.setattr(crosswalk, "sqlite_insert", boom_insert)
+    with pytest.raises(RuntimeError, match="phase two failed"):
+        upsert_player_ids(
+            seeded_session,
+            [_row("00-0001", "Historical Only", sleeper_id="5000")],
+        )
+
+    # Pre-clear is visible inside the still-open transaction...
+    mid = _stored_player_ids(seeded_session)
+    assert mid["00-0002"]["sleeper_id"] is None
+
+    # ...and the caller's rollback restores the pre-clear state exactly.
+    seeded_session.rollback()
+    assert _stored_player_ids(seeded_session) == before
+
+
 def _patch_sync_sources(monkeypatch, dp_rows, sleeper_players, *, cache_at=None) -> None:
     def fetch_dp():
         return dp_rows

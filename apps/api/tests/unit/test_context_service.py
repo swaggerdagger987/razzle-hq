@@ -12,14 +12,17 @@ import pytest
 import sqlalchemy as sa
 from alembic import command
 from alembic.config import Config
+from httpx import ASGITransport, AsyncClient
 from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
 from razzle_api.api.schemas.context import ConnectResponse, ContextRevisionResponse
 from razzle_api.config import get_settings
+from razzle_api.core.db import get_session
 from razzle_api.domain.scoring import compile_league
 from razzle_api.ingest.sleeper import SleeperUpstreamError
+from razzle_api.main import app
 from razzle_api.services import context_service
 from razzle_api.services.context_service import (
     ContextForbiddenError,
@@ -522,6 +525,78 @@ def test_bad_state_season_is_upstream_no_writes(
     with pytest.raises(ContextUpstreamError):
         connect_username(session, USERNAME)
     _assert_no_writes(session)
+
+
+_MALFORMED_LEAGUES = [
+    None,
+    {"league_id": LEAGUE_ID},
+    "not-a-list",
+    [None],
+    ["scalar"],
+    [{"name": "No ID"}],
+    [{"league_id": ""}],
+    [{"league_id": "   "}],
+    [{"league_id": 123}],
+]
+
+
+def _patch_owned_leagues(monkeypatch: pytest.MonkeyPatch, leagues: object) -> None:
+    monkeypatch.setattr(
+        context_service.sleeper,
+        "fetch_user",
+        lambda username: {"user_id": USER_ID, "username": USERNAME},
+    )
+    monkeypatch.setattr(
+        context_service.sleeper,
+        "fetch_nfl_state",
+        lambda: {"league_season": "2025"},
+    )
+    monkeypatch.setattr(context_service.sleeper, "fetch_user_leagues", lambda *a, **k: leagues)
+
+
+@pytest.mark.parametrize("leagues", _MALFORMED_LEAGUES)
+def test_malformed_owned_leagues_is_upstream_no_writes(
+    session: Session,
+    monkeypatch: pytest.MonkeyPatch,
+    leagues: object,
+):
+    _patch_owned_leagues(monkeypatch, leagues)
+
+    with pytest.raises(ContextUpstreamError, match="owned league"):
+        connect_username(session, USERNAME)
+    _assert_no_writes(session)
+
+    with pytest.raises(ContextUpstreamError, match="owned league"):
+        refresh_league(session, LEAGUE_ID, username=USERNAME)
+    _assert_no_writes(session)
+
+
+async def test_malformed_owned_leagues_http_502_no_writes(
+    session_factory,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    _patch_owned_leagues(monkeypatch, [{"name": "No ID"}])
+
+    def override_session():
+        with session_factory() as db:
+            yield db
+
+    app.dependency_overrides[get_session] = override_session
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            connect = await client.post("/api/context/connect", json={"username": USERNAME})
+            refresh = await client.post(
+                f"/api/context/leagues/{LEAGUE_ID}/refresh",
+                json={"username": USERNAME},
+            )
+    finally:
+        app.dependency_overrides.pop(get_session, None)
+
+    assert connect.status_code == 502
+    assert refresh.status_code == 502
+    with session_factory() as db:
+        _assert_no_writes(db)
 
 
 def _drop_league(snap: dict) -> dict:
