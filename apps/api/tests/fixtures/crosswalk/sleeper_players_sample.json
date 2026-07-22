@@ -23,6 +23,12 @@
     "gsis_id": "00-0002",
     "espn_id": "9999"
   },
+  "2998": {
+    "player_id": "2998",
+    "full_name": "Second Claimant For Two",
+    "gsis_id": "00-0002",
+    "espn_id": "8888"
+  },
   "9999": {
     "player_id": "9999",
     "full_name": "Canonical Two",
@@ -34,5 +40,17 @@
     "full_name": "Player Four",
     "gsis_id": "00-0004",
     "espn_id": "3404"
+  },
+  "2610": {
+    "player_id": "2610",
+    "full_name": "Agree Multi A",
+    "gsis_id": "00-0001",
+    "espn_id": "3100"
+  },
+  "2611": {
+    "player_id": "2611",
+    "full_name": "Agree Multi B",
+    "gsis_id": "00-0001",
+    "espn_id": "3100"
   }
 }
