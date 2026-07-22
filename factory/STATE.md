@@ -2,44 +2,65 @@
 
 ## NOW
 
-- **Active slice:** none — S-002 is next (execution-ready)
-- **Launch deadline:** **2026-07-28** (live + Reddit-shareable before draft season; scope bends, date doesn't)
-- **Launch-critical path:** S-001 ingest → S-002 screener → S-003 player sheet → S-004 custom scoring → S-005 valuation workbench → S-006 Sleeper connect → S-007 watermarked export → deploy
-- **Blockers:** none
-- **Last commit:** S-001 nflverse ingest — players + week stats synced, /api/players live
-- **Date:** 2026-06-09
+- **Mode:** Milestone Zero refit landed 2026-07-22 — backlog below is a **swarm wave plan** (`factory/ROUTING.md` Swarm runs). Founder says **"swarm"** to launch; "start" still runs it serially.
+- **Active slice:** none — W0 (S-009/S-010/S-011, architect seat) is next and unblocks the fleet.
+- **Milestone Zero:** the perfect localhost, zero credentials (`spec/NORTH_STAR.md`). Every source in `spec/DATA.md` is keyless and was probed live 2026-07-22 — **no client deliverables block this milestone.**
+- **Launch deadline:** **2026-07-28** (unchanged; Milestone Zero is the gate before deploy).
+- **Blockers:** none. `CLIENT:` asks (Stripe keys, DNS, LLM keys) are all post-Milestone-Zero by design.
+- **Last commit:** factory refit — T0 accuracy law, 18-source data stack, chart standard, swarm routing.
+- **Date:** 2026-07-22
+
+## THE 12-HOUR MAP (swarm run, ~35 fleet seats + 1 architect)
+
+| Hours | Wave | Seats | What lands |
+|-------|------|-------|-----------|
+| 0–2 | **W0 foundation** | architect, sequential | All migrations, final-form main.py + web shell, registries, chart kit, tier switcher, crosswalk, verify harness |
+| 2–6 | **W1 data + core** | ~14 parallel | Ten ingest adapters, screener, player sheet v0, sleeper connect, tier gating |
+| 6–10 | **W2 product** | ~15 parallel | Custom scoring, workbench, ten Lab panels, player-sheet depth (usage/health/value), Bureau v0, explore density, compare view |
+| 10–12 | **W3 trust** | ~7 + analysts | Trade answer card, accuracy audit fleet, design QA fleet, hallway audit, graveyard quarry, Room shell (stretch) |
+
+Wave discipline: fences never overlap (isolation law); architect merges and gates per wave; cards below marked **[detail at wave start]** get their full build sheet from the architect just-in-time (`factory/SLICE.md`).
 
 ## BACKLOG
 
-### S-001 nflverse-ingest [DONE]
-- **Pillar/Layer:** Data (Explore L0 prerequisite) · **Trust:** T1 substrate
-- **Goal:** `uv run python scripts/sync_data.py --quick` fills `players` + `player_week_stats` from nflverse for seasons 2024–2025; `GET /api/players` serves it.
-- **File plan:**
-  - NEW `apps/api/src/razzle_api/ingest/__init__.py` — docstring only.
-  - NEW `apps/api/src/razzle_api/ingest/nflverse.py` — the adapter (fetch + map + upsert).
-  - NEW `apps/api/src/razzle_api/services/players_service.py` — `list_players(session, position, limit)`.
-  - NEW `apps/api/src/razzle_api/api/routers/players.py` + `api/schemas/players.py`.
-  - EDIT `apps/api/src/razzle_api/main.py` — one import + one `include_router` line.
-  - NEW `scripts/sync_data.py` — argparse CLI: `--quick` (seasons 2024+2025), `--seasons 2023 2024`, `--status` (print row counts + db file size, no fetch).
-  - NEW `apps/api/tests/unit/test_nflverse_mapping.py`, `apps/api/tests/integration/test_players_api.py`.
-- **Interfaces:**
-  - `fetch_players() -> list[dict]` and `fetch_week_stats(season: int) -> list[dict]` — network only, no DB. Stdlib urllib + csv (+ gzip for `.gz`), `User-Agent: razzle-sync/1.0`, timeout 120s.
-  - `map_week_row(row: dict) -> dict | None` — pure: one nflverse CSV row → our column dict, or None if filtered out. This is the unit-tested function.
-  - `upsert_players(session, rows) -> int`, `upsert_week_stats(session, season, rows) -> int` — DB only, no network. SQLite upsert via `sqlalchemy.dialects.sqlite.insert(...).on_conflict_do_update(...)`; conflict targets: `gsis_id` / `(player_id, season, week)`.
-  - `GET /api/players?position=RB&limit=100` → `{"players": [{"gsis_id", "name", "position", "team"}]}`, ordered by name; `limit` default 100, max 500.
-- **Data contract:**
-  - Players: `https://github.com/nflverse/nflverse-data/releases/download/players/players.csv` — take `gsis_id` (PK; skip rows without one), `display_name`→name, `position`, `latest_team`→team. Keep positions QB/RB/WR/TE only.
-  - Weekly: release tag `stats_player`, file `stats_player_week_{season}.csv`, found via `https://api.github.com/repos/nflverse/nflverse-data/releases?per_page=100` (or direct download URL of the same shape as players). Keep rows where `season_type == "REG"` and position in QB/RB/WR/TE. **The weekly file's `player_id` column IS the gsis_id.**
-  - Column map (nflverse → ours): `attempts`→pass_att · `completions`→pass_cmp · `passing_yards`→pass_yd · `passing_tds`→pass_td · `passing_interceptions` (older files: `interceptions`)→pass_int · `sacks_suffered` (older: `sacks`)→pass_sack · `passing_2pt_conversions`→pass_two_pt · `carries`→rush_att · `rushing_yards`→rush_yd · `rushing_tds`→rush_td · `rushing_2pt_conversions`→rush_two_pt · `targets`→target · `receptions`→rec · `receiving_yards`→rec_yd · `receiving_tds`→rec_td · `receiving_2pt_conversions`→rec_two_pt · fumble = `rushing_fumbles`+`receiving_fumbles`+`sack_fumbles` · fumble_lost = same three `_lost` columns · `special_teams_tds`→special_teams_td. All other schema columns stay 0.
-  - Coercion: `""`/`"NA"`/`"NaN"`/None → 0.0; everything to float. The map must accept BOTH old and new column names (the 2025+ format renamed exactly: passing_interceptions, sacks_suffered, sack_yards_lost, team→recent_team).
-- **Test plan:** unit — `map_week_row` on two literal fixture dicts (one new-format, one old-format names) asserts identical mapped output, NA→0.0, non-REG row → None. Integration — on a tmp migrated DB: upsert fixture players+stats twice, assert row counts identical both times (idempotency) and a known value survives; seed 3 players, `GET /api/players?position=RB` via ASGITransport returns the RBs only.
-- **Gates:** G1–G4; G5 (paste outputs in commit body):
-  - `uv run python scripts/sync_data.py --quick` → exit 0
-  - `uv run python scripts/sync_data.py --status` → players ≥ 500, week-stat rows ≥ 10000, db size < 100MB
-  - run `--quick` again, then `--status` → identical row counts
-  - `curl -s 'localhost:8000/api/players?position=RB&limit=50' | python3 -c "import json,sys; print(len(json.load(sys.stdin)['players']))"` → ≥ 20
-- **Out of scope:** kicking columns (stay 0), DST/IDP, return_yd/return_td (stay 0), college data, snap counts, injuries, schedules, storing nflverse's precomputed fantasy_points columns (we always compute from rules), any UI.
-- **Pitfalls (verified against the legacy adapter, read-only ref: old razzle repo `legacy/adapters/nflverse_adapter.py`):** GitHub releases API requires a User-Agent header · players.csv uses BOM, decode `utf-8-sig` · don't trust `players.csv` team for identity (teams go stale), gsis_id only · keep `ingest/` importing the engine's column names from one place: define `STAT_COLUMNS` once (the migration already has the list — mirror it, don't import the migration).
+### ═══ W0 — FOUNDATION (architect seat, sequential) ═══
+
+### S-009 foundation-db-api [OPEN — next]
+- **Pillar/Layer:** Infrastructure (swarm prerequisite) · **Trust:** T0 substrate
+- **Goal:** One migration (0002) creates every planned table; `main.py` reaches final form with all routers pre-registered; `sync_data.py` becomes a lazy-import adapter registry.
+- **Scope fence:** `apps/api/migrations/versions/0002_*.py` · `apps/api/src/razzle_api/api/routers/` (empty routers: screener, player, lab, bureau, league, values, me) · `main.py` (final form) · `scripts/sync_data.py` (registry refit; existing nflverse adapter becomes registry entry #1) · `apps/api/src/razzle_api/ingest/report.py` (`SyncReport`).
+- **Tables (0002):** `player_ids` (crosswalk) · `player_meta` · `snap_counts_week` · `injuries_week` · `depth_charts_week` · `games` · `ngs_passing_week` / `ngs_receiving_week` / `ngs_rushing_week` · `pfr_adv_week` (type-discriminated) · `ftn_week` · `qbr_week` · `contracts` · `draft_picks` · `combine` · `market_values` · `college_season_stats` · `leagues` · `source_syncs`. Column lists finalized by the architect from the source CSVs headers at implementation time (`spec/DATA.md` owns source truth).
+- **Gates:** G1–G4; G5: fresh-db migrate exits 0; `--quick` sync still green; every pre-registered router serves a typed 501 or empty-state response, never 404.
+
+### S-010 foundation-web-shell [OPEN]
+- **Pillar/Layer:** Infrastructure (swarm prerequisite) · **Trust:** T3/T6 substrate
+- **Goal:** Final-form shell: nav with all planned routes, providers (TanStack Query + nuqs), panel registry (all Launch-10 slugs from `spec/PRODUCT.md`), entitlement hook + tier switcher, the chart kit per `spec/DESIGN.md` Charts.
+- **Scope fence:** `apps/web/src/app/layout.tsx`, `providers.tsx`, nav component · `apps/web/src/features/chart-kit/` · `apps/web/src/features/shell/` (nav, tier switcher, context bar placeholder) · `apps/web/src/features/entitlements/` (useEntitlement, `<Gated>` lock component) · panel registry module · route stubs (`/explore`, `/player/[gsis_id]`, `/lab`, `/lab/[panel]`, `/bureau`, `/compare`) each rendering a staff-voiced empty state — never a 404, never a dead end.
+- **Deps added here once for the whole swarm:** `@tanstack/react-query@^5`, `@tanstack/react-table@^8`, `nuqs@^2`, `recharts@^3` (+ committed `pnpm-lock.yaml`).
+- **Gates:** G1–G4; G5: every route renders shell + empty state; tier switcher flips a visible badge; chart kit renders a demo config in all states (loading/empty/data); voice grep clean.
+
+### S-011 crosswalk-entitlements-verify [OPEN]
+- **Pillar/Layer:** Data/Infrastructure · **Trust:** T0, T7
+- **Goal:** Identity + tiers + accuracy harness: `player_ids` crosswalk synced (DynastyProcess `db_playerids.csv` + Sleeper dump enrich), `player_meta` filled, entitlement registry + seeded dev users (`dev-free`, `dev-pro`, `dev-elite`) + `GET /api/me` honoring the dev-tier cookie, and `scripts/verify_data.py` (G6 harness v1 covering players + week stats + crosswalk).
+- **Scope fence:** `ingest/crosswalk.py`, `ingest/sleeper_players.py` · `domain/entitlements.py` (pure: feature key → minimum tier) · `services/me_service.py`, `api/routers/me.py` fill · `scripts/verify_data.py` · tests.
+- **Gates:** G1–G4, G6 (self-hosting: the harness passes on synced data); G5: `/api/me` returns tier by cookie; crosswalk resolves ≥95% of QB/RB/WR/TE actives to sleeper_id, unresolved rows logged.
+
+### ═══ W1 — DATA FLEET (one seat per card, parallel) ═══
+
+All W1 ingest cards share the pattern: **fence = own module in `ingest/` + own tests + one registry row**; identity resolves through the crosswalk; idempotent upserts; `SyncReport` printed; G6 sample replay green. Sources/URLs/pitfalls: `spec/DATA.md`. **[detail at wave start]** unless noted.
+
+### S-012 ingest-snap-counts [OPEN] — snaps + snap% per week; joins Explore + Player Sheet usage. T0/T1.
+### S-013 ingest-injuries-depth [OPEN] — weekly injury reports + depth charts; Dolphin substrate. T0/T1.
+### S-014 ingest-schedules-vegas [OPEN] — nfldata games.csv: schedule, results, spread/total; context substrate. T0/T2.
+### S-015 ingest-ngs [OPEN] — combined NGS files (passing/receiving/rushing) filtered to synced seasons. T0/T1.
+### S-016 ingest-pfr-adv [OPEN] — advstats week files (pass/rush/rec/def): pressures, broken tackles, drops. T0/T1.
+### S-017 ingest-ftn [OPEN] — charting 2022+: routes vs man/zone, play action, screens. T0/T1.
+### S-018 ingest-pedigree [OPEN] — contracts (.gz), draft picks, combine; the "expiring contract" thesis fuel. T0/T1.
+### S-019 ingest-market-values [OPEN] — FantasyCalc API (formats × dynasty/redraft) + DynastyProcess weekly; stamped `market_values` rows. T0/T1 — **the market half of the valuation thesis.**
+### S-020 ingest-college [OPEN] — cfbfastR seasons 2023–2025 into `college_season_stats`. T0.
+### S-021 ingest-qbr [OPEN] — ESPN QBR weekly. T0. (Smallest card — good first fleet seat to validate the pattern.)
+
+### ═══ W1 — CORE SURFACES (parallel with data fleet) ═══
 
 ### S-002 explore-screener [OPEN — execution-ready]
 - **Pillar/Layer:** Explore L0–L1 · **Trust:** T1, T6
@@ -47,11 +68,11 @@
 - **File plan:**
   - NEW `apps/api/src/razzle_api/services/screener_service.py` — `list_season_totals(...)` (the aggregation query).
   - NEW `apps/api/src/razzle_api/api/routers/screener.py` + `api/schemas/screener.py`.
-  - EDIT `apps/api/src/razzle_api/main.py` — one import + one `include_router` line.
+  - EDIT `apps/api/src/razzle_api/main.py` — one import + one `include_router` line. *(W0 note: pre-registered — this edit disappears; fill the empty router instead.)*
   - NEW `apps/api/tests/integration/test_screener_api.py`.
-  - EDIT `apps/web/package.json` — add deps `@tanstack/react-query@^5`, `@tanstack/react-table@^8`, `nuqs@^2`; run `pnpm install` and COMMIT `pnpm-lock.yaml` (CI uses `--frozen-lockfile`).
-  - NEW `apps/web/src/app/providers.tsx` — client component: `QueryClientProvider` + `NuqsAdapter` (from `nuqs/adapters/next/app`).
-  - EDIT `apps/web/src/app/layout.tsx` — wrap `{children}` in `<Providers>`.
+  - EDIT `apps/web/package.json` — add deps `@tanstack/react-query@^5`, `@tanstack/react-table@^8`, `nuqs@^2`; run `pnpm install` and COMMIT `pnpm-lock.yaml` (CI uses `--frozen-lockfile`). *(W0 note: landed in S-010 — skip.)*
+  - NEW `apps/web/src/app/providers.tsx` — client component: `QueryClientProvider` + `NuqsAdapter` (from `nuqs/adapters/next/app`). *(W0 note: landed in S-010 — skip.)*
+  - EDIT `apps/web/src/app/layout.tsx` — wrap `{children}` in `<Providers>`. *(W0 note: landed in S-010 — skip.)*
   - NEW `apps/web/src/app/explore/page.tsx` — route shell, renders the feature.
   - NEW `apps/web/src/features/explore/api.ts` — typed `fetchScreener` (same `API_URL` pattern as `scoring-preview/api.ts`).
   - NEW `apps/web/src/features/explore/ScreenerPanel.tsx` — client component: nuqs state, TanStack Query fetch, position filter pills, table.
@@ -65,7 +86,7 @@
   - URL is source of truth: nuqs `useQueryStates` for `season` (int, default 2025), `position` (string or null), `sort` (default `name`), `dir`. Changing any control updates the URL; loading `/explore?position=RB&sort=rush_yd&dir=desc` cold reproduces the exact view.
   - TanStack Query key `["screener", season, position, sort, dir]`; manual server-side sorting (table `manualSorting: true`, header click writes nuqs state, NOT client sort).
   - Design (`spec/DESIGN.md`, tokens only): page on `--bg`, table card `--bg-card` with 3px solid `var(--ink)` border + `var(--shadow-chunky)`; header row `--bg-warm`; data cells `--font-mono` 13px; player names `--font-display`; position badge per row tinted `var(--pos-qb|rb|wr|te)`; zebra `var(--zebra-stripe)`; sorted column header highlighted with `--orange`. Loading state: "pulling film..." in `--font-hand` 24px. Explicit error ("film room's dark. try again.") and empty ("no players match that cut.") states.
-  - Hallway: header links back to `/` and to `/scoring` (`crossRoomLinkPresent`); player-row → Player Sheet link is S-003's first move (rows are plain text here — logged, not a dead-end violation since the route doesn't exist yet).
+  - Hallway: header links back to `/` and to `/scoring` (`crossRoomLinkPresent`); player-row → Player Sheet link lands with S-003 (route exists from W0 — link rows now).
 - **Test plan (`test_screener_api.py`, reuse the `session_factory` + dependency-override pattern from `test_players_api.py`):** seed 2 RBs + 1 QB with 2 weeks each of 2024 stats → `season totals are summed and games counted` (known player: rush_yd = wk1+wk2, games = 2) · `sort=rush_yd&dir=desc orders correctly` · `position=RB returns only RBs` and `total` matches · `sort=evil_column returns 422` · `position=K returns 422` · `season with no rows returns empty rows, total 0, not 500`.
 - **Gates:** G1–G4; G5 (paste outputs in commit body):
   - `curl -s 'localhost:8000/api/screener?season=2025&position=RB&sort=rush_yd&dir=desc&limit=50' | python3 -c "import json,sys; d=json.load(sys.stdin); print(len(d['rows']), d['rows'][0]['name'])"` → `50 <a real RB1>` against the synced db
@@ -73,50 +94,69 @@
   - `/explore` renders ≥20 rows; clicking a header or position pill updates the URL; hard refresh on that URL preserves the exact view; no 500s in API log
   - voice check: `grep -rEn '\bAI\b|powered by|chatbot|LLM' apps/web/src --include='*.tsx'` → no user-facing hits
   - screenshot of `/explore?position=RB&sort=rush_yd&dir=desc` attached to the session (sand bg, chunky border, RB teal badges) — would r/DynastyFF screenshot it?
-- **Out of scope:** fantasy-points column and scoring presets (S-004) · player-row links to Player Sheet (S-003) · virtualization, 100+ columns, college toggle (Explore L1+) · saved views, export, watermark · pagination UI beyond limit/offset params · any new table or migration.
+- **Out of scope:** fantasy-points column and scoring presets (S-004) · virtualization, 100+ columns, college toggle (S-028) · saved views, export, watermark · pagination UI beyond limit/offset params · any new table or migration.
 - **Pitfalls:** nuqs v2 throws without `NuqsAdapter` mounted above any `useQueryState` call · keep `page.tsx` a server component and the panel `"use client"` (nuqs + TanStack hooks are client-only) · TanStack Table v8 column defs must be memoized (`useMemo`) or the table re-mounts every render · SQLite `SUM` returns NULL for no rows — wrap aggregates in `COALESCE(..., 0)` or coerce in the service · sort param goes through a whitelist dict to a column object, never string-interpolated into SQL · CI runs `pnpm install --frozen-lockfile`: forgetting to commit the updated `pnpm-lock.yaml` fails the web job.
 
-### S-003 player-sheet-v0 [OPEN]
-- **Pillar/Layer:** Player Sheet · **Trust:** T3
-- **Goal:** `/player/[gsis_id]` — header (name/team/position color), season + weekly stat table, prev/next player switch; every Explore row links here.
-- **Scope:** `apps/web/src/app/player/`, `apps/web/src/features/player-sheet/`, players API detail endpoint, tests.
-- **Gates:** G1–G4; G5: Explore row click lands on sheet, switching players feels instant, hallway check `playerIdentityConsistent`, screenshot.
+### S-003 player-sheet-v0 [OPEN] **[detail at wave start]**
+- **Pillar/Layer:** Player Sheet L0–L1 · **Trust:** T3
+- **Goal:** `/player/[gsis_id]` — position-colored header (name, team, meta from `player_meta`, headshot), season totals + weekly gamelog table, prev/next player switch, instant feel; every Explore row links here.
+- **Fence:** `apps/web/src/features/player-sheet/` + `/player` page fill · `services/player_service.py` + player router fill · tests. Interface: `GET /api/player/{gsis_id}` → identity + meta + season totals + weekly rows.
+- **Gates:** G1–G4, G6; G5: Explore row click lands here; switch feels instant; clean at 375px; hallway `playerIdentityConsistent`; screenshot.
 
-### S-004 explore-custom-scoring [OPEN]
-- **Pillar/Layer:** Explore L3 · **Trust:** T1, T3
-- **Goal:** Scoring preset picker (PPR/half/standard/TEP from `domain/scoring/presets.py`) + editable core rules; fantasy-points column computed server-side by `score_week` over real week stats.
-- **Scope:** screener API (accept scoring config), `apps/web/src/features/explore/` controls, `apps/web/src/features/scoring-preview/` integration, tests.
-- **Gates:** G1–G4; G5: points column changes when rules change, values match engine unit-test fixtures, URL carries the preset.
-
-### S-005 valuation-workbench-v0 [OPEN]
-- **Pillar/Layer:** Lab L1–L3 (flagship; absorbs Launch-10 `vorp`) · **Trust:** T1, T5, T6
-- **Goal:** `/lab/workbench` — the income approach made visible. VORP over a real season is the first model: assumptions panel (scoring config, replacement logic, league size) on the left, tier-colored value table on the right, values recompute live as assumptions change. Methodology note rendered beside the numbers ("how this value is built"). Octo header.
-- **Scope:** `apps/web/src/app/lab/`, `apps/web/src/features/lab/`, valuation service wiring to real data, tests.
-- **Gates:** G1–G4; G5: real top-200 renders, position ranks correct vs `test_vorp.py` logic, changing an assumption visibly moves values, links back to Player Sheet (hallway `crossRoomLinkPresent`), screenshot passes the r/DynastyFF test.
-
-### S-006 sleeper-connect [OPEN]
+### S-022 sleeper-connect [OPEN] **[detail at wave start]** *(was S-006)*
 - **Pillar/Layer:** Bureau L0 · **Trust:** T2
-- **Goal:** Sleeper username → league list → pick league; persist `LeagueConfig` (new `leagues` migration); context bar shows `@user · league`; workbench + screener default to the connected league's scoring.
-- **Scope:** to be fenced by a frontier planning pass before activation.
-- **Gates:** to be defined when fenced.
+- **Goal:** Sleeper username → league list → pick league; persist to `leagues` with `LeagueConfig` mapped from Sleeper `scoring_settings`; context bar shows `@user · league` on every route; screener/workbench default to the connected league's scoring. Keyless — works on localhost day one.
+- **Fence:** `ingest/sleeper_league.py` · `services/league_service.py` + league router fill · `features/shell/` context-bar fill · connect flow UI · tests.
+- **Gates:** G1–G4, G6 (roster identity via crosswalk); G5: connect a real username end-to-end on localhost; scoring settings match Sleeper's JSON field-for-field (T0 for league rules); hallway `leagueContextGlobal`.
 
-### S-007 trade-answer-card [OPEN]
-- **Pillar/Layer:** Explore/Lab (distribution) · **Trust:** T1, T6
-- **Goal:** The canonical Reddit screenshot per the trade-reply doctrine (NORTH_STAR Distribution): a side-by-side trade comparison card — players/picks on each side, valued under a league's settings, key assumptions visible — exportable as image with Razzle colors and "razzle.lol" watermark. Plus plain watermarked export for screener/workbench views.
-- **Scope:** to be fenced before activation (likely `/og/*` server-rendered routes + a compare view).
-- **Gates:** to be defined when fenced; G5 must include: the card alone answers "who wins this trade?" without the reader needing the app.
+### S-023 tier-gating [OPEN] **[detail at wave start]**
+- **Pillar/Layer:** Infrastructure/Product · **Trust:** T7
+- **Goal:** The paid line rendered: `<Gated feature="...">` lock treatments on Pro/Elite surfaces (chunky sticker lock, visible payoff copy, never an error page), tier badge in nav, switcher flips the whole product live.
+- **Fence:** `features/entitlements/` fill (component states per tier) · gate placements on lab/bureau routes · tests.
+- **Gates:** G1–G4; G5: browse `/lab` as dev-free (locked, inviting) vs dev-pro (open) vs dev-elite; screenshot each; voice grep clean.
 
-### S-008 deploy [OPEN]
-- **Pillar/Layer:** Infrastructure (launch gate) · **Trust:** —
-- **Goal:** Fly.io API + web live on razzle.lol behind Cloudflare; weekly sync cron; founder provides DNS + keys.
-- **Scope:** to be fenced before activation.
-- **Gates:** to be defined when fenced.
+### ═══ W2 — PRODUCT FLEET (parallel) ═══
 
-> Post-launch queue (do not start before 2026-07-28 unless launch path is done): valuation model layers (positional age curves, team situation surplus/deficit, growth rates — the NORTH_STAR build sheet), consensus market values beside intrinsic values, Bureau Self-Scout + monitoring/prediction, Monte Carlo championship odds, injury intel feed + Dolphin timelines + champ-probability deltas, Situation Room ask flow, Stripe Pro tier.
+### S-004 explore-custom-scoring [OPEN] **[detail at wave start]**
+- **Pillar/Layer:** Explore L3 · **Trust:** T1, T2, T3
+- **Goal:** Scoring preset picker (PPR/half/standard/TEP from `domain/scoring/presets.py`) + editable core rules; fantasy-points column computed server-side by `score_week` over real week stats; URL carries the config; connected league's scoring is the default preset.
+- **Gates:** G1–G4; G5: points column changes when rules change; values match engine unit-test fixtures exactly (T0 for computed numbers); URL carries the preset.
+
+### S-005 valuation-workbench-v0 [OPEN] **[detail at wave start]**
+- **Pillar/Layer:** Lab L1–L3 (flagship; absorbs Launch-10 `vorp`) · **Trust:** T1, T5, T6
+- **Goal:** `/lab/workbench` — the income approach made visible. VORP over a real season: assumptions panel (scoring config, replacement logic, league size) left, tier-colored value table right, live recompute, methodology note beside the numbers, **market value column beside intrinsic (from `market_values`) — the gap rendered as the trade thesis.** Octo header. Best-of-2 seats; architect picks on T6.
+- **Gates:** G1–G4, G6; G5: real top-200 renders; position ranks match `test_vorp.py` logic; changing an assumption visibly moves values; market column sourced+stamped; links to Player Sheet; screenshot passes the r/DynastyFF test.
+
+### S-024 lab-panels (ten seats, one per Launch-10 slug) [OPEN] **[detail at wave start]**
+- **Pillar/Layer:** Lab L1–L2 · **Trust:** T1, T5, T6
+- **Goal:** Each Launch-10 panel (`spec/PRODUCT.md` owns the list; `vorp` absorbed by S-005) rendered real: chart-kit visualization per its stated shape, staff-owner header, domain loading copy, Player Sheet links, watermark. One seat per slug, ten parallel — identical card template, different slug/data/chart config.
+- **Fence per seat:** `features/lab/panels/<slug>.tsx` + its service/router fill + tests. Registry rows landed in W0.
+- **Gates per seat:** G1–G4, G6; G5: panel renders real data in its stated shape (never JSON dump), gated per tier map, screenshot.
+
+### S-025 player-sheet-usage [OPEN] **[detail at wave start]** — Hawkeye tab: snap%, targets/routes, NGS separation/aDOT, weekly usage chart (chart kit). T1/T3. G6.
+### S-026 player-sheet-health [OPEN] **[detail at wave start]** — Dolphin tab: injury history timeline from `injuries_week`, current status, durability read. `dolphinReachable` satisfied product-wide. T1/T3. G6.
+### S-027 player-sheet-value [OPEN] **[detail at wave start]** — market value (stamped source) beside intrinsic VORP under active scoring; the gap called out in Caveat; contract line (OTC) + pedigree. Links into workbench. T1/T3. G6.
+### S-028 explore-density [OPEN] **[detail at wave start]** — Explore L1: column groups from new sources (snaps, NGS, adv, market), 100+ columns, TanStack Virtual, college toggle (blue mode). T1/T6. G6.
+### S-029 bureau-v0 [OPEN] **[detail at wave start]** — league home after connect: standings + real points, power ranks, roster grades vs market values, "who's hoarding RBs" reads, weekly briefing card v0 — all deterministic from synced + Sleeper data (no LLM). Bureau summary free, deep-dive Pro-gated. T2/T4/T6.
+### S-030 compare-view [OPEN] **[detail at wave start]** — `/compare?a=...&b=...`: side-by-side players (+picks later) under active league settings, assumptions visible; the pre-export trade answer surface. T1/T6.
+
+### ═══ W3 — TRUST FLEET (parallel) ═══
+
+### S-007 trade-answer-card [OPEN] **[detail at wave start]**
+- **Pillar/Layer:** Distribution · **Trust:** T1, T6
+- **Goal:** The canonical Reddit screenshot per the trade-reply doctrine: compare view exported as image — players/picks each side, valued under the asker's settings, assumptions visible, Razzle colors, `razzle.lol` watermark. Plus plain watermarked export for screener/workbench. G5 law: the card alone answers "who wins this trade?" without the app.
+### S-031 accuracy-audit [OPEN] — analyst fleet: full G6 across every synced source at high sample count; every mismatch fixed or documented as a source discrepancy; report in commit body. **Milestone Zero cannot pass without this card green.** T0.
+### S-032 design-qa [OPEN] — analyst fleet: screenshot every route in both themes at 1440/375, audit against `spec/DESIGN.md` Do/Don't + chart standard, fix loop. T6.
+### S-033 hallway-audit [OPEN] — the `spec/PRODUCT.md` wiring checklist across all routes: `playerIdentityConsistent`, `leagueContextGlobal`, `crossRoomLinkPresent`, `staffRegistryAligned`, `dolphinReachable` + voice grep repo-wide. T3.
+### S-034 graveyard-quarry [OPEN] — audit `graveyard/` (razzle, razzle-legacy, FDL) for anything valuable not yet carried in (pixel-room canvas assets, adapter edge cases, panel ideas, persona copy); report + ≤3 proposed cards. Read-only quarry rules apply.
+### S-035 room-shell [OPEN — STRETCH] — Situation Room L0 without LLM keys: dark floor (`--bg-ink`), six staff present, deterministic briefing cards from real data (injury flag → Dolphin card with timeline from `injuries_week`). Ask flow stays behind the entitlement flag until keys arrive (post-Milestone-Zero). T4.
+
+> **Post-Milestone-Zero queue (do not start):** S-008 deploy (Fly.io + razzle.lol + cron) · Stripe Pro tier · LLM keys → Room asks + staff nudges (OpenRouter BYOK) · valuation model layers (age curves, team situation, growth rates) · Monte Carlo championship odds · Bureau monitoring/prediction · OG share routes.
 
 ## LEDGER
 
 | Slice | Date | Commit | Gates | Note |
 |-------|------|--------|-------|------|
 | seed | 2026-06-09 | — | G1–G4 | Repo seeded: specs, factory, domain spine (scoring+VORP), tokens, personas, web skeleton |
-| S-001 | 2026-06-09 | (this) | G1–G5 | nflverse adapter + sync CLI; 8364 players, 11891 week rows (2024–2025), idempotent, db 1.6MB; GET /api/players live |
+| S-001 | 2026-06-09 | (prior) | G1–G5 | nflverse adapter + sync CLI; 8364 players, 11891 week rows (2024–2025), idempotent, db 1.6MB; GET /api/players live |
+| refit | 2026-07-22 | (this) | G1–G4 | Milestone Zero refit: T0 accuracy law + G6, 18-source data stack, chart standard, swarm routing, wave backlog. Verified live: tests 18 pass, web build green, --quick sync green, all 18 sources HTTP 200 keyless |
