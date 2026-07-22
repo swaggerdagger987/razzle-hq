@@ -10,10 +10,13 @@ import csv
 import gzip
 import io
 import urllib.request
+from datetime import UTC, datetime
 
 import sqlalchemy as sa
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.orm import Session
+
+from razzle_api.ingest.report import SourceStamp, SyncReport
 
 PLAYERS_URL = "https://github.com/nflverse/nflverse-data/releases/download/players/players.csv"
 WEEK_STATS_URL = (
@@ -110,6 +113,37 @@ def fetch_players() -> list[dict]:
 
 def fetch_week_stats(season: int) -> list[dict]:
     return _fetch_csv_rows(WEEK_STATS_URL.format(season=season))
+
+
+def sync(session: Session, seasons: list[int]) -> SyncReport:
+    fetched_at = datetime.now(UTC)
+    stamps: list[SourceStamp] = []
+    upserted: dict[str, int] = {}
+    skipped: list[str] = []
+
+    raw_players = fetch_players()
+    players = [mapped for mapped in (map_player_row(row) for row in raw_players) if mapped]
+    player_count = upsert_players(session, players)
+    upserted["players"] = player_count
+    stamps.append(SourceStamp("nflverse_players", None, player_count, fetched_at))
+    if skipped_count := len(raw_players) - len(players):
+        skipped.append(f"nflverse_players:{skipped_count}")
+
+    for season in seasons:
+        raw_stats = fetch_week_stats(season)
+        stats = [mapped for mapped in (map_week_row(row) for row in raw_stats) if mapped]
+        stats_count = upsert_week_stats(session, season, stats)
+        upserted[f"player_week_stats:{season}"] = stats_count
+        stamps.append(SourceStamp("nflverse_week_stats", season, stats_count, fetched_at))
+        if skipped_count := len(raw_stats) - len(stats):
+            skipped.append(f"nflverse_week_stats:{season}:{skipped_count}")
+
+    return SyncReport(
+        adapter="nflverse",
+        stamps=tuple(stamps),
+        upserted=upserted,
+        skipped=tuple(skipped),
+    )
 
 
 def _fetch_csv_rows(url: str) -> list[dict]:

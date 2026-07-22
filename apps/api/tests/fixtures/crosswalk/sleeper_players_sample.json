@@ -1,0 +1,56 @@
+{
+  "2505": {
+    "player_id": "2505",
+    "full_name": "Player Five",
+    "gsis_id": "00-0005",
+    "espn_id": "3505"
+  },
+  "2601": {
+    "player_id": "2601",
+    "full_name": "Multi One",
+    "gsis_id": "00-0006",
+    "espn_id": "3601"
+  },
+  "2602": {
+    "player_id": "2602",
+    "full_name": "Multi Two",
+    "gsis_id": "00-0006",
+    "espn_id": "3602"
+  },
+  "2002": {
+    "player_id": "2002",
+    "full_name": "Sleeper Override Attempt",
+    "gsis_id": "00-0002",
+    "espn_id": "9999"
+  },
+  "2998": {
+    "player_id": "2998",
+    "full_name": "Second Claimant For Two",
+    "gsis_id": "00-0002",
+    "espn_id": "8888"
+  },
+  "9999": {
+    "player_id": "9999",
+    "full_name": "Canonical Two",
+    "gsis_id": null,
+    "espn_id": "9999"
+  },
+  "2404": {
+    "player_id": "2404",
+    "full_name": "Player Four",
+    "gsis_id": "00-0004",
+    "espn_id": "3404"
+  },
+  "2610": {
+    "player_id": "2610",
+    "full_name": "Agree Multi A",
+    "gsis_id": "00-0001",
+    "espn_id": "3100"
+  },
+  "2611": {
+    "player_id": "2611",
+    "full_name": "Agree Multi B",
+    "gsis_id": "00-0001",
+    "espn_id": "3100"
+  }
+}

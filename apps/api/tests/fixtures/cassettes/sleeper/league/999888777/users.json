@@ -1,0 +1,16 @@
+[
+  {
+    "user_id": "111222333",
+    "username": "alice_dynasty",
+    "display_name": "Alice Dynasty",
+    "avatar": "abcdef0123456789",
+    "is_owner": true
+  },
+  {
+    "user_id": "444555666",
+    "username": "bob_rival",
+    "display_name": "Bob Rival",
+    "avatar": "fedcba9876543210",
+    "is_owner": false
+  }
+]

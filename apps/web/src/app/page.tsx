@@ -21,15 +21,38 @@ export default function Home() {
       </div>
 
       <div className="card-chunky p-6">
-        <p className="font-display text-base uppercase">The film room is under construction</p>
+        <p className="font-display text-base uppercase">The film room is open</p>
         <p className="mt-3 text-sm leading-6 text-ink-medium">
-          Explore, Lab, Bureau, Situation Room. One operation, four doors. The scoring engine is
-          already on —{" "}
-          <Link href="/scoring" className="font-bold text-orange underline">
-            try the scoring preview
+          Start in the{" "}
+          <Link href="/scratchpad" className="font-bold text-orange underline">
+            Scratchpad
           </Link>
-          .
+          , or{" "}
+          <Link href="/connect" className="font-bold text-orange underline">
+            Connect Sleeper
+          </Link>{" "}
+          to pull your league truth.
         </p>
+        <div className="mt-5 flex flex-wrap items-center gap-3">
+          <Link
+            href="/scratchpad"
+            className="rounded-lg border-2 border-ink px-3 py-1 text-xs font-bold"
+            style={{ background: "var(--bg-card)", color: "var(--ink)" }}
+          >
+            Scratchpad
+          </Link>
+          <Link
+            href="/connect"
+            className="btn-chunky"
+            data-active="true"
+            style={{ textDecoration: "none", fontSize: "12px", padding: "0.4rem 0.85rem" }}
+          >
+            Connect Sleeper
+          </Link>
+          <p className="font-hand text-lg text-ink-light">
+            The Line and War Room are still pulling film.
+          </p>
+        </div>
         <div className="mt-5 flex gap-2">
           {positions.map((position) => (
             <span
@@ -41,7 +64,6 @@ export default function Home() {
             </span>
           ))}
         </div>
-        <p className="font-hand mt-5 text-xl text-ink-light">pulling film...</p>
       </div>
     </main>
   );

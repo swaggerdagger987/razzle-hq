@@ -1,0 +1,45 @@
+{
+  "league_id": "999888777",
+  "name": "Pixel Punchers",
+  "season": "2025",
+  "sport": "nfl",
+  "status": "in_season",
+  "total_rosters": 12,
+  "draft_id": "draft_abc",
+  "previous_league_id": "888777666",
+  "roster_positions": [
+    "QB",
+    "RB",
+    "RB",
+    "WR",
+    "WR",
+    "TE",
+    "FLEX",
+    "SUPER_FLEX",
+    "BN",
+    "BN"
+  ],
+  "scoring_settings": {
+    "pass_td": 4.0,
+    "pass_yd": 0.04,
+    "pass_int": -1.0,
+    "rush_yd": 0.1,
+    "rush_td": 6.0,
+    "rec": 1.0,
+    "rec_yd": 0.1,
+    "rec_td": 6.0,
+    "fum_lost": -2.0,
+    "bonus_rec_te": 0.5
+  },
+  "settings": {
+    "type": 2,
+    "best_ball": 0,
+    "num_teams": 12,
+    "playoff_teams": 6,
+    "playoff_week_start": 15,
+    "waiver_type": 2,
+    "taxi_slots": 0,
+    "reserve_slots": 2,
+    "daily_waivers": 1
+  }
+}

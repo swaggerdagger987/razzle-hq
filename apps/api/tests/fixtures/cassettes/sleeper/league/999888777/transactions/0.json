@@ -1,0 +1,12 @@
+[
+  {
+    "type": "waiver",
+    "transaction_id": "txn_week0",
+    "status": "complete",
+    "leg": 0,
+    "roster_ids": [1],
+    "adds": {"7526": 1},
+    "drops": null,
+    "status_updated": 1725000000000
+  }
+]

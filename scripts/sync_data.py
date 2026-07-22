@@ -7,40 +7,57 @@ Run from repo root:
 """
 
 import argparse
+import importlib
+import sys
+from collections.abc import Callable
 from pathlib import Path
+from typing import cast
 
 import sqlalchemy as sa
 from alembic import command
 from alembic.config import Config
+from sqlalchemy.orm import Session
 
 from razzle_api.config import get_settings
 from razzle_api.core.db import SessionLocal
-from razzle_api.ingest.nflverse import (
-    fetch_players,
-    fetch_week_stats,
-    map_player_row,
-    map_week_row,
-    upsert_players,
-    upsert_week_stats,
-)
+from razzle_api.ingest.report import SyncReport, stamp_source_syncs
+from razzle_api.ingest.sleeper import SleeperUpstreamError
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 QUICK_SEASONS = [2024, 2025]
+ADAPTERS: dict[str, str] = {
+    "nflverse": "razzle_api.ingest.nflverse",
+    "crosswalk": "razzle_api.ingest.crosswalk",
+}
+AdapterSync = Callable[[Session, list[int]], SyncReport]
 
 
 def sync(seasons: list[int]) -> None:
     _migrate_to_head()
     with SessionLocal() as session:
-        players = [m for m in (map_player_row(row) for row in fetch_players()) if m is not None]
-        count = upsert_players(session, players)
-        print(f"players: upserted {count}")
-        for season in seasons:
-            stats = [
-                m for m in (map_week_row(row) for row in fetch_week_stats(season)) if m is not None
-            ]
-            count = upsert_week_stats(session, season, stats)
-            print(f"player_week_stats {season}: upserted {count}")
+        for adapter_name in ADAPTERS:
+            report = _load_adapter(adapter_name)(session, seasons)
+            stamp_source_syncs(session, report.stamps)
+            _print_report(report)
         session.commit()
+
+
+def _load_adapter(name: str) -> AdapterSync:
+    module_path = ADAPTERS.get(name)
+    if module_path is None:
+        raise ValueError(f"unknown adapter: {name}")
+    module = importlib.import_module(module_path)
+    adapter_sync = getattr(module, "sync", None)
+    if not callable(adapter_sync):
+        raise TypeError(f"adapter {name} does not expose callable sync")
+    return cast(AdapterSync, adapter_sync)
+
+
+def _print_report(report: SyncReport) -> None:
+    for key, count in report.upserted.items():
+        table, separator, qualifier = key.partition(":")
+        suffix = f" {qualifier}" if separator else ""
+        print(f"{table}{suffix}: upserted {count}")
 
 
 def status() -> None:
@@ -66,19 +83,27 @@ def _sqlite_path(database_url: str) -> Path | None:
     return Path(database_url.removeprefix(prefix))
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--quick", action="store_true", help="sync current + prior season")
     group.add_argument("--seasons", nargs="+", type=int, help="explicit seasons to sync")
     group.add_argument("--status", action="store_true", help="print row counts and db size")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
-    if args.status:
-        status()
-    else:
-        sync(QUICK_SEASONS if args.quick else args.seasons)
+    try:
+        if args.status:
+            status()
+        else:
+            sync(QUICK_SEASONS if args.quick else args.seasons)
+    # Operational failures only (bad preconditions, network, upstream). SleeperUpstreamError
+    # subclasses Exception directly, so it is named here; urllib errors are OSError.
+    # SQLAlchemy integrity/programming errors are bugs and must escape as tracebacks.
+    except (SleeperUpstreamError, ValueError, OSError, RuntimeError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

@@ -3,7 +3,7 @@
 ## Identity — the crosswalk (T0 substrate)
 
 - **Primary player key: nflverse `gsis_id`.** Every NFL stat table keys on it.
-- **The crosswalk is one table (`player_ids`)**, built from DynastyProcess `db_playerids.csv` enriched by the Sleeper players dump: gsis_id ⇄ sleeper_id ⇄ espn_id ⇄ pfr_id ⇄ cfb_player_id ⇄ market-source naming. Any adapter arriving keyed on anything other than gsis_id resolves **through the crosswalk table — never by name matching inside adapter code**. Unresolvable rows are logged in the sync report and skipped; guessing an identity is worse than dropping a row.
+- **The crosswalk is one table (`player_ids`)**, seeded from the canonical `players` spine (every spine gsis_id gets a row; unmapped external ids stay NULL), overlaid by DynastyProcess `db_playerids.csv`, and enriched by the Sleeper players dump — exact keys only: gsis_id ⇄ sleeper_id ⇄ espn_id ⇄ pfr_id ⇄ cfb_player_id ⇄ market-source naming. Any adapter arriving keyed on anything other than gsis_id resolves **through the crosswalk table — never by name matching inside adapter code**. Unresolvable rows are logged in the sync report and skipped; guessing an identity is worse than dropping a row.
 - **The college→pro bridge is keyed, not fuzzy** (verified 2026-07-22): nflverse `draft_picks.csv` carries `gsis_id`, `pfr_player_id`, and `cfb_player_id` side by side, plus college and draft capital. Drafted players link deterministically. Undrafted players go through name + college + class-year matching that **fails closed**: an unverified link renders "no verified college record," never a wrong attach. Bridge coverage is an audited number (target: ≥95% of drafted actives since 2016 linked, every link replayable).
 - All stat values stored as **floats**.
 

@@ -1,0 +1,37 @@
+[
+  {
+    "league_id": "999888777",
+    "name": "Pixel Punchers",
+    "season": "2025",
+    "sport": "nfl",
+    "status": "in_season",
+    "total_rosters": 12,
+    "settings": {
+      "type": 2,
+      "best_ball": 0,
+      "num_teams": 12,
+      "playoff_week_start": 15,
+      "waiver_type": 2
+    },
+    "scoring_settings": {
+      "pass_td": 4.0,
+      "pass_yd": 0.04,
+      "rush_yd": 0.1,
+      "rec": 1.0,
+      "rec_yd": 0.1,
+      "bonus_rec_te": 0.5
+    },
+    "roster_positions": [
+      "QB",
+      "RB",
+      "RB",
+      "WR",
+      "WR",
+      "TE",
+      "FLEX",
+      "SUPER_FLEX",
+      "BN",
+      "BN"
+    ]
+  }
+]
