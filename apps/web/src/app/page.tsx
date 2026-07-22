@@ -27,7 +27,11 @@ export default function Home() {
           <Link href="/scratchpad" className="font-bold text-orange underline">
             Scratchpad
           </Link>
-          .
+          , or{" "}
+          <Link href="/connect" className="font-bold text-orange underline">
+            Connect Sleeper
+          </Link>{" "}
+          to pull your league truth.
         </p>
         <div className="mt-5 flex flex-wrap items-center gap-3">
           <Link
@@ -36,6 +40,14 @@ export default function Home() {
             style={{ background: "var(--bg-card)", color: "var(--ink)" }}
           >
             Scratchpad
+          </Link>
+          <Link
+            href="/connect"
+            className="btn-chunky"
+            data-active="true"
+            style={{ textDecoration: "none", fontSize: "12px", padding: "0.4rem 0.85rem" }}
+          >
+            Connect Sleeper
           </Link>
           <p className="font-hand text-lg text-ink-light">
             The Line and War Room are still pulling film.
