@@ -29,7 +29,7 @@ Frozen contracts land at the end of Stage 1 (`/api/context/connect` · `/api/con
 ### R-01 ci-scope-repair [DONE — landed in the constitution PR]
 - graveyard/ excluded from pytest collection and ruff (pyproject.toml). Repo-root gates green again: 18 passed; all checks passed.
 
-### R-02 recover-screener-train [OPEN — execution-ready] · L · writer + auditors
+### R-02 recover-screener-train [ACTIVE] · L · writer + auditors
 - **Goal:** the jolly-turing S-002→S-004 train (screener, player sheet, custom scoring) recovered onto a lane branch, defects fixed, gated, merged — the free layer of Scratchpad live over real data.
 - **Method:** reviewed cherry-pick from `origin/claude/jolly-turing-l4muhb` (merge-base 199eba5) — never blind merge. Its factory/* changes are superseded by this constitution; take product code + tests only.
 - **Verified defects to fix (read 2026-07-22):**
