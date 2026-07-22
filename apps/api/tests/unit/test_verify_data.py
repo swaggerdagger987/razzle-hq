@@ -23,6 +23,7 @@ from razzle_api.ingest.nflverse import (
     upsert_players,
     upsert_week_stats,
 )
+from razzle_api.ingest.report import SourceStamp, stamp_source_syncs
 
 
 def _repo_root() -> Path:
@@ -210,7 +211,8 @@ def db_env(tmp_path, monkeypatch):
         cfg = Config(str(API_DIR / "alembic.ini"))
         cfg.set_main_option("script_location", str(API_DIR / "migrations"))
         cfg.set_main_option("sqlalchemy.url", db_url)
-        command.upgrade(cfg, "head")
+        # Most R-03 tests exercise the pre-K-01 unavailable-capability state.
+        command.upgrade(cfg, "0001")
         engine = sa.create_engine(db_url)
         factory = sessionmaker(engine, expire_on_commit=False)
         yield {
@@ -319,6 +321,41 @@ def test_happy_bidirectional_replay_with_pinned_map_fields(db_env):
     assert _result(report, "identity").status == CheckStatus.UNAVAILABLE
     assert _result(report, "freshness").status == CheckStatus.UNAVAILABLE
     assert _result(report, "cross_source").status == CheckStatus.UNAVAILABLE
+
+
+def test_required_freshness_passes_after_k01_stamps(db_env):
+    players = _fixture_players()
+    weeks = _fixture_weeks()
+    _seed_from_source(db_env["factory"], players, weeks)
+
+    cfg = Config(str(API_DIR / "alembic.ini"))
+    cfg.set_main_option("script_location", str(API_DIR / "migrations"))
+    cfg.set_main_option("sqlalchemy.url", db_env["db_url"])
+    command.upgrade(cfg, "head")
+
+    as_of = datetime(2026, 7, 22, 12, 0, tzinfo=UTC)
+    player_count = sum(map_player_row(row) is not None for row in players)
+    week_count = sum(map_week_row(row) is not None for row in weeks)
+    with db_env["factory"]() as session:
+        stamp_source_syncs(
+            session,
+            (
+                SourceStamp("nflverse_players", None, player_count, as_of),
+                SourceStamp("nflverse_week_stats", SEASON, week_count, as_of),
+            ),
+        )
+        session.commit()
+
+    report = _run_verify(
+        db_env["factory"],
+        players,
+        weeks,
+        required_checks={"freshness"},
+        fetched_at=as_of,
+    )
+
+    assert report.status == CheckStatus.PASS
+    assert _result(report, "freshness").status == CheckStatus.PASS
 
 
 def test_stat_and_player_corruption_fail_with_field_and_key(db_env):
