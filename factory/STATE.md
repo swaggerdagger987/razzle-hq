@@ -65,7 +65,7 @@ Frozen contracts land at the end of Stage 1 (`/api/context/connect` · `/api/con
 
 ### ═══ STAGE 1 — CONTEXT KERNEL (after R-02, R-03) ═══
 
-### K-01 migrations-and-provenance [OPEN — execution-ready] · L · **captain-authored** (serialized lock)
+### K-01 migrations-and-provenance [ACTIVE] · L · **captain-authored** (serialized lock)
 - **Pillar / Trust:** context-kernel infrastructure; T0 traceability and T2 shared league truth.
 - **Goal:** one Alembic wave creates the complete Milestone-Zero schema; `main.py` reaches its final router registry; sync becomes lazy-adapter based and stamps freshness; one provenance envelope contract is ready for every room.
 - **File plan:** NEW `apps/api/migrations/versions/0002_context_kernel_tables.py`, `apps/api/src/razzle_api/ingest/report.py`, `apps/api/src/razzle_api/core/provenance.py`, `apps/api/src/razzle_api/api/schemas/provenance.py`, router shells `api/routers/{context,me,scenarios,scratchpad,line,war_room,values}.py`, tests `unit/test_{provenance,sync_registry}.py` and `integration/test_router_preregistration.py`; EDIT `apps/api/src/razzle_api/main.py`, `apps/api/src/razzle_api/ingest/nflverse.py`, `scripts/sync_data.py`, `apps/api/tests/integration/test_migrations.py`, and narrowly `unit/test_verify_data.py` for a stamped freshness integration. No domain, web, package, spec, or other factory edits.
