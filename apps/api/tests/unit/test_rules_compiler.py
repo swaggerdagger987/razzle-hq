@@ -388,9 +388,19 @@ def test_yards_allowed_ranges_score_week_dst() -> None:
             },
         )
     )
+    assert compiled.coverage.status == "full"
+    assert compiled.league.scoring.defense.yards_allowed_ranges[:2] == [
+        RangeRule(min_value=0.0, max_value=99.0, points=5.0),
+        RangeRule(min_value=100.0, max_value=199.0, points=2.0),
+    ]
     rules = compiled.league.scoring
     assert score_week(PlayerWeekStats(dst_yards_allowed=50), rules, position="DST") == 5.0
+    # Sleeper boundary: 99 is "less than 100"; exactly 100 belongs to 100-199.
+    assert score_week(PlayerWeekStats(dst_yards_allowed=99), rules, position="DST") == 5.0
+    assert score_week(PlayerWeekStats(dst_yards_allowed=100), rules, position="DST") == 2.0
     assert score_week(PlayerWeekStats(dst_yards_allowed=150), rules, position="DST") == 2.0
+    assert score_week(PlayerWeekStats(dst_yards_allowed=199), rules, position="DST") == 2.0
+    assert score_week(PlayerWeekStats(dst_yards_allowed=200), rules, position="DST") == 0.0
     assert score_week(PlayerWeekStats(dst_yards_allowed=320), rules, position="DST") == -1.0
     assert score_week(PlayerWeekStats(dst_yards_allowed=600), rules, position="DST") == -6.0
 

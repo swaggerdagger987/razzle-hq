@@ -167,7 +167,9 @@ _PTS_ALLOW_BUCKETS: list[tuple[str, float, float | None]] = [
 ]
 
 _YDS_ALLOW_BUCKETS: list[tuple[str, float, float | None]] = [
-    ("yds_allow_0_100", 0.0, 100.0),
+    # Sleeper's yds_allow_0_100 means "less than 100"; RangeRule is inclusive
+    # and first-match wins, so the bucket must end at 99 to keep 100 in 100_199.
+    ("yds_allow_0_100", 0.0, 99.0),
     ("yds_allow_100_199", 100.0, 199.0),
     ("yds_allow_200_299", 200.0, 299.0),
     ("yds_allow_300_349", 300.0, 349.0),
