@@ -1,0 +1,12 @@
+[
+  {
+    "type": "trade",
+    "transaction_id": "txn_week3",
+    "status": "complete",
+    "leg": 3,
+    "roster_ids": [1, 2],
+    "adds": {"4039": 1, "7526": 2},
+    "drops": null,
+    "status_updated": 1727000000000
+  }
+]

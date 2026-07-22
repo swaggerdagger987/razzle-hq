@@ -1,0 +1,32 @@
+[
+  {
+    "roster_id": 1,
+    "owner_id": "111222333",
+    "players": ["4046", "6794", "7526"],
+    "starters": ["4046", "6794"],
+    "reserve": [],
+    "taxi": [],
+    "settings": {
+      "wins": 2,
+      "losses": 1,
+      "ties": 0,
+      "fpts": 312,
+      "fpts_decimal": 40
+    }
+  },
+  {
+    "roster_id": 2,
+    "owner_id": "444555666",
+    "players": ["4984", "4039"],
+    "starters": ["4984"],
+    "reserve": [],
+    "taxi": [],
+    "settings": {
+      "wins": 1,
+      "losses": 2,
+      "ties": 0,
+      "fpts": 288,
+      "fpts_decimal": 10
+    }
+  }
+]
