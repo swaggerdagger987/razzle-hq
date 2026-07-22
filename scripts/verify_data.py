@@ -16,8 +16,8 @@ import random
 import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from enum import Enum
+from datetime import UTC, datetime
+from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
@@ -57,7 +57,7 @@ DEFAULT_MAX_AGE_HOURS = 36.0
 FLOAT_ABS_TOL = 1e-9
 
 
-class CheckStatus(str, Enum):
+class CheckStatus(StrEnum):
     PASS = "PASS"
     FAIL = "FAIL"
     UNAVAILABLE = "UNAVAILABLE"
@@ -130,13 +130,13 @@ def sample_sorted_keys(keys: Sequence[Any], n: int, seed: int) -> list[Any]:
 
 
 def _utc_now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def _ensure_utc(value: datetime) -> datetime:
     if value.tzinfo is None:
-        return value.replace(tzinfo=timezone.utc)
-    return value.astimezone(timezone.utc)
+        return value.replace(tzinfo=UTC)
+    return value.astimezone(UTC)
 
 
 def parse_datetime(value: object) -> datetime | None:
@@ -145,7 +145,7 @@ def parse_datetime(value: object) -> datetime | None:
     if isinstance(value, datetime):
         return _ensure_utc(value)
     if isinstance(value, (int, float)):
-        return datetime.fromtimestamp(float(value), tz=timezone.utc)
+        return datetime.fromtimestamp(float(value), tz=UTC)
     text = str(value).strip()
     if not text:
         return None
@@ -277,7 +277,7 @@ def compare_identity_capability(
     )
 
 
-def compare_freshness_capability(
+def compare_freshness_capability(  # noqa: PLR0913
     sync_rows: Sequence[Mapping[str, Any]] | None,
     *,
     columns: Sequence[str] | None = None,
@@ -543,11 +543,8 @@ def _compare_week_fields(
         return details
     if db_row.get("player_id") != source_row.get("player_id"):
         details.append(
-            "key={key} field=player_id db={db!r} source={src!r}".format(
-                key=key,
-                db=db_row.get("player_id"),
-                src=source_row.get("player_id"),
-            )
+            f"key={key} field=player_id "
+            f"db={db_row.get('player_id')!r} source={source_row.get('player_id')!r}"
         )
     if int(db_row.get("week")) != int(source_row.get("week")):
         details.append(
@@ -588,7 +585,13 @@ def _verify_players(
             warnings=warnings,
         )
 
-    if not db_keys or not source_keys or len(db_keys) < sample_size or len(source_keys) < sample_size:
+    undersized = (
+        not db_keys
+        or not source_keys
+        or len(db_keys) < sample_size
+        or len(source_keys) < sample_size
+    )
+    if undersized:
         return CheckResult(
             name="players",
             status=CheckStatus.FAIL,
@@ -661,7 +664,7 @@ def _verify_players(
     )
 
 
-def _verify_weeks(
+def _verify_weeks(  # noqa: PLR0913
     *,
     season: int,
     db_weeks: Mapping[tuple[str, int], Mapping[str, Any]],
@@ -686,7 +689,13 @@ def _verify_weeks(
 
     db_keys = list(db_weeks.keys())
     source_keys = list(accepted.keys())
-    if not db_keys or not source_keys or len(db_keys) < sample_size or len(source_keys) < sample_size:
+    undersized = (
+        not db_keys
+        or not source_keys
+        or len(db_keys) < sample_size
+        or len(source_keys) < sample_size
+    )
+    if undersized:
         return CheckResult(
             name=name,
             status=CheckStatus.FAIL,
@@ -778,7 +787,7 @@ def _verify_weeks(
     )
 
 
-def verify(
+def verify(  # noqa: PLR0913
     session: Session,
     *,
     sample_size: int,
@@ -804,7 +813,11 @@ def verify(
     sources: list[SourceEvidence] = []
     sample_keys: dict[str, list[Any]] = {}
 
-    player_mapped = [mapped for mapped in (map_player_row(row) for row in player_source_rows) if mapped]
+    player_mapped = [
+        mapped
+        for mapped in (map_player_row(row) for row in player_source_rows)
+        if mapped
+    ]
     sources.append(
         SourceEvidence(
             name="players",
@@ -921,16 +934,12 @@ def verify(
 def format_human_report(report: VerificationReport) -> str:
     lines: list[str] = []
     for source in report.sources:
+        fetched = _ensure_utc(source.fetched_at).isoformat()
         lines.append(
-            "SOURCE {name} location={location} raw_rows={raw} mapped_rows={mapped} "
-            "canonical_rows_sha256={sha} fetched_at={fetched}".format(
-                name=source.name,
-                location=source.location,
-                raw=source.raw_row_count,
-                mapped=source.mapped_row_count,
-                sha=source.canonical_rows_sha256,
-                fetched=_ensure_utc(source.fetched_at).isoformat(),
-            )
+            f"SOURCE {source.name} location={source.location} "
+            f"raw_rows={source.raw_row_count} mapped_rows={source.mapped_row_count} "
+            f"canonical_rows_sha256={source.canonical_rows_sha256} "
+            f"fetched_at={fetched}"
         )
 
     for result in report.results:
@@ -1043,7 +1052,74 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def run_cli(argv: list[str] | None = None) -> int:
+def _cli_arg_error(args: argparse.Namespace) -> str | None:
+    if args.sample < 1:
+        return "error: --sample must be an integer >= 1"
+    if args.max_age_hours <= 0:
+        return "error: --max-age-hours must be > 0"
+    return None
+
+
+def _open_verify_engine(database_url: str) -> Engine:
+    engine = _create_engine(database_url)
+    _require_tables(engine)
+    return engine
+
+
+def _offline_missing_paths(
+    *,
+    players_csv: Path | None,
+    seasons: list[int],
+    week_paths: dict[int, Path],
+) -> list[str]:
+    missing: list[str] = []
+    if players_csv is None:
+        return ["<players-csv>"]
+    if not players_csv.exists():
+        missing.append(str(players_csv))
+    for season in seasons:
+        path = week_paths.get(season)
+        if path is None or not path.exists():
+            missing.append(f"{season}={path}" if path else f"{season}=<missing>")
+    return missing
+
+
+def _load_sources(
+    *,
+    offline: bool,
+    players_csv: Path | None,
+    seasons: list[int],
+    week_paths: dict[int, Path],
+) -> tuple[list[dict], dict[int, list[dict]], dict[str, str]]:
+    locations: dict[str, str] = {}
+    if players_csv is not None:
+        if not players_csv.exists():
+            raise FileNotFoundError(f"players csv not found: {players_csv}")
+        player_source_rows = read_csv_rows(players_csv)
+        locations["players"] = str(players_csv)
+    elif offline:
+        raise ValueError("--offline requires --players-csv")
+    else:
+        player_source_rows = fetch_players()
+        locations["players"] = PLAYERS_URL
+
+    week_source_rows_by_season: dict[int, list[dict]] = {}
+    for season in seasons:
+        path = week_paths.get(season)
+        if path is not None:
+            if not path.exists():
+                raise FileNotFoundError(f"week csv not found: {path}")
+            week_source_rows_by_season[season] = read_csv_rows(path)
+            locations[f"week_{season}"] = str(path)
+        elif offline:
+            raise FileNotFoundError(f"offline missing --week-csv for season {season}")
+        else:
+            week_source_rows_by_season[season] = fetch_week_stats(season)
+            locations[f"week_{season}"] = WEEK_STATS_URL.format(season=season)
+    return player_source_rows, week_source_rows_by_season, locations
+
+
+def run_cli(argv: list[str] | None = None) -> int:  # noqa: PLR0911, PLR0912, PLR0915
     parser = _build_parser()
     try:
         args = parser.parse_args(argv)
@@ -1051,11 +1127,9 @@ def run_cli(argv: list[str] | None = None) -> int:
         code = exc.code
         return int(code) if isinstance(code, int) else 2
 
-    if args.sample < 1:
-        print("error: --sample must be an integer >= 1", file=sys.stderr)
-        return 2
-    if args.max_age_hours <= 0:
-        print("error: --max-age-hours must be > 0", file=sys.stderr)
+    arg_error = _cli_arg_error(args)
+    if arg_error is not None:
+        print(arg_error, file=sys.stderr)
         return 2
 
     try:
@@ -1067,12 +1141,9 @@ def run_cli(argv: list[str] | None = None) -> int:
     database_url = args.database_url or get_settings().database_url
     engine: Engine | None = None
     try:
-        engine = _create_engine(database_url)
-        _require_tables(engine)
+        engine = _open_verify_engine(database_url)
     except Exception as exc:  # noqa: BLE001 — operational exit 2
         print(f"error: database unavailable: {exc}", file=sys.stderr)
-        if engine is not None:
-            engine.dispose()
         return 2
 
     session_factory = sessionmaker(engine, expire_on_commit=False)
@@ -1088,58 +1159,24 @@ def run_cli(argv: list[str] | None = None) -> int:
                 if args.players_csv is None:
                     print("error: --offline requires --players-csv", file=sys.stderr)
                     return 2
-                missing = []
-                if not args.players_csv.exists():
-                    missing.append(str(args.players_csv))
-                for season in seasons:
-                    path = week_paths.get(season)
-                    if path is None or not path.exists():
-                        missing.append(f"{season}={path}" if path else f"{season}=<missing>")
+                missing = _offline_missing_paths(
+                    players_csv=args.players_csv,
+                    seasons=seasons,
+                    week_paths=week_paths,
+                )
                 if missing:
-                    print(
-                        "error: offline source path(s) missing: " + ", ".join(missing),
-                        file=sys.stderr,
-                    )
+                    joined = ", ".join(missing)
+                    print(f"error: offline source path(s) missing: {joined}", file=sys.stderr)
                     return 2
 
-            locations: dict[str, str] = {}
             fetched_at = _utc_now()
-
             try:
-                if args.players_csv is not None:
-                    if not args.players_csv.exists():
-                        print(
-                            f"error: players csv not found: {args.players_csv}",
-                            file=sys.stderr,
-                        )
-                        return 2
-                    player_source_rows = read_csv_rows(args.players_csv)
-                    locations["players"] = str(args.players_csv)
-                elif args.offline:
-                    print("error: --offline requires --players-csv", file=sys.stderr)
-                    return 2
-                else:
-                    player_source_rows = fetch_players()
-                    locations["players"] = PLAYERS_URL
-
-                week_source_rows_by_season: dict[int, list[dict]] = {}
-                for season in seasons:
-                    path = week_paths.get(season)
-                    if path is not None:
-                        if not path.exists():
-                            print(f"error: week csv not found: {path}", file=sys.stderr)
-                            return 2
-                        week_source_rows_by_season[season] = read_csv_rows(path)
-                        locations[f"week_{season}"] = str(path)
-                    elif args.offline:
-                        print(
-                            f"error: offline missing --week-csv for season {season}",
-                            file=sys.stderr,
-                        )
-                        return 2
-                    else:
-                        week_source_rows_by_season[season] = fetch_week_stats(season)
-                        locations[f"week_{season}"] = WEEK_STATS_URL.format(season=season)
+                player_rows, week_rows, locations = _load_sources(
+                    offline=args.offline,
+                    players_csv=args.players_csv,
+                    seasons=seasons,
+                    week_paths=week_paths,
+                )
             except Exception as exc:  # noqa: BLE001 — network/parse/I/O
                 print(f"error: source load failed: {exc}", file=sys.stderr)
                 return 2
@@ -1149,8 +1186,8 @@ def run_cli(argv: list[str] | None = None) -> int:
                 sample_size=args.sample,
                 seed=args.seed,
                 seasons=seasons,
-                player_source_rows=player_source_rows,
-                week_source_rows_by_season=week_source_rows_by_season,
+                player_source_rows=player_rows,
+                week_source_rows_by_season=week_rows,
                 required_checks=set(args.require),
                 max_age_hours=args.max_age_hours,
                 fetched_at=fetched_at,

@@ -6,7 +6,7 @@ import csv
 import importlib.util
 import json
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -24,7 +24,17 @@ from razzle_api.ingest.nflverse import (
     upsert_week_stats,
 )
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+
+def _repo_root() -> Path:
+    here = Path(__file__).resolve()
+    for parent in here.parents:
+        candidate = parent / "scripts" / "verify_data.py"
+        if candidate.is_file():
+            return parent
+    raise RuntimeError("could not locate repository root with scripts/verify_data.py")
+
+
+REPO_ROOT = _repo_root()
 API_DIR = Path(__file__).resolve().parents[2]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "verify_data.py"
 
@@ -237,7 +247,7 @@ def _block_network(monkeypatch) -> None:
     monkeypatch.setattr(verify_data, "fetch_week_stats", _boom)
 
 
-def _run_verify(
+def _run_verify(  # noqa: PLR0913
     factory,
     player_rows: list[dict[str, str]],
     week_rows: list[dict[str, str]],
@@ -259,7 +269,7 @@ def _run_verify(
             week_source_rows_by_season={SEASON: week_rows},
             required_checks=required_checks or set(),
             max_age_hours=max_age_hours,
-            fetched_at=fetched_at or datetime(2026, 7, 22, tzinfo=timezone.utc),
+            fetched_at=fetched_at or datetime(2026, 7, 22, tzinfo=UTC),
         )
 
 
@@ -315,7 +325,10 @@ def test_stat_and_player_corruption_fail_with_field_and_key(db_env):
             sa.text("UPDATE player_week_stats SET pass_yd = 999 WHERE player_id = '00-0034796'")
         )
         session.execute(
-            sa.text("UPDATE players SET name = 'Wrong', position = 'RB', team = 'XX' WHERE gsis_id = '00-0000001'")
+            sa.text(
+                "UPDATE players SET name = 'Wrong', position = 'RB', team = 'XX' "
+                "WHERE gsis_id = '00-0000001'"
+            )
         )
         session.commit()
 
@@ -701,7 +714,7 @@ def test_offline_happy_cli_and_require_flags(db_env, monkeypatch, capsys):
 
 
 def test_pure_capability_comparators():
-    now = datetime(2026, 7, 22, 12, 0, tzinfo=timezone.utc)
+    now = datetime(2026, 7, 22, 12, 0, tzinfo=UTC)
     sampled = ["00-1", "00-2"]
 
     missing = compare_identity_capability(sampled, None)
