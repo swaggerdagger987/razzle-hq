@@ -1,0 +1,12 @@
+mfl_id,gsis_id,sleeper_id,espn_id,pfr_id,cfbref_id,name,merge_name,position,team
+100,00-0002,2002,3002,Pfr02,cfb-player-2,DP Name Two,dp name two,RB,KC
+101,MEN516487,2999,3999,PfrProv,cfb-prov,Provisional Player,provisional player,WR,FA
+102,NA,2000,3000,PfrMiss,cfb-miss,Missing Gsis,missing gsis,TE,NE
+103,00-0003,2100,3100,Pfr03a,cfb-03a,Conflict A,conflict a,QB,BUF
+104,00-0003,2101,3101,Pfr03b,cfb-03b,Conflict B,conflict b,QB,BUF
+105,00-0007,2700,3700,Pfr07,cfb-07,Player Seven,player seven,WR,DAL
+106,00-0008,2700,3800,Pfr08,cfb-08,Player Eight,player eight,TE,PHI
+107,00-0005,NA,NA,Pfr05,cfb-05,Player Five,player five,RB,SF
+108,00-0005,NA,NA,Pfr05,cfb-05,Player Five,player five,RB,SF
+109,00-0004,NA,NA,Pfr04,,Player Four,player four,WR,MIA
+110,00-NONAME,2888,3888,PfrNo,,NA,no name,QB,FA
