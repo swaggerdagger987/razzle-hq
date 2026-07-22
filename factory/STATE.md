@@ -40,7 +40,7 @@ Frozen contracts land at the end of Stage 1 (`/api/context/connect` · `/api/con
 - **Golden tests:** two hand-verified 2025 player-seasons per position (incl. one two-pt-conversion case and one non-REG-filter case), asserted to the decimal against `score_week` fixtures.
 - **Gates:** G1–G6; G5: `/explore`-equivalent renders ≥20 real rows under PPR/half/standard/TEP with points matching goldens; URL round-trips; screenshot.
 
-### R-03 verify-harness-v1 [OPEN — execution-ready] · M · writer + auditors
+### R-03 verify-harness-v1 [ACTIVE] · M · writer + auditors
 - **Pillar / Trust:** release safety; T0 accuracy law and reusable G6 substrate.
 - **Goal:** `scripts/verify_data.py` map-replays deterministic random samples in both directions between `players` / `player_week_stats` and nflverse source rows, detects filter leaks and identity/stat mismatches, never mutates the DB, and exits 0 on a freshly synced database. Checks report `PASS`, `FAIL`, or visible `UNAVAILABLE(reason)`; `--require identity|freshness` promotes unavailable table-backed checks to failures.
 - **File plan:** NEW `scripts/verify_data.py` (CLI, source loading, capability probes, report); NEW `apps/api/tests/unit/test_verify_data.py` (offline source fixtures built in `tmp_path`, temp migrated DB, no network). No edits to ingest, sync, migrations, domain, web, manifests, spec, or other factory files; `factory/STATE.md` remains captain-only for status/ledger.
