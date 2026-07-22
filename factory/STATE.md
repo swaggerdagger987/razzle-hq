@@ -94,7 +94,7 @@ Frozen contracts land at the end of Stage 1 (`/api/context/connect` · `/api/con
 - **Out of scope:** Sleeper HTTP/persistence, standings math, web chip, expanding engine for unsupported keys, migrations/shared locks.
 - **Pitfalls:** `int` is DST interception, not pass INT; DST `fum_rec` only when DEF rostered; no silent unsupported nonzero; domain stays pure; never import graveyard.
 
-### K-03a sleeper-client-cassettes [OPEN — execution-ready] · M · Grok writer + auditors
+### K-03a sleeper-client-cassettes [ACTIVE] · M · Grok writer + auditors
 - **Pillar / Trust:** T0 source honesty and T2 live-only league acquisition.
 - **Goal:** keyless Sleeper client fetches one user's current-season leagues and complete league snapshots; the 14MB player dump uses a 24h disk cache; all CI league JSON is cassette-only.
 - **File plan:** NEW `apps/api/src/razzle_api/ingest/sleeper.py`, `tests/unit/test_sleeper_client.py`, and trimmed files under `tests/fixtures/cassettes/sleeper/` for state, user, leagues, league, users, rosters, traded picks, and per-week matchup/transaction responses. No DB/router/service/domain/main/sync/migration/shared locks.
