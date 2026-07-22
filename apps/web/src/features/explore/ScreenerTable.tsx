@@ -58,6 +58,17 @@ function buildColumns(scoringPreset: ScoringPreset, scoringRules: string | null)
         </Link>
       ),
     }),
+    // Decision column first in the mobile paint (Player, then Pts).
+    helper.accessor("fantasy_points", {
+      id: "fantasy_points",
+      header: "Pts",
+      enableSorting: true,
+      cell: (info) => {
+        const v = info.getValue();
+        if (v == null) return "—";
+        return Number(v).toFixed(1);
+      },
+    }),
     helper.accessor("position", {
       id: "position",
       header: "Pos",
@@ -102,16 +113,6 @@ function buildColumns(scoringPreset: ScoringPreset, scoringRules: string | null)
     numCol("rec_yd", "ReYd"),
     numCol("rec_td", "ReTD"),
     numCol("fumble_lost", "FL"),
-    helper.accessor("fantasy_points", {
-      id: "fantasy_points",
-      header: "Pts",
-      enableSorting: true,
-      cell: (info) => {
-        const v = info.getValue();
-        if (v == null) return "—";
-        return Number(v).toFixed(1);
-      },
-    }),
   ];
 }
 

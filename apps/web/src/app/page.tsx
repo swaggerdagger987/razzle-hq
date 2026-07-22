@@ -7,8 +7,6 @@ const positions = [
   { label: "TE", token: "var(--pos-te)" },
 ];
 
-const rooms = ["Scratchpad", "The Line", "War Room"];
-
 export default function Home() {
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center gap-8 px-6 py-16">
@@ -25,33 +23,23 @@ export default function Home() {
       <div className="card-chunky p-6">
         <p className="font-display text-base uppercase">The film room is open</p>
         <p className="mt-3 text-sm leading-6 text-ink-medium">
-          Scratchpad, The Line, War Room. One operation, three doors. Start in the{" "}
+          Start in the{" "}
           <Link href="/scratchpad" className="font-bold text-orange underline">
             Scratchpad
           </Link>
           .
         </p>
-        <div className="mt-5 flex flex-wrap gap-3">
-          {rooms.map((room) =>
-            room === "Scratchpad" ? (
-              <Link
-                key={room}
-                href="/scratchpad"
-                className="rounded-lg border-2 border-ink px-3 py-1 text-xs font-bold"
-                style={{ background: "var(--bg-card)", color: "var(--ink)" }}
-              >
-                {room}
-              </Link>
-            ) : (
-              <span
-                key={room}
-                className="rounded-lg border-2 border-ink px-3 py-1 text-xs font-bold"
-                style={{ background: "var(--bg-card)", color: "var(--ink)" }}
-              >
-                {room}
-              </span>
-            ),
-          )}
+        <div className="mt-5 flex flex-wrap items-center gap-3">
+          <Link
+            href="/scratchpad"
+            className="rounded-lg border-2 border-ink px-3 py-1 text-xs font-bold"
+            style={{ background: "var(--bg-card)", color: "var(--ink)" }}
+          >
+            Scratchpad
+          </Link>
+          <p className="font-hand text-lg text-ink-light">
+            The Line and War Room are still pulling film.
+          </p>
         </div>
         <div className="mt-5 flex gap-2">
           {positions.map((position) => (
@@ -64,7 +52,6 @@ export default function Home() {
             </span>
           ))}
         </div>
-        <p className="font-hand mt-5 text-xl text-ink-light">pulling film...</p>
       </div>
     </main>
   );

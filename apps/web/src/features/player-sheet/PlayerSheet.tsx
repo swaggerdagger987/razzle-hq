@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { parseAsString, useQueryState } from "nuqs";
+import { scratchpadHref } from "@/features/explore/scoring-url";
 import { fetchPlayerDetail } from "./api";
 import { PlayerHeader } from "./PlayerHeader";
 import { StatTable } from "./StatTable";
@@ -16,6 +18,10 @@ export function PlayerSheet({ gsis_id }: Props) {
   const [scoringPreset] = useQueryState("scoring_preset", parseAsString.withDefault("standard"));
   const [scoringRules] = useQueryState("scoring_rules", parseAsString);
   const scoringLabel = scoringRules ? "custom" : scoringPreset;
+  const scratchpadLink = scratchpadHref({
+    scoring_preset: scoringPreset,
+    scoring_rules: scoringRules,
+  });
 
   const { data, isPending, isError, error } = useQuery({
     queryKey: ["player", gsis_id],
@@ -72,7 +78,18 @@ export function PlayerSheet({ gsis_id }: Props) {
               marginTop: "12px",
             }}
           >
-            check the ID or head back to Scratchpad.
+            check the ID or head back to{" "}
+            <Link
+              href={scratchpadLink}
+              style={{
+                color: "var(--orange)",
+                fontWeight: 700,
+                textDecoration: "underline",
+              }}
+            >
+              Scratchpad
+            </Link>
+            .
           </p>
         </div>
       </div>
@@ -169,6 +186,7 @@ export function PlayerSheet({ gsis_id }: Props) {
         >
           {seasonData.week_stats.length} week{seasonData.week_stats.length !== 1 ? "s" : ""} of film
           {" · "}
+          scoring context saved:{" "}
           <span style={{ color: "var(--orange)", fontWeight: 600 }}>{scoringLabel}</span>
         </p>
       )}
