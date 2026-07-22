@@ -48,6 +48,7 @@ CheckStatus = verify_data.CheckStatus
 compare_freshness_capability = verify_data.compare_freshness_capability
 compare_identity_capability = verify_data.compare_identity_capability
 format_human_report = verify_data.format_human_report
+read_csv_rows = verify_data.read_csv_rows
 run_cli = verify_data.run_cli
 verify = verify_data.verify
 
@@ -349,16 +350,11 @@ def test_missing_orphan_week_player_and_position_failures(db_env):
 
     # Equal-sized surfaces with divergent keys: one source-only, one DB-only.
     source_divergent = [
-        row
-        for row in weeks
-        if not (row["player_id"] == "00-0000004" and row["week"] == "1")
+        row for row in weeks if not (row["player_id"] == "00-0000004" and row["week"] == "1")
     ] + [_week_raw_new("00-0000002", week=9, position="RB")]
     with db_env["factory"]() as session:
         session.execute(
-            sa.text(
-                "DELETE FROM player_week_stats "
-                "WHERE player_id = '00-0000004' AND week = 1"
-            )
+            sa.text("DELETE FROM player_week_stats WHERE player_id = '00-0000004' AND week = 1")
         )
         upsert_week_stats(
             session,
@@ -422,9 +418,7 @@ def test_missing_orphan_week_player_and_position_failures(db_env):
     weeks2 = _fixture_weeks()
     _seed_from_source(db_env["factory"], players2, weeks2)
     with db_env["factory"]() as session:
-        session.execute(
-            sa.text("UPDATE players SET position = 'WR' WHERE gsis_id = '00-0034796'")
-        )
+        session.execute(sa.text("UPDATE players SET position = 'WR' WHERE gsis_id = '00-0034796'"))
         session.commit()
     report = _run_verify(db_env["factory"], players2, weeks2, sample_size=6)
     assert report.status == CheckStatus.FAIL
@@ -711,6 +705,37 @@ def test_offline_happy_cli_and_require_flags(db_env, monkeypatch, capsys):
     out = capsys.readouterr().out
     assert code == 1
     assert "FAIL freshness" in out or "RESULT FAIL" in out
+
+
+def test_csv_roundtrip_preserves_old_stat_aliases(tmp_path):
+    rows = [
+        _week_raw_old("00-0000001", week=1, position="QB"),
+        _week_raw_new("00-0000002", week=1, position="RB"),
+    ]
+    reloaded = read_csv_rows(_write_csv(tmp_path / "mixed_weeks.csv", rows))
+    assert len(reloaded) == len(rows)
+
+    old_row, new_row = reloaded
+    # DictWriter pads the rectangular header with "" for cells a row never
+    # had; those must not resurface as present keys that shadow the populated
+    # fallback aliases in map_week_row.
+    assert "passing_interceptions" not in old_row
+    assert "sacks_suffered" not in old_row
+    assert old_row["interceptions"] == "1"
+    assert old_row["sacks"] == "3"
+    assert "interceptions" not in new_row
+    assert "sacks" not in new_row
+    assert new_row["passing_interceptions"] == "1"
+    assert new_row["sacks_suffered"] == "3"
+
+    mapped_old = map_week_row(old_row)
+    mapped_new = map_week_row(new_row)
+    assert mapped_old is not None
+    assert mapped_new is not None
+    assert mapped_old["pass_int"] == 1.0
+    assert mapped_old["pass_sack"] == 3.0
+    assert mapped_new["pass_int"] == 1.0
+    assert mapped_new["pass_sack"] == 3.0
 
 
 def test_pure_capability_comparators():

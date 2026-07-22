@@ -169,8 +169,7 @@ def _report_to_dict(report: VerificationReport) -> dict[str, Any]:
         "known_unmapped": list(report.known_unmapped),
         "warnings": list(report.warnings),
         "sample_keys": {
-            name: [_serialize_key(key) for key in keys]
-            for name, keys in report.sample_keys.items()
+            name: [_serialize_key(key) for key in keys] for name, keys in report.sample_keys.items()
         },
         "sources": [
             {
@@ -325,9 +324,7 @@ def compare_freshness_capability(  # noqa: PLR0913
     def _check_row(label: str, source: str, season: int | None, expected_rows: int) -> None:
         row = _find(source, season)
         if row is None:
-            details.append(
-                f"key={label} field=row db=missing source={source} season={season}"
-            )
+            details.append(f"key={label} field=row db=missing source={source} season={season}")
             return
         try:
             actual_rows = int(row["rows"])
@@ -335,9 +332,7 @@ def compare_freshness_capability(  # noqa: PLR0913
             details.append(f"key={label} field=rows db={row.get('rows')!r} source={expected_rows}")
             return
         if actual_rows != expected_rows:
-            details.append(
-                f"key={label} field=rows db={actual_rows} source={expected_rows}"
-            )
+            details.append(f"key={label} field=rows db={actual_rows} source={expected_rows}")
         fetched_at = parse_datetime(row.get("fetched_at"))
         if fetched_at is None:
             details.append(
@@ -412,9 +407,7 @@ def _index_players(
         key = mapped["gsis_id"]
         if key in accepted:
             if accepted[key] != mapped:
-                errors.append(
-                    f"key={key} field=duplicate db=conflict source=conflicting_payloads"
-                )
+                errors.append(f"key={key} field=duplicate db=conflict source=conflicting_payloads")
             else:
                 warnings.append(f"identical duplicate player key={key}")
         accepted[key] = mapped
@@ -442,9 +435,7 @@ def _index_weeks(
             try:
                 row_season = int(float(str(row["season"])))
             except (TypeError, ValueError):
-                errors.append(
-                    f"key=season field=season db={season} source={row.get('season')!r}"
-                )
+                errors.append(f"key=season field=season db={season} source={row.get('season')!r}")
                 continue
             if row_season != season:
                 errors.append(
@@ -467,9 +458,7 @@ def _index_weeks(
         key = (mapped["player_id"], int(mapped["week"]))
         if key in accepted:
             if accepted[key] != mapped:
-                errors.append(
-                    f"key={key} field=duplicate db=conflict source=conflicting_payloads"
-                )
+                errors.append(f"key={key} field=duplicate db=conflict source=conflicting_payloads")
             else:
                 warnings.append(f"identical duplicate week key={key}")
         accepted[key] = mapped
@@ -491,9 +480,13 @@ def _load_db_players(session: Session) -> dict[str, dict[str, Any]]:
 
 
 def _load_db_weeks(session: Session, season: int) -> dict[tuple[str, int], dict[str, Any]]:
-    rows = session.execute(
-        sa.select(player_week_stats_table).where(player_week_stats_table.c.season == season)
-    ).mappings().all()
+    rows = (
+        session.execute(
+            sa.select(player_week_stats_table).where(player_week_stats_table.c.season == season)
+        )
+        .mappings()
+        .all()
+    )
     out: dict[tuple[str, int], dict[str, Any]] = {}
     for row in rows:
         key = (row["player_id"], int(row["week"]))
@@ -522,9 +515,7 @@ def _compare_player_fields(
         db_val = db_row.get(field_name)
         source_val = source_row.get(field_name)
         if db_val != source_val:
-            details.append(
-                f"key={key} field={field_name} db={db_val!r} source={source_val!r}"
-            )
+            details.append(f"key={key} field={field_name} db={db_val!r} source={source_val!r}")
     return details
 
 
@@ -551,16 +542,12 @@ def _compare_week_fields(
             f"key={key} field=week db={db_row.get('week')!r} source={source_row.get('week')!r}"
         )
     if int(db_row.get("season", season)) != season:
-        details.append(
-            f"key={key} field=season db={db_row.get('season')!r} source={season}"
-        )
+        details.append(f"key={key} field=season db={db_row.get('season')!r} source={season}")
     for column in STAT_COLUMNS:
         db_val = float(db_row[column])
         source_val = float(source_row[column])
         if not math.isclose(db_val, source_val, rel_tol=0.0, abs_tol=FLOAT_ABS_TOL):
-            details.append(
-                f"key={key} field={column} db={db_val!r} source={source_val!r}"
-            )
+            details.append(f"key={key} field={column} db={db_val!r} source={source_val!r}")
     return details
 
 
@@ -736,8 +723,7 @@ def _verify_weeks(  # noqa: PLR0913
         raw_position = (raw.get("position") or "").strip()
         if player.get("position") != raw_position:
             details.append(
-                f"key={key} field=position db={player.get('position')!r} "
-                f"source={raw_position!r}"
+                f"key={key} field=position db={player.get('position')!r} source={raw_position!r}"
             )
 
     if rejected_keys:
@@ -814,9 +800,7 @@ def verify(  # noqa: PLR0913
     sample_keys: dict[str, list[Any]] = {}
 
     player_mapped = [
-        mapped
-        for mapped in (map_player_row(row) for row in player_source_rows)
-        if mapped
+        mapped for mapped in (map_player_row(row) for row in player_source_rows) if mapped
     ]
     sources.append(
         SourceEvidence(
@@ -837,9 +821,7 @@ def verify(  # noqa: PLR0913
         sources.append(
             SourceEvidence(
                 name=f"player_week_stats_{season}",
-                location=locations.get(
-                    f"week_{season}", WEEK_STATS_URL.format(season=season)
-                ),
+                location=locations.get(f"week_{season}", WEEK_STATS_URL.format(season=season)),
                 raw_row_count=len(week_rows),
                 mapped_row_count=len(mapped_weeks),
                 fetched_at=as_of,
@@ -912,9 +894,7 @@ def verify(  # noqa: PLR0913
         )
     )
 
-    known_unmapped = [
-        f"{','.join(KNOWN_UNMAPPED_FIELDS)}: not source-complete (adapter zeros)"
-    ]
+    known_unmapped = [f"{','.join(KNOWN_UNMAPPED_FIELDS)}: not source-complete (adapter zeros)"]
 
     overall = (
         CheckStatus.FAIL
@@ -978,8 +958,20 @@ def format_human_report(report: VerificationReport) -> str:
 
 
 def read_csv_rows(path: Path) -> list[dict[str, str]]:
+    """Load CSV rows, dropping blank cells so absent fields stay absent.
+
+    A rectangular CSV cannot express per-row column absence: DictWriter pads
+    heterogeneous rows (old/new nflverse stat aliases) with "" for columns a
+    row never had, and on reload those present-but-empty keys would shadow
+    populated fallback aliases in map_week_row. Blank cells already mean 0.0
+    to the adapter, so dropping them keeps reloaded rows shape-identical to
+    the rows the source originally produced.
+    """
     with path.open("r", encoding="utf-8-sig", newline="") as handle:
-        return list(csv.DictReader(handle))
+        return [
+            {key: value for key, value in row.items() if value not in (None, "")}
+            for row in csv.DictReader(handle)
+        ]
 
 
 def _sqlite_file_path(database_url: str) -> Path | None:
@@ -1010,11 +1002,15 @@ def _require_tables(engine: Engine) -> None:
 
 
 def list_db_seasons(session: Session) -> list[int]:
-    rows = session.execute(
-        sa.select(player_week_stats_table.c.season)
-        .distinct()
-        .order_by(player_week_stats_table.c.season)
-    ).scalars().all()
+    rows = (
+        session.execute(
+            sa.select(player_week_stats_table.c.season)
+            .distinct()
+            .order_by(player_week_stats_table.c.season)
+        )
+        .scalars()
+        .all()
+    )
     return [int(season) for season in rows]
 
 
