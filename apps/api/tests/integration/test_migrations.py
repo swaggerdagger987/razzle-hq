@@ -327,6 +327,27 @@ EXPECTED_PRIMARY_KEYS = {
     "college_season_stats": ("cfb_player_id", "season"),
 }
 
+PLAYER_ID_UNIQUE_INDEXES = {
+    "uq_player_ids_sleeper_id": "sleeper_id",
+    "uq_player_ids_espn_id": "espn_id",
+    "uq_player_ids_pfr_id": "pfr_id",
+    "uq_player_ids_cfb_player_id": "cfb_player_id",
+    "uq_player_ids_mfl_id": "mfl_id",
+    "uq_player_ids_fantasycalc_id": "fantasycalc_id",
+}
+
+CASCADE_PLAYER_FKS = {
+    "player_meta": "gsis_id",
+    "player_week_stats": "player_id",
+    "snap_counts": "player_id",
+    "injuries": "player_id",
+    "depth_charts": "player_id",
+    "ngs_week_stats": "player_id",
+    "pfr_week_stats": "player_id",
+    "ftn_week_stats": "player_id",
+    "qbr_week_stats": "player_id",
+}
+
 
 def _alembic_config(db_url: str) -> Config:
     cfg = Config(str(API_DIR / "alembic.ini"))
@@ -346,6 +367,62 @@ def _column_names(inspector: Inspector, table: str) -> set[str]:
     return {column["name"] for column in inspector.get_columns(table)}
 
 
+def _columns_by_name(inspector: Inspector, table: str) -> dict[str, dict]:
+    return {column["name"]: column for column in inspector.get_columns(table)}
+
+
+def _assert_player_id_index_contract(inspector: Inspector) -> None:
+    indexes = {index["name"]: index for index in inspector.get_indexes("player_ids")}
+    unique_names = {name for name, index in indexes.items() if index["unique"]}
+    assert unique_names == set(PLAYER_ID_UNIQUE_INDEXES)
+
+    for name, column in PLAYER_ID_UNIQUE_INDEXES.items():
+        index = indexes[name]
+        assert index["column_names"] == [column]
+        where = index["dialect_options"].get("sqlite_where")
+        assert where is not None
+        assert str(where).lower() == f"{column} is not null"
+
+
+def _assert_nullability_contract(inspector: Inspector) -> None:
+    injury_columns = _columns_by_name(inspector, "injuries")
+    depth_columns = _columns_by_name(inspector, "depth_charts")
+
+    report_injury = injury_columns["report_primary_injury"]
+    assert report_injury["nullable"] is False
+    assert str(report_injury["default"]).strip("()") in {"''", '""'}
+    assert injury_columns["practice_primary_injury"]["nullable"] is True
+
+    for name in ("formation", "depth_position"):
+        column = depth_columns[name]
+        assert column["nullable"] is False
+        assert str(column["default"]).strip("()") in {"''", '""'}
+
+
+def _assert_player_fk_cascades(inspector: Inspector) -> None:
+    for table, column in CASCADE_PLAYER_FKS.items():
+        player_fks = [
+            foreign_key
+            for foreign_key in inspector.get_foreign_keys(table)
+            if foreign_key["referred_table"] == "players"
+            and foreign_key["constrained_columns"] == [column]
+        ]
+        assert len(player_fks) == 1
+        assert player_fks[0]["options"].get("ondelete", "").upper() == "CASCADE"
+
+
+@pytest.fixture
+def migrated_engine(tmp_path, monkeypatch):
+    db_url, cfg = _configured_database(tmp_path, monkeypatch, "constraints.db")
+    try:
+        command.upgrade(cfg, "head")
+        engine = sa.create_engine(db_url)
+        yield engine
+        engine.dispose()
+    finally:
+        get_settings.cache_clear()
+
+
 def test_upgrade_head_creates_exact_canonical_schema(tmp_path, monkeypatch):
     db_url, cfg = _configured_database(tmp_path, monkeypatch)
     try:
@@ -363,6 +440,9 @@ def test_upgrade_head_creates_exact_canonical_schema(tmp_path, monkeypatch):
         for table, expected in EXPECTED_PRIMARY_KEYS.items():
             assert tuple(inspector.get_pk_constraint(table)["constrained_columns"]) == expected
         assert "updated_at" not in _column_names(inspector, "context_revisions")
+        _assert_player_id_index_contract(inspector)
+        _assert_nullability_contract(inspector)
+        _assert_player_fk_cascades(inspector)
         engine.dispose()
 
         command.downgrade(cfg, "base")
@@ -493,6 +573,176 @@ def test_source_sync_partial_uniqueness_and_orphan_player_ids(tmp_path, monkeypa
         engine.dispose()
     finally:
         get_settings.cache_clear()
+
+
+def test_mfl_id_partial_uniqueness_allows_multiple_nulls(migrated_engine):
+    with migrated_engine.begin() as connection:
+        connection.execute(
+            sa.text(
+                "INSERT INTO player_ids (gsis_id, name, mfl_id) VALUES "
+                "('null-mfl-1', 'Null One', NULL),"
+                "('null-mfl-2', 'Null Two', NULL),"
+                "('mfl-player-1', 'MFL One', 'mfl-1')"
+            )
+        )
+
+    with pytest.raises(sa.exc.IntegrityError):
+        with migrated_engine.begin() as connection:
+            connection.execute(
+                sa.text(
+                    "INSERT INTO player_ids (gsis_id, name, mfl_id) "
+                    "VALUES ('mfl-player-2', 'MFL Two', 'mfl-1')"
+                )
+            )
+
+    with migrated_engine.connect() as connection:
+        assert connection.execute(sa.text("SELECT COUNT(*) FROM player_ids")).scalar_one() == 3
+        assert (
+            connection.execute(
+                sa.text("SELECT COUNT(*) FROM player_ids WHERE mfl_id IS NULL")
+            ).scalar_one()
+            == 2
+        )
+
+
+def test_injury_natural_key_closes_null_holes(migrated_engine):
+    with migrated_engine.begin() as connection:
+        connection.exec_driver_sql("PRAGMA foreign_keys=ON")
+        connection.execute(
+            sa.text(
+                "INSERT INTO players (gsis_id, name, position) "
+                "VALUES ('injury-player', 'Injury Player', 'WR')"
+            )
+        )
+        connection.execute(
+            sa.text(
+                "INSERT INTO injuries (player_id, season, week) VALUES ('injury-player', 2026, 1)"
+            )
+        )
+        connection.execute(
+            sa.text(
+                "INSERT INTO injuries "
+                "(player_id, season, week, report_primary_injury) VALUES "
+                "('injury-player', 2026, 1, 'hamstring'),"
+                "('injury-player', 2026, 1, 'knee')"
+            )
+        )
+
+    with pytest.raises(sa.exc.IntegrityError):
+        with migrated_engine.begin() as connection:
+            connection.execute(
+                sa.text(
+                    "INSERT INTO injuries (player_id, season, week) "
+                    "VALUES ('injury-player', 2026, 1)"
+                )
+            )
+
+    with pytest.raises(sa.exc.IntegrityError):
+        with migrated_engine.begin() as connection:
+            connection.execute(
+                sa.text(
+                    "INSERT INTO injuries "
+                    "(player_id, season, week, report_primary_injury) "
+                    "VALUES ('injury-player', 2026, 2, NULL)"
+                )
+            )
+
+    with migrated_engine.connect() as connection:
+        rows = (
+            connection.execute(
+                sa.text(
+                    "SELECT report_primary_injury, practice_primary_injury "
+                    "FROM injuries ORDER BY id"
+                )
+            )
+            .mappings()
+            .all()
+        )
+    assert [row["report_primary_injury"] for row in rows] == ["", "hamstring", "knee"]
+    assert rows[0]["practice_primary_injury"] is None
+
+
+def test_depth_chart_natural_key_closes_null_holes(migrated_engine):
+    with migrated_engine.begin() as connection:
+        connection.exec_driver_sql("PRAGMA foreign_keys=ON")
+        connection.execute(
+            sa.text(
+                "INSERT INTO players (gsis_id, name, position) "
+                "VALUES ('depth-player', 'Depth Player', 'WR')"
+            )
+        )
+        connection.execute(
+            sa.text(
+                "INSERT INTO depth_charts (player_id, season, week, team) "
+                "VALUES ('depth-player', 2026, 1, 'BUF')"
+            )
+        )
+        connection.execute(
+            sa.text(
+                "INSERT INTO depth_charts "
+                "(player_id, season, week, team, formation, depth_position) VALUES "
+                "('depth-player', 2026, 1, 'BUF', 'OFFENSE', 'WR-L'),"
+                "('depth-player', 2026, 1, 'BUF', 'OFFENSE', 'WR-R')"
+            )
+        )
+
+    with pytest.raises(sa.exc.IntegrityError):
+        with migrated_engine.begin() as connection:
+            connection.execute(
+                sa.text(
+                    "INSERT INTO depth_charts "
+                    "(player_id, season, week, team, formation, depth_position) "
+                    "VALUES ('depth-player', 2026, 1, 'BUF', '', '')"
+                )
+            )
+
+    null_statements = (
+        "INSERT INTO depth_charts "
+        "(player_id, season, week, team, formation) "
+        "VALUES ('depth-player', 2026, 2, 'BUF', NULL)",
+        "INSERT INTO depth_charts "
+        "(player_id, season, week, team, depth_position) "
+        "VALUES ('depth-player', 2026, 2, 'BUF', NULL)",
+    )
+    for statement in null_statements:
+        with pytest.raises(sa.exc.IntegrityError):
+            with migrated_engine.begin() as connection:
+                connection.execute(sa.text(statement))
+
+    with migrated_engine.connect() as connection:
+        rows = (
+            connection.execute(
+                sa.text("SELECT formation, depth_position FROM depth_charts ORDER BY id")
+            )
+            .mappings()
+            .all()
+        )
+    assert [(row["formation"], row["depth_position"]) for row in rows] == [
+        ("", ""),
+        ("OFFENSE", "WR-L"),
+        ("OFFENSE", "WR-R"),
+    ]
+
+
+def test_advanced_weekly_rows_cascade_when_player_is_deleted(migrated_engine):
+    with migrated_engine.begin() as connection:
+        connection.exec_driver_sql("PRAGMA foreign_keys=ON")
+        connection.execute(
+            sa.text(
+                "INSERT INTO players (gsis_id, name, position) "
+                "VALUES ('advanced-player', 'Advanced Player', 'QB')"
+            )
+        )
+        connection.execute(
+            sa.text(
+                "INSERT INTO ftn_week_stats (player_id, season, week, team) "
+                "VALUES ('advanced-player', 2026, 1, 'BUF')"
+            )
+        )
+        connection.execute(sa.text("DELETE FROM players WHERE gsis_id = 'advanced-player'"))
+
+    with migrated_engine.connect() as connection:
+        assert connection.execute(sa.text("SELECT COUNT(*) FROM ftn_week_stats")).scalar_one() == 0
 
 
 def test_scenario_check_and_context_cascade(tmp_path, monkeypatch):

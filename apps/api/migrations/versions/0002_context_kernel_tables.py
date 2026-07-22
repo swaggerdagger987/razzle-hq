@@ -57,7 +57,14 @@ def upgrade() -> None:  # noqa: PLR0915
         sa.Column("position", sa.Text(), nullable=True),
         sa.Column("team", sa.Text(), nullable=True),
     )
-    for column in ("sleeper_id", "espn_id", "pfr_id", "cfb_player_id", "fantasycalc_id"):
+    for column in (
+        "sleeper_id",
+        "espn_id",
+        "pfr_id",
+        "cfb_player_id",
+        "mfl_id",
+        "fantasycalc_id",
+    ):
         op.create_index(
             f"uq_player_ids_{column}",
             "player_ids",
@@ -213,7 +220,12 @@ def upgrade() -> None:  # noqa: PLR0915
         sa.Column("position", sa.Text(), nullable=True),
         sa.Column("report_status", sa.Text(), nullable=True),
         sa.Column("practice_status", sa.Text(), nullable=True),
-        sa.Column("report_primary_injury", sa.Text(), nullable=True),
+        sa.Column(
+            "report_primary_injury",
+            sa.Text(),
+            nullable=False,
+            server_default=sa.text("''"),
+        ),
         sa.Column("practice_primary_injury", sa.Text(), nullable=True),
         sa.Column("date_modified", sa.Text(), nullable=True),
         sa.UniqueConstraint(
@@ -240,9 +252,19 @@ def upgrade() -> None:  # noqa: PLR0915
         sa.Column("week", sa.Integer(), nullable=False),
         sa.Column("team", sa.Text(), nullable=False),
         sa.Column("position", sa.Text(), nullable=True),
-        sa.Column("depth_position", sa.Text(), nullable=True),
+        sa.Column(
+            "depth_position",
+            sa.Text(),
+            nullable=False,
+            server_default=sa.text("''"),
+        ),
         sa.Column("depth_team", sa.Integer(), nullable=True),
-        sa.Column("formation", sa.Text(), nullable=True),
+        sa.Column(
+            "formation",
+            sa.Text(),
+            nullable=False,
+            server_default=sa.text("''"),
+        ),
         sa.Column("jersey_number", sa.Integer(), nullable=True),
         sa.UniqueConstraint(
             "player_id",
@@ -265,7 +287,7 @@ def upgrade() -> None:  # noqa: PLR0915
         sa.Column(
             "player_id",
             sa.Text(),
-            sa.ForeignKey("players.gsis_id"),
+            sa.ForeignKey("players.gsis_id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column("season", sa.Integer(), nullable=False),
@@ -303,7 +325,7 @@ def upgrade() -> None:  # noqa: PLR0915
         sa.Column(
             "player_id",
             sa.Text(),
-            sa.ForeignKey("players.gsis_id"),
+            sa.ForeignKey("players.gsis_id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column("pfr_player_id", sa.Text(), nullable=False),
@@ -348,7 +370,7 @@ def upgrade() -> None:  # noqa: PLR0915
         sa.Column(
             "player_id",
             sa.Text(),
-            sa.ForeignKey("players.gsis_id"),
+            sa.ForeignKey("players.gsis_id", ondelete="CASCADE"),
             primary_key=True,
         ),
         sa.Column("season", sa.Integer(), primary_key=True),
@@ -368,7 +390,7 @@ def upgrade() -> None:  # noqa: PLR0915
         sa.Column(
             "player_id",
             sa.Text(),
-            sa.ForeignKey("players.gsis_id"),
+            sa.ForeignKey("players.gsis_id", ondelete="CASCADE"),
             nullable=False,
         ),
         sa.Column("espn_player_id", sa.Text(), nullable=False),
@@ -617,7 +639,16 @@ def downgrade() -> None:  # noqa: PLR0915
     op.drop_table("player_meta")
 
     op.drop_index("ix_player_ids_merge_name", table_name="player_ids")
-    for column in reversed(("sleeper_id", "espn_id", "pfr_id", "cfb_player_id", "fantasycalc_id")):
+    for column in reversed(
+        (
+            "sleeper_id",
+            "espn_id",
+            "pfr_id",
+            "cfb_player_id",
+            "mfl_id",
+            "fantasycalc_id",
+        )
+    ):
         op.drop_index(f"uq_player_ids_{column}", table_name="player_ids")
     op.drop_table("player_ids")
 
