@@ -24,7 +24,7 @@ Not this: every dark-mode fintech/AI dashboard. This: a Sunday comics page that 
 | `--bg` | `#ede0cf` | Page background — warm sand |
 | `--bg-warm` | `#e5d5c3` | Toolbars, table headers |
 | `--bg-card` | `#f7efe5` | Cards, elevated surfaces |
-| `--bg-ink` | `#1a110a` | Situation Room dark only — deepest espresso |
+| `--bg-ink` | `#1a110a` | War Room dark only — deepest espresso |
 
 ### Ink — "Espresso" (warm brown, never blue-black)
 | Token | Hex | Usage |
@@ -35,7 +35,7 @@ Not this: every dark-mode fintech/AI dashboard. This: a Sunday comics page that 
 | `--ink-faint` | `#c4b5a5` | Dividers, dashed borders |
 
 ### Dark mode — "Espresso Flip"
-Toggle via `[data-theme="dark"]` on `<html>`, persisted in localStorage. Sand and espresso swap; accents stay. Not the default. Light tints shift to muted deep versions. **The Situation Room always uses `--bg-ink` regardless of toggle** — playful chrome steps aside, contrast is intentional.
+Toggle via `[data-theme="dark"]` on `<html>`, persisted in localStorage. Sand and espresso swap; accents stay. Not the default. Light tints shift to muted deep versions. **The War Room always uses `--bg-ink` regardless of toggle** — playful chrome steps aside, contrast is intentional.
 
 ### Accents
 | Token | Hex | Role |
@@ -70,6 +70,21 @@ Scale: 32/700 display page titles · 20/700 display player names · 16/700 displ
 ## Loading states
 
 Personality, not spinners: *"pulling film..."* (screener) · *"checking the tape..."* (data sync) · *"running the numbers..."* (formulas).
+
+## Charts — one kit, comic-strip clarity
+
+Every chart renders through the **Razzle chart kit** (`apps/web/src/features/chart-kit/` — the only place allowed to import the chart library, per `spec/STACK.md`). An instrument is data + kit config, never bespoke chart code — that's what lets many panels ship in parallel without design drift. The **career arc** (college → combine/draft → pro on one timeline) is the signature chart of the product.
+
+- **Container:** chart sits on `--bg-card` inside the standard chunky card. No chart-library default frames, legends, or fonts anywhere.
+- **Axes:** 2px solid `var(--ink)`; tick labels Space Mono 12px `--ink-medium`; axis titles 11px display uppercase.
+- **Gridlines:** horizontal only, 1px dashed `--ink-faint` — or none. Never a gray grid box.
+- **Series color:** position colors when the series is a player/position; blue for college segments (NCAA is always blue); one accent otherwise. A chart earns multiple colors only when encoding position.
+- **Marks:** lines 3px with 5px ink-bordered dots; bars with 2px ink borders, radius ≤ `--radius-sm`; scatter dots ink-bordered. Never gradients, never soft shadows.
+- **Tooltip:** a chunky mini-card — 2px ink border, `--shadow-chunky`, `--bg-card`, display-font name, Space Mono values.
+- **Annotations are the differentiator:** tier lines, breakout markers, draft-day marker on career arcs, "the washed line" — drawn in Caveat, margin-note energy. A Razzle chart talks.
+- **Provenance:** forecasts carry their model + as-of in the margin (Space Mono 11px); recorded vs forecast segments are visually distinct (solid vs dashed).
+- **Watermark:** every chart carries `razzle.lol` bottom-right in Caveat `--ink-light`. Charts are screenshot bait (T6) — cropped out of the app, a chart must still be unmistakably Razzle.
+- **States:** loading *"running the numbers..."* · empty gets a staff-voiced one-liner, never a bare "No data".
 
 ## Copy
 

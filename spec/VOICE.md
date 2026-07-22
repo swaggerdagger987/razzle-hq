@@ -22,7 +22,7 @@
 3. Lead with specific fantasy insight (usage, contract, coach tendency), not capability claims.
 4. Characters feel like **staff with opinions**, not chatbots with prompts.
 
-## Situation Room framing
+## War Room framing
 
 A film room, not an AI chat product.
 
