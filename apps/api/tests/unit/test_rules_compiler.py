@@ -161,38 +161,76 @@ def test_unsupported_zero_is_ignored_and_stays_full() -> None:
     assert compiled.coverage.ignored_zero_keys == ["bonus_pass_cmp_25", "return_yd"]
 
 
-def test_te_premium_from_rec_te_delta() -> None:
-    compiled = compile_league(
-        _base_league(scoring_settings={"rec": 1.0, "rec_te": 1.5})
-    )
+def test_return_yard_nonzero_stays_unsupported_partial() -> None:
+    compiled = compile_league(_base_league(scoring_settings={"return_yd": 0.1}))
 
-    assert compiled.te_premium is True
-    assert compiled.league.scoring.receiving.te_premium == 0.5
-    assert compiled.coverage.status == "full"
-    assert compiled.coverage.supported_keys == ["rec", "rec_te"]
+    assert compiled.coverage.status == "partial"
+    assert compiled.league.scoring.misc.return_yd == 0.0
+    assert compiled.coverage.unsupported_keys == [
+        UnsupportedScoringKey(key="return_yd", value=0.1, reason="unmapped")
+    ]
+
+
+def test_te_premium_from_rec_te_absolute_including_zero_and_negative() -> None:
+    positive = compile_league(_base_league(scoring_settings={"rec": 1.0, "rec_te": 1.5}))
+    assert positive.te_premium is True
+    assert positive.league.scoring.receiving.te_premium == 0.5
+    assert positive.coverage.status == "full"
+    assert positive.coverage.supported_keys == ["rec", "rec_te"]
+
+    zero = compile_league(_base_league(scoring_settings={"rec": 1.0, "rec_te": 1.0}))
+    assert zero.te_premium is False
+    assert zero.league.scoring.receiving.te_premium == 0.0
+    assert "rec_te" in zero.coverage.supported_keys
+    assert zero.coverage.status == "full"
+
+    negative = compile_league(_base_league(scoring_settings={"rec": 1.0, "rec_te": 0.5}))
+    assert negative.te_premium is True
+    assert negative.league.scoring.receiving.te_premium == -0.5
+    assert "rec_te" in negative.coverage.supported_keys
+
+
+def test_te_premium_score_week_oracle_vs_wr() -> None:
+    positive = compile_league(_base_league(scoring_settings={"rec": 1.0, "rec_te": 1.5}))
+    rules = positive.league.scoring
+    stats = PlayerWeekStats(rec=6)
+    assert score_week(stats, rules, position="TE") == 9.0
+    assert score_week(stats, rules, position="WR") == 6.0
+
+    negative = compile_league(_base_league(scoring_settings={"rec": 1.0, "rec_te": 0.5}))
+    rules = negative.league.scoring
+    assert score_week(stats, rules, position="TE") == 3.0
+    assert score_week(stats, rules, position="WR") == 6.0
 
 
 def test_te_premium_conflict_applies_bonus_rec_te() -> None:
     compiled = compile_league(
-        _base_league(
-            scoring_settings={"rec": 1.0, "rec_te": 2.0, "bonus_rec_te": 0.5}
-        )
+        _base_league(scoring_settings={"rec": 1.0, "rec_te": 2.0, "bonus_rec_te": 0.5})
     )
 
     assert compiled.te_premium is True
     assert compiled.league.scoring.receiving.te_premium == 0.5
     assert compiled.coverage.status == "partial"
     assert "bonus_rec_te" in compiled.coverage.supported_keys
+    assert "rec_te" not in compiled.coverage.supported_keys
     assert compiled.coverage.unsupported_keys == [
         UnsupportedScoringKey(key="rec_te", value=2.0, reason="conflict")
     ]
 
 
+def test_te_premium_bonus_and_rec_te_consistent() -> None:
+    compiled = compile_league(
+        _base_league(scoring_settings={"rec": 1.0, "rec_te": 1.5, "bonus_rec_te": 0.5})
+    )
+
+    assert compiled.league.scoring.receiving.te_premium == 0.5
+    assert compiled.coverage.status == "full"
+    assert compiled.coverage.supported_keys == ["bonus_rec_te", "rec", "rec_te"]
+
+
 def test_two_qb_marks_superflex() -> None:
     compiled = compile_league(
-        _base_league(
-            roster_positions=["QB", "QB", "RB", "RB", "WR", "WR", "TE", "FLEX", "BN"]
-        )
+        _base_league(roster_positions=["QB", "QB", "RB", "RB", "WR", "WR", "TE", "FLEX", "BN"])
     )
 
     assert compiled.superflex is True
@@ -200,10 +238,27 @@ def test_two_qb_marks_superflex() -> None:
     assert compiled.league.roster.superflex == 0
 
 
-def test_best_ball_and_keeper_dynasty_mappings() -> None:
-    best_ball = compile_league(
-        _base_league(settings={"type": 2, "best_ball": 1})
+def test_wrrb_flex_and_rec_flex_count_as_flex() -> None:
+    compiled = compile_league(
+        _base_league(
+            roster_positions=[
+                "QB",
+                "RB",
+                "WR",
+                "TE",
+                "FLEX",
+                "WRRB_FLEX",
+                "REC_FLEX",
+                "BN",
+            ]
+        )
     )
+
+    assert compiled.league.roster.flex == 3
+
+
+def test_best_ball_and_keeper_dynasty_mappings() -> None:
+    best_ball = compile_league(_base_league(settings={"type": 2, "best_ball": 1}))
     assert best_ball.best_ball is True
     assert best_ball.league.format == "best_ball"
 
@@ -218,8 +273,19 @@ def test_best_ball_and_keeper_dynasty_mappings() -> None:
     assert redraft.league.format == "redraft"
 
 
+def test_unknown_settings_type_defaults_redraft() -> None:
+    missing = compile_league({"league_id": "x", "name": "Empty", "season": "2025"})
+    assert missing.league.format == "redraft"
+
+    malformed = compile_league(_base_league(settings={"type": "dynasty"}))
+    assert malformed.league.format == "redraft"
+
+    out_of_range = compile_league(_base_league(settings={"type": 9}))
+    assert out_of_range.league.format == "redraft"
+
+
 def test_exclusive_yardage_bonuses_score_exactly_through_score_week() -> None:
-    compiled = compile_league(
+    pass_compiled = compile_league(
         _base_league(
             scoring_settings={
                 "pass_yd": 0.04,
@@ -228,23 +294,44 @@ def test_exclusive_yardage_bonuses_score_exactly_through_score_week() -> None:
             }
         )
     )
-    bonuses = compiled.league.scoring.passing.pass_yardage_bonuses
-    assert bonuses == [
+    assert pass_compiled.league.scoring.passing.pass_yardage_bonuses == [
         YardageBonus(threshold=300.0, points=3.0),
         YardageBonus(threshold=400.0, points=2.0),
     ]
+    pass_rules = pass_compiled.league.scoring
+    assert score_week(PlayerWeekStats(pass_yd=299), pass_rules) == 11.96
+    assert score_week(PlayerWeekStats(pass_yd=300), pass_rules) == 15.0
+    assert score_week(PlayerWeekStats(pass_yd=400), pass_rules) == 21.0
 
-    rules = compiled.league.scoring
-    low = score_week(PlayerWeekStats(pass_yd=300), rules)
-    high = score_week(PlayerWeekStats(pass_yd=400), rules)
-    below = score_week(PlayerWeekStats(pass_yd=299), rules)
+    rush_compiled = compile_league(
+        _base_league(
+            scoring_settings={
+                "rush_yd": 0.1,
+                "bonus_rush_yd_100": 2.0,
+                "bonus_rush_yd_200": 5.0,
+            }
+        )
+    )
+    rush_rules = rush_compiled.league.scoring
+    assert score_week(PlayerWeekStats(rush_yd=100), rush_rules) == 12.0
+    assert score_week(PlayerWeekStats(rush_yd=200), rush_rules) == 25.0
 
-    assert below == 11.96
-    assert low == 15.0
-    assert high == 21.0
+    rec_compiled = compile_league(
+        _base_league(
+            scoring_settings={
+                "rec": 0.0,
+                "rec_yd": 0.1,
+                "bonus_rec_yd_100": 2.0,
+                "bonus_rec_yd_200": 4.0,
+            }
+        )
+    )
+    rec_rules = rec_compiled.league.scoring
+    assert score_week(PlayerWeekStats(rec_yd=100), rec_rules) == 12.0
+    assert score_week(PlayerWeekStats(rec_yd=200), rec_rules) == 24.0
 
 
-def test_range_replacement_missing_bucket_is_zero() -> None:
+def test_sparse_ranges_preserve_defaults_and_override_supplied() -> None:
     compiled = compile_league(
         _base_league(
             roster_positions=["QB", "RB", "WR", "TE", "DEF", "BN"],
@@ -252,26 +339,60 @@ def test_range_replacement_missing_bucket_is_zero() -> None:
                 "pts_allow_0": 12.0,
                 "pts_allow_35p": -6.0,
                 "fgm_40_49": 4.5,
+                "yds_allow_200_299": -1.0,
             },
         )
     )
 
     assert compiled.league.scoring.defense.points_allowed_ranges == [
         RangeRule(min_value=0.0, max_value=0.0, points=12.0),
-        RangeRule(min_value=1.0, max_value=6.0, points=0.0),
-        RangeRule(min_value=7.0, max_value=13.0, points=0.0),
-        RangeRule(min_value=14.0, max_value=20.0, points=0.0),
+        RangeRule(min_value=1.0, max_value=6.0, points=7.0),
+        RangeRule(min_value=7.0, max_value=13.0, points=4.0),
+        RangeRule(min_value=14.0, max_value=20.0, points=1.0),
         RangeRule(min_value=21.0, max_value=27.0, points=0.0),
-        RangeRule(min_value=28.0, max_value=34.0, points=0.0),
+        RangeRule(min_value=28.0, max_value=34.0, points=-1.0),
         RangeRule(min_value=35.0, max_value=None, points=-6.0),
     ]
     assert compiled.league.scoring.kicking.fg_made_ranges == [
-        RangeRule(min_value=0.0, max_value=19.0, points=0.0),
-        RangeRule(min_value=20.0, max_value=29.0, points=0.0),
-        RangeRule(min_value=30.0, max_value=39.0, points=0.0),
+        RangeRule(min_value=0.0, max_value=19.0, points=3.0),
+        RangeRule(min_value=20.0, max_value=29.0, points=3.0),
+        RangeRule(min_value=30.0, max_value=39.0, points=3.0),
         RangeRule(min_value=40.0, max_value=49.0, points=4.5),
-        RangeRule(min_value=50.0, max_value=None, points=0.0),
+        RangeRule(min_value=50.0, max_value=None, points=5.0),
     ]
+    assert compiled.league.scoring.defense.yards_allowed_ranges == [
+        RangeRule(min_value=200.0, max_value=299.0, points=-1.0),
+    ]
+
+
+def test_yards_allowed_ranges_score_week_dst() -> None:
+    compiled = compile_league(
+        _base_league(
+            roster_positions=["QB", "DEF", "BN"],
+            scoring_settings={
+                "sack": 0.0,
+                "int": 0.0,
+                "fum_rec": 0.0,
+                "def_td": 0.0,
+                "safe": 0.0,
+                "blk_kick": 0.0,
+                "yds_allow_0_100": 5.0,
+                "yds_allow_100_199": 2.0,
+                "yds_allow_200_299": 0.0,
+                "yds_allow_300_349": -1.0,
+                "yds_allow_350_399": -2.0,
+                "yds_allow_400_449": -3.0,
+                "yds_allow_450_499": -4.0,
+                "yds_allow_500_549": -5.0,
+                "yds_allow_550p": -6.0,
+            },
+        )
+    )
+    rules = compiled.league.scoring
+    assert score_week(PlayerWeekStats(dst_yards_allowed=50), rules, position="DST") == 5.0
+    assert score_week(PlayerWeekStats(dst_yards_allowed=150), rules, position="DST") == 2.0
+    assert score_week(PlayerWeekStats(dst_yards_allowed=320), rules, position="DST") == -1.0
+    assert score_week(PlayerWeekStats(dst_yards_allowed=600), rules, position="DST") == -6.0
 
 
 def test_missing_sections_use_safe_defaults() -> None:
@@ -284,7 +405,7 @@ def test_missing_sections_use_safe_defaults() -> None:
         unsupported_keys=[],
         ignored_zero_keys=[],
     )
-    assert compiled.league.format == "dynasty"
+    assert compiled.league.format == "redraft"
     assert compiled.league.scoring.receiving.rec == 1.0
     assert compiled.league.scoring.passing.pass_td == 4.0
     assert compiled.league.roster.qb == 1
@@ -294,16 +415,140 @@ def test_missing_sections_use_safe_defaults() -> None:
     assert compiled.best_ball is False
 
 
-def test_fum_rec_is_offensive_misc_when_def_absent() -> None:
+def test_empty_roster_is_zero_slots_missing_roster_keeps_defaults() -> None:
+    empty = compile_league(_base_league(roster_positions=[]))
+    assert empty.league.roster.qb == 0
+    assert empty.league.roster.flex == 0
+    assert empty.league.roster.dst == 0
+
+    missing = compile_league({"league_id": "x", "name": "n", "season": "2025"})
+    assert missing.league.roster.qb == 1
+    assert missing.league.roster.dst == 1
+
+
+def test_fum_rec_offensive_when_def_absent_and_dst_when_present() -> None:
+    no_def = compile_league(_base_league(scoring_settings={"fum_rec": 1.0, "fum_rec_td": 6.0}))
+    assert no_def.league.roster.dst == 0
+    assert no_def.league.scoring.misc.fumble_rec == 1.0
+    assert no_def.league.scoring.misc.fumble_rec_td == 6.0
+    assert no_def.league.scoring.defense.fumble_recovery == 2.0
+    assert no_def.coverage.status == "full"
+
+    with_def = compile_league(
+        _base_league(
+            roster_positions=["QB", "DEF", "BN"],
+            scoring_settings={"fum_rec": 3.0, "def_td": 6.0},
+        )
+    )
+    assert with_def.league.scoring.defense.fumble_recovery == 3.0
+    assert with_def.league.scoring.misc.fumble_rec == 0.0
+
+
+def test_fum_rec_td_conflicts_with_def_td() -> None:
     compiled = compile_league(
-        _base_league(scoring_settings={"fum_rec": 1.0, "fum_rec_td": 6.0})
+        _base_league(
+            roster_positions=["QB", "DEF", "BN"],
+            scoring_settings={"def_td": 6.0, "fum_rec_td": 4.0},
+        )
     )
 
-    assert compiled.league.roster.dst == 0
-    assert compiled.league.scoring.misc.fumble_rec == 1.0
-    assert compiled.league.scoring.misc.fumble_rec_td == 6.0
-    assert compiled.league.scoring.defense.fumble_recovery == 2.0
-    assert compiled.coverage.status == "full"
+    assert compiled.league.scoring.defense.td == 6.0
+    assert compiled.coverage.status == "partial"
+    assert compiled.coverage.unsupported_keys == [
+        UnsupportedScoringKey(key="fum_rec_td", value=4.0, reason="conflict")
+    ]
+
+
+def test_idp_path_compiles() -> None:
+    compiled = compile_league(
+        _base_league(
+            roster_positions=["QB", "LB", "DB", "IDP_FLEX", "BN"],
+            scoring_settings={
+                "idp_tkl_solo": 1.5,
+                "idp_tkl_ast": 0.75,
+                "idp_sack": 3.0,
+                "idp_int": 4.0,
+            },
+        )
+    )
+
+    assert compiled.league.roster.idp == 3
+    assert compiled.league.scoring.idp.solo_tackle == 1.5
+    assert compiled.league.scoring.idp.assisted_tackle == 0.75
+    assert compiled.league.scoring.idp.sack == 3.0
+    assert compiled.league.scoring.idp.interception == 4.0
+    assert (
+        score_week(
+            PlayerWeekStats(idp_solo_tackle=2, idp_sack=1),
+            compiled.league.scoring,
+            position="LB",
+        )
+        == 6.0
+    )
+
+
+def test_dst_without_def_is_unsupported_or_ignored() -> None:
+    nonzero = compile_league(
+        _base_league(scoring_settings={"sack": 1.0, "pts_allow_0": 10.0, "int": 2.0})
+    )
+    assert nonzero.coverage.status == "partial"
+    assert {item.key for item in nonzero.coverage.unsupported_keys} == {
+        "sack",
+        "pts_allow_0",
+        "int",
+    }
+    assert nonzero.league.scoring.defense.sack == 1.0  # default preserved
+
+    zero = compile_league(_base_league(scoring_settings={"sack": 0.0, "int": 0.0}))
+    assert zero.coverage.status == "full"
+    assert zero.coverage.ignored_zero_keys == ["int", "sack"]
+
+
+def test_non_numeric_and_bool_scoring_values_are_partial() -> None:
+    string_td = compile_league(_base_league(scoring_settings={"pass_td": "6"}))
+    assert string_td.coverage.status == "partial"
+    assert string_td.league.scoring.passing.pass_td == 4.0
+    assert string_td.coverage.unsupported_keys == [
+        UnsupportedScoringKey(key="pass_td", value="6", reason="unmapped")
+    ]
+
+    bool_td = compile_league(_base_league(scoring_settings={"pass_td": True}))
+    assert bool_td.coverage.status == "partial"
+    assert bool_td.league.scoring.passing.pass_td == 4.0
+    assert bool_td.coverage.unsupported_keys == [
+        UnsupportedScoringKey(key="pass_td", value=True, reason="unmapped")
+    ]
+
+    nested = compile_league(_base_league(scoring_settings={"pass_td": {"pts": 6}}))
+    assert nested.coverage.status == "partial"
+    assert nested.coverage.unsupported_keys[0].key == "pass_td"
+    assert isinstance(nested.coverage.unsupported_keys[0].value, str)
+
+
+def test_unrepresentable_split_50_plus_preserves_default_range() -> None:
+    compiled = compile_league(_base_league(scoring_settings={"fgm_50_59": 5.0, "fgm_60p": 6.0}))
+
+    assert compiled.coverage.status == "partial"
+    assert compiled.league.scoring.kicking.fg_made_ranges[-1] == RangeRule(
+        min_value=50.0, max_value=None, points=5.0
+    )
+    assert {item.key for item in compiled.coverage.unsupported_keys} == {
+        "fgm_50_59",
+        "fgm_60p",
+    }
+    assert all(
+        item.reason == "exclusive_range_unrepresentable"
+        for item in compiled.coverage.unsupported_keys
+    )
+    # Default 50+ scoring remains 5 points.
+    assert (
+        score_week(
+            PlayerWeekStats(fg_made_50_plus=1),
+            compiled.league.scoring,
+            position="K",
+        )
+        == 5.0
+    )
 
 
 def test_absent_keys_never_erase_defaults() -> None:

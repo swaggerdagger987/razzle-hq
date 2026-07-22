@@ -5,6 +5,7 @@ No I/O: maps scoring_settings and league settings onto existing LeagueConfig.
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -32,6 +33,7 @@ UnsupportedReason = Literal["unmapped", "exclusive_range_unrepresentable", "conf
 CoverageStatus = Literal["full", "partial"]
 MatchupStyle = Literal["h2h", "h2h_median"]
 TiebreakerKey = Literal["record", "points_for", "points_against"]
+UnsupportedValue = bool | int | float | str | None
 
 _TIEBREAKER_ORDER: list[TiebreakerKey] = ["record", "points_for", "points_against"]
 
@@ -47,7 +49,6 @@ _WAIVER_BY_TYPE: dict[int, WaiverType] = {
     2: "faab",
 }
 
-# Direct scalar maps: sleeper_key → (section, field)
 _PASSING_DIRECT: dict[str, str] = {
     "pass_att": "pass_att",
     "pass_cmp": "pass_cmp",
@@ -97,7 +98,7 @@ _KICKING_DIRECT: dict[str, str] = {
     "fgmiss": "fg_missed",
 }
 
-_DEFENSE_DIRECT: dict[str, str] = {
+_DEFENSE_SCALARS: dict[str, str] = {
     "sack": "sack",
     "int": "interception",
     "def_td": "td",
@@ -165,12 +166,26 @@ _PTS_ALLOW_BUCKETS: list[tuple[str, float, float | None]] = [
     ("pts_allow_35p", 35.0, None),
 ]
 
+_YDS_ALLOW_BUCKETS: list[tuple[str, float, float | None]] = [
+    ("yds_allow_0_100", 0.0, 100.0),
+    ("yds_allow_100_199", 100.0, 199.0),
+    ("yds_allow_200_299", 200.0, 299.0),
+    ("yds_allow_300_349", 300.0, 349.0),
+    ("yds_allow_350_399", 350.0, 399.0),
+    ("yds_allow_400_449", 400.0, 449.0),
+    ("yds_allow_450_499", 450.0, 499.0),
+    ("yds_allow_500_549", 500.0, 549.0),
+    ("yds_allow_550p", 550.0, None),
+]
+
 _ROSTER_SLOT_MAP: dict[str, str] = {
     "QB": "qb",
     "RB": "rb",
     "WR": "wr",
     "TE": "te",
     "FLEX": "flex",
+    "WRRB_FLEX": "flex",
+    "REC_FLEX": "flex",
     "SUPER_FLEX": "superflex",
     "K": "k",
     "DEF": "dst",
@@ -186,7 +201,7 @@ class UnsupportedScoringKey(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     key: str
-    value: float
+    value: UnsupportedValue
     reason: UnsupportedReason
 
 
@@ -228,6 +243,39 @@ class CompiledRules(BaseModel):
     coverage: CoverageReport
 
 
+@dataclass
+class _Coverage:
+    supported: set[str] = field(default_factory=set)
+    unsupported: dict[str, UnsupportedScoringKey] = field(default_factory=dict)
+    ignored_zero: set[str] = field(default_factory=set)
+    consumed: set[str] = field(default_factory=set)
+
+    def support(self, key: str) -> None:
+        self.supported.add(key)
+        self.consumed.add(key)
+
+    def reject(
+        self,
+        key: str,
+        value: Any,
+        reason: UnsupportedReason = "unmapped",
+    ) -> None:
+        self.unsupported[key] = UnsupportedScoringKey(
+            key=key,
+            value=_coverage_value(value),
+            reason=reason,
+        )
+        self.consumed.add(key)
+
+    def report(self) -> CoverageReport:
+        return CoverageReport(
+            status="partial" if self.unsupported else "full",
+            supported_keys=sorted(self.supported),
+            unsupported_keys=sorted(self.unsupported.values(), key=lambda item: item.key),
+            ignored_zero_keys=sorted(self.ignored_zero),
+        )
+
+
 def compile_league(sleeper_json: dict[str, Any]) -> CompiledRules:
     """Map a Sleeper league payload onto CompiledRules. Pure and deterministic."""
     settings = _as_dict(sleeper_json.get("settings"))
@@ -237,8 +285,33 @@ def compile_league(sleeper_json: dict[str, Any]) -> CompiledRules:
         roster_positions = None
 
     roster = _compile_roster(roster_positions)
-    def_rostered = roster.dst > 0
+    scoring, coverage = _compile_scoring(scoring_raw, def_rostered=roster.dst > 0)
+    league_format, best_ball = _compile_format(settings)
+    league = _compile_league_config(
+        sleeper_json, settings, roster, scoring, league_format=league_format
+    )
+    matchup, tiebreakers = _compile_match_meta(settings)
 
+    return CompiledRules(
+        league_id=str(sleeper_json.get("league_id") or ""),
+        name=str(sleeper_json.get("name") or ""),
+        season=str(sleeper_json.get("season") or ""),
+        league=league,
+        matchup=matchup,
+        tiebreakers=tiebreakers,
+        te_premium=abs(scoring.receiving.te_premium) > _EPS,
+        superflex=roster.superflex > 0 or roster.qb >= 2,
+        best_ball=best_ball,
+        coverage=coverage,
+    )
+
+
+def _compile_scoring(
+    scoring_raw: dict[str, Any],
+    *,
+    def_rostered: bool,
+) -> tuple[ScoringRules, CoverageReport]:
+    cov = _Coverage()
     passing = PassingRules()
     rushing = RushingRules()
     receiving = ReceivingRules()
@@ -247,65 +320,26 @@ def compile_league(sleeper_json: dict[str, Any]) -> CompiledRules:
     defense = DefenseRules()
     idp = IdpRules()
 
-    supported: set[str] = set()
-    unsupported: dict[str, UnsupportedScoringKey] = {}
-    ignored_zero: set[str] = set()
-    consumed: set[str] = set()
-
-    # --- direct section maps ---
-    _apply_direct(scoring_raw, _PASSING_DIRECT, passing, supported, consumed)
-    _apply_direct(scoring_raw, _RUSHING_DIRECT, rushing, supported, consumed)
-    _apply_direct(scoring_raw, _RECEIVING_DIRECT, receiving, supported, consumed)
-    _apply_direct(scoring_raw, _MISC_DIRECT, misc, supported, consumed)
-    _apply_direct(scoring_raw, _KICKING_DIRECT, kicking, supported, consumed)
-    _apply_direct(scoring_raw, _IDP_DIRECT, idp, supported, consumed)
-
-    # TE premium: bonus_rec_te primary; else positive rec_te - rec delta.
-    _apply_te_premium(scoring_raw, receiving, supported, unsupported, consumed)
-
-    # Yardage bonuses (exclusive Sleeper tiers → stacking engine bonuses)
-    _apply_yardage_bonuses(scoring_raw, passing, rushing, receiving, supported, consumed)
-
-    # Kicking distance families
-    _apply_fg_ranges(
+    _apply_direct(scoring_raw, _PASSING_DIRECT, passing, cov)
+    _apply_direct(scoring_raw, _RUSHING_DIRECT, rushing, cov)
+    _apply_direct(scoring_raw, _RECEIVING_DIRECT, receiving, cov)
+    _apply_direct(scoring_raw, _MISC_DIRECT, misc, cov)
+    _apply_direct(scoring_raw, _KICKING_DIRECT, kicking, cov)
+    _apply_direct(scoring_raw, _IDP_DIRECT, idp, cov)
+    _apply_te_premium(scoring_raw, receiving, cov)
+    _apply_yardage_bonuses(
         scoring_raw,
-        kicking,
-        made=True,
-        supported=supported,
-        unsupported=unsupported,
-        consumed=consumed,
+        {
+            "passing": (passing, "pass_yardage_bonuses"),
+            "rushing": (rushing, "rush_yardage_bonuses"),
+            "receiving": (receiving, "rec_yardage_bonuses"),
+        },
+        cov,
     )
-    _apply_fg_ranges(
-        scoring_raw,
-        kicking,
-        made=False,
-        supported=supported,
-        unsupported=unsupported,
-        consumed=consumed,
-    )
-
-    # DST / offensive fum_rec split
-    _apply_defense_and_fum_rec(
-        scoring_raw,
-        defense,
-        misc,
-        def_rostered=def_rostered,
-        supported=supported,
-        unsupported=unsupported,
-        consumed=consumed,
-    )
-
-    # Remaining keys: known-handled already in consumed; else ignore-zero or unsupported
-    for key, raw_value in scoring_raw.items():
-        if key in consumed:
-            continue
-        value = _as_float(raw_value)
-        if value is None:
-            continue
-        if abs(value) <= _EPS:
-            ignored_zero.add(key)
-        else:
-            unsupported[key] = UnsupportedScoringKey(key=key, value=value, reason="unmapped")
+    _apply_fg_family(scoring_raw, kicking, made=True, cov=cov)
+    _apply_fg_family(scoring_raw, kicking, made=False, cov=cov)
+    _apply_defense(scoring_raw, defense, misc, def_rostered=def_rostered, cov=cov)
+    _finalize_unknown(scoring_raw, cov)
 
     scoring = ScoringRules(
         passing=passing,
@@ -316,189 +350,133 @@ def compile_league(sleeper_json: dict[str, Any]) -> CompiledRules:
         defense=defense,
         idp=idp,
     )
+    return scoring, cov.report()
 
-    league_format, best_ball = _compile_format(settings)
+
+def _compile_league_config(
+    sleeper_json: dict[str, Any],
+    settings: dict[str, Any],
+    roster: RosterConfig,
+    scoring: ScoringRules,
+    *,
+    league_format: LeagueFormat,
+) -> LeagueConfig:
     league_size = _as_int(sleeper_json.get("total_rosters"))
     if league_size is None:
         league_size = LeagueConfig().league_size
 
     waiver_type_code = _as_int(settings.get("waiver_type"))
-    if waiver_type_code in _WAIVER_BY_TYPE:
-        waiver_type = _WAIVER_BY_TYPE[waiver_type_code]
-    else:
-        waiver_type = LeagueConfig().waiver_type
+    waiver_type = (
+        _WAIVER_BY_TYPE[waiver_type_code]
+        if waiver_type_code in _WAIVER_BY_TYPE
+        else LeagueConfig().waiver_type
+    )
 
-    faab_budget = _as_int(settings.get("waiver_budget"))
-    if faab_budget is None:
-        faab_budget = LeagueConfig().faab_budget
-
-    trade_deadline = _as_int(settings.get("trade_deadline"))
-    if trade_deadline is None:
-        trade_deadline = LeagueConfig().trade_deadline_week
-
-    playoff_teams = _as_int(settings.get("playoff_teams"))
-    if playoff_teams is None:
-        playoff_teams = LeagueConfig().playoff_teams
-
-    playoff_start = _as_int(settings.get("playoff_week_start"))
-    if playoff_start is None:
-        playoff_start = LeagueConfig().playoff_start_week
-
-    league = LeagueConfig(
+    return LeagueConfig(
         league_size=league_size,
         format=league_format,
         scoring=scoring,
         roster=roster,
         waiver_type=waiver_type,
-        faab_budget=faab_budget,
-        trade_deadline_week=trade_deadline,
-        playoff_teams=playoff_teams,
-        playoff_start_week=playoff_start,
+        faab_budget=_int_or_default(settings.get("waiver_budget"), LeagueConfig().faab_budget),
+        trade_deadline_week=_int_or_default(
+            settings.get("trade_deadline"), LeagueConfig().trade_deadline_week
+        ),
+        playoff_teams=_int_or_default(settings.get("playoff_teams"), LeagueConfig().playoff_teams),
+        playoff_start_week=_int_or_default(
+            settings.get("playoff_week_start"), LeagueConfig().playoff_start_week
+        ),
     )
 
+
+def _compile_match_meta(settings: dict[str, Any]) -> tuple[MatchupFormat, TiebreakerConfig]:
     median_enabled = _as_int(settings.get("league_average_match")) == 1
     matchup = MatchupFormat(
         style="h2h_median" if median_enabled else "h2h",
         median_enabled=median_enabled,
     )
-
-    playoff_seed_type = _as_int(settings.get("playoff_seed_type"))
     tiebreakers = TiebreakerConfig(
         order=list(_TIEBREAKER_ORDER),
-        playoff_seed_type=playoff_seed_type,
+        playoff_seed_type=_as_int(settings.get("playoff_seed_type")),
     )
-
-    superflex = roster.superflex > 0 or roster.qb >= 2
-    te_premium_flag = abs(receiving.te_premium) > _EPS
-
-    coverage = CoverageReport(
-        status="partial" if unsupported else "full",
-        supported_keys=sorted(supported),
-        unsupported_keys=sorted(unsupported.values(), key=lambda item: item.key),
-        ignored_zero_keys=sorted(ignored_zero),
-    )
-
-    return CompiledRules(
-        league_id=str(sleeper_json.get("league_id") or ""),
-        name=str(sleeper_json.get("name") or ""),
-        season=str(sleeper_json.get("season") or ""),
-        league=league,
-        matchup=matchup,
-        tiebreakers=tiebreakers,
-        te_premium=te_premium_flag,
-        superflex=superflex,
-        best_ball=best_ball,
-        coverage=coverage,
-    )
+    return matchup, tiebreakers
 
 
 def _apply_direct(
     scoring_raw: dict[str, Any],
     mapping: dict[str, str],
     target: BaseModel,
-    supported: set[str],
-    consumed: set[str],
+    cov: _Coverage,
 ) -> None:
     for sleeper_key, field_name in mapping.items():
         if sleeper_key not in scoring_raw:
             continue
-        value = _as_float(scoring_raw[sleeper_key])
-        if value is None:
+        number = _take_number(scoring_raw, sleeper_key, cov)
+        if number is None:
             continue
-        setattr(target, field_name, value)
-        supported.add(sleeper_key)
-        consumed.add(sleeper_key)
+        setattr(target, field_name, number)
+        cov.support(sleeper_key)
 
 
 def _apply_te_premium(
     scoring_raw: dict[str, Any],
     receiving: ReceivingRules,
-    supported: set[str],
-    unsupported: dict[str, UnsupportedScoringKey],
-    consumed: set[str],
+    cov: _Coverage,
 ) -> None:
     has_bonus = "bonus_rec_te" in scoring_raw
     has_rec_te = "rec_te" in scoring_raw
-
-    bonus_val = _as_float(scoring_raw["bonus_rec_te"]) if has_bonus else None
-    rec_te_val = _as_float(scoring_raw["rec_te"]) if has_rec_te else None
+    bonus_val = _take_number(scoring_raw, "bonus_rec_te", cov) if has_bonus else None
+    rec_te_val = _take_number(scoring_raw, "rec_te", cov) if has_rec_te else None
 
     if has_bonus and bonus_val is not None:
-        consumed.add("bonus_rec_te")
-        supported.add("bonus_rec_te")
         receiving.te_premium = bonus_val
+        cov.support("bonus_rec_te")
 
-    if has_rec_te and rec_te_val is not None:
-        consumed.add("rec_te")
-        delta = rec_te_val - receiving.rec
-        if has_bonus and bonus_val is not None:
-            if abs(bonus_val - delta) > _EPS:
-                # Apply bonus_rec_te; mark rec_te conflict (partial).
-                unsupported["rec_te"] = UnsupportedScoringKey(
-                    key="rec_te",
-                    value=rec_te_val,
-                    reason="conflict",
-                )
-            else:
-                supported.add("rec_te")
+    if not (has_rec_te and rec_te_val is not None):
+        return
+
+    # rec_te is absolute TE reception value; always derive premium when alone.
+    if has_bonus and bonus_val is not None:
+        # Consistency: rec + bonus_rec_te == rec_te.
+        if abs(receiving.rec + bonus_val - rec_te_val) > _EPS:
+            cov.reject("rec_te", rec_te_val, reason="conflict")
         else:
-            if delta > _EPS:
-                receiving.te_premium = delta
-            supported.add("rec_te")
+            cov.support("rec_te")
+        return
+
+    receiving.te_premium = rec_te_val - receiving.rec
+    cov.support("rec_te")
 
 
 def _apply_yardage_bonuses(
     scoring_raw: dict[str, Any],
-    passing: PassingRules,
-    rushing: RushingRules,
-    receiving: ReceivingRules,
-    supported: set[str],
-    consumed: set[str],
+    sections: dict[str, tuple[BaseModel, str]],
+    cov: _Coverage,
 ) -> None:
-    sections: dict[str, tuple[BaseModel, str]] = {
-        "passing": (passing, "pass_yardage_bonuses"),
-        "rushing": (rushing, "rush_yardage_bonuses"),
-        "receiving": (receiving, "rec_yardage_bonuses"),
-    }
-
-    present_by_section: dict[str, dict[float, tuple[str, float]]] = {
-        "passing": {},
-        "rushing": {},
-        "receiving": {},
-    }
+    present_by_section: dict[str, dict[float, float]] = {name: {} for name in sections}
 
     for key, (section, threshold) in _YARDAGE_BONUS_KEYS.items():
         if key not in scoring_raw:
             continue
-        value = _as_float(scoring_raw[key])
-        if value is None:
+        number = _take_number(scoring_raw, key, cov)
+        if number is None:
             continue
-        present_by_section[section][threshold] = (key, value)
-        consumed.add(key)
-        supported.add(key)
+        present_by_section[section][threshold] = number
+        cov.support(key)
 
     for section, low_key, high_key in _YARDAGE_PAIRS:
-        model, field_name = sections[section]
-        defaults: list[YardageBonus] = list(getattr(model, field_name))
-        by_threshold = {bonus.threshold: bonus.points for bonus in defaults}
         present = present_by_section[section]
         if not present:
             continue
-
+        model, field_name = sections[section]
+        by_threshold = {bonus.threshold: bonus.points for bonus in getattr(model, field_name)}
         low_threshold = _YARDAGE_BONUS_KEYS[low_key][1]
         high_threshold = _YARDAGE_BONUS_KEYS[high_key][1]
-        low_present = low_threshold in present
-        high_present = high_threshold in present
-
-        if low_present and high_present:
-            p_low = present[low_threshold][1]
-            p_high = present[high_threshold][1]
-            by_threshold[low_threshold] = p_low
-            by_threshold[high_threshold] = p_high - p_low
+        if low_threshold in present and high_threshold in present:
+            by_threshold[low_threshold] = present[low_threshold]
+            by_threshold[high_threshold] = present[high_threshold] - present[low_threshold]
         else:
-            for threshold, (_key, points) in present.items():
-                by_threshold[threshold] = points
-
+            by_threshold.update(present)
         setattr(
             model,
             field_name,
@@ -509,159 +487,202 @@ def _apply_yardage_bonuses(
         )
 
 
-def _apply_fg_ranges(
+def _apply_fg_family(
     scoring_raw: dict[str, Any],
     kicking: KickingRules,
     *,
     made: bool,
-    supported: set[str],
-    unsupported: dict[str, UnsupportedScoringKey],
-    consumed: set[str],
+    cov: _Coverage,
 ) -> None:
     buckets = _FG_MADE_BUCKETS if made else _FG_MISS_BUCKETS
     plus_keys = _FG_MADE_50_KEYS if made else _FG_MISS_50_KEYS
     field_name = "fg_made_ranges" if made else "fg_missed_ranges"
+    current: list[RangeRule] = list(getattr(kicking, field_name))
+    updated = _overlay_range_buckets(scoring_raw, buckets, current, cov)
+    updated = _overlay_fg_50_plus(scoring_raw, plus_keys, updated, cov)
+    setattr(kicking, field_name, updated)
 
-    family_keys = [key for key, _lo, _hi in buckets] + list(plus_keys)
-    present_keys = [key for key in family_keys if key in scoring_raw]
-    if not present_keys:
-        return
 
-    ranges: list[RangeRule] = []
+def _overlay_range_buckets(
+    scoring_raw: dict[str, Any],
+    buckets: list[tuple[str, float, float | None]],
+    current: list[RangeRule],
+    cov: _Coverage,
+) -> list[RangeRule]:
+    """Override only supplied buckets; preserve absent defaults."""
+    if not any(key in scoring_raw for key, _min, _max in buckets):
+        return current
+
+    by_bounds = {(rule.min_value, rule.max_value): rule.points for rule in current}
+    changed = False
     for key, min_value, max_value in buckets:
-        if key in scoring_raw:
-            value = _as_float(scoring_raw[key])
-            if value is None:
-                continue
-            ranges.append(RangeRule(min_value=min_value, max_value=max_value, points=value))
-            supported.add(key)
-            consumed.add(key)
-        else:
-            # Explicitly supplied family: missing bucket contributes zero.
-            ranges.append(RangeRule(min_value=min_value, max_value=max_value, points=0.0))
+        if key not in scoring_raw:
+            continue
+        number = _take_number(scoring_raw, key, cov)
+        if number is None:
+            continue
+        by_bounds[(min_value, max_value)] = number
+        cov.support(key)
+        changed = True
+    if not changed:
+        return current
+    return _ranges_from_bounds(by_bounds)
 
-    plus_present: list[tuple[str, float]] = []
+
+def _overlay_fg_50_plus(
+    scoring_raw: dict[str, Any],
+    plus_keys: tuple[str, ...],
+    current: list[RangeRule],
+    cov: _Coverage,
+) -> list[RangeRule]:
+    present: list[tuple[str, float]] = []
     for key in plus_keys:
         if key not in scoring_raw:
             continue
-        value = _as_float(scoring_raw[key])
-        if value is None:
+        number = _take_number(scoring_raw, key, cov)
+        if number is None:
             continue
-        plus_present.append((key, value))
-        consumed.add(key)
+        present.append((key, number))
+    if not present:
+        return current
 
-    if plus_present:
-        values = [value for _key, value in plus_present]
-        if max(values) - min(values) > _EPS:
-            for key, value in plus_present:
-                unsupported[key] = UnsupportedScoringKey(
-                    key=key,
-                    value=value,
-                    reason="exclusive_range_unrepresentable",
-                )
-            # Family still supplied for lower buckets; 50+ contributes zero.
-            ranges.append(RangeRule(min_value=50.0, max_value=None, points=0.0))
-        else:
-            for key, _value in plus_present:
-                supported.add(key)
-            ranges.append(RangeRule(min_value=50.0, max_value=None, points=values[0]))
-    else:
-        ranges.append(RangeRule(min_value=50.0, max_value=None, points=0.0))
+    values = [value for _key, value in present]
+    if max(values) - min(values) > _EPS:
+        for key, value in present:
+            cov.reject(key, value, reason="exclusive_range_unrepresentable")
+        # Leave existing 50+ range untouched.
+        return current
 
-    setattr(kicking, field_name, ranges)
+    by_bounds = {(rule.min_value, rule.max_value): rule.points for rule in current}
+    by_bounds[(50.0, None)] = values[0]
+    for key, _value in present:
+        cov.support(key)
+    return _ranges_from_bounds(by_bounds)
 
 
-def _apply_defense_and_fum_rec(
+def _apply_defense(
     scoring_raw: dict[str, Any],
     defense: DefenseRules,
     misc: MiscRules,
     *,
     def_rostered: bool,
-    supported: set[str],
-    unsupported: dict[str, UnsupportedScoringKey],
-    consumed: set[str],
+    cov: _Coverage,
 ) -> None:
-    # Points-allowed family (DEF only)
-    pts_keys = [key for key, _lo, _hi in _PTS_ALLOW_BUCKETS]
-    pts_present = [key for key in pts_keys if key in scoring_raw]
-    if pts_present:
-        if def_rostered:
-            ranges: list[RangeRule] = []
-            for key, min_value, max_value in _PTS_ALLOW_BUCKETS:
-                if key in scoring_raw:
-                    value = _as_float(scoring_raw[key])
-                    if value is None:
-                        continue
-                    ranges.append(
-                        RangeRule(min_value=min_value, max_value=max_value, points=value)
-                    )
-                    supported.add(key)
-                    consumed.add(key)
-                else:
-                    ranges.append(RangeRule(min_value=min_value, max_value=max_value, points=0.0))
-            defense.points_allowed_ranges = ranges
-        else:
-            for key in pts_present:
-                value = _as_float(scoring_raw[key])
-                if value is None:
-                    continue
-                if abs(value) > _EPS:
-                    unsupported[key] = UnsupportedScoringKey(
-                        key=key, value=value, reason="unmapped"
-                    )
-                    consumed.add(key)
-
-    # Scalar DST keys
-    dst_scalar_keys = (
-        "sack",
-        "int",
-        "def_td",
-        "safe",
-        "blk_kick",
-        "ff",
-        "tkl_loss",
-        "qb_hit",
+    defense.points_allowed_ranges = _apply_gated_ranges(
+        scoring_raw,
+        _PTS_ALLOW_BUCKETS,
+        defense.points_allowed_ranges,
+        def_rostered=def_rostered,
+        cov=cov,
     )
-    for key in dst_scalar_keys:
+    defense.yards_allowed_ranges = _apply_gated_ranges(
+        scoring_raw,
+        _YDS_ALLOW_BUCKETS,
+        defense.yards_allowed_ranges,
+        def_rostered=def_rostered,
+        cov=cov,
+    )
+    _apply_defense_scalars(scoring_raw, defense, def_rostered=def_rostered, cov=cov)
+    _apply_fum_rec(scoring_raw, defense, misc, def_rostered=def_rostered, cov=cov)
+
+
+def _apply_gated_ranges(
+    scoring_raw: dict[str, Any],
+    buckets: list[tuple[str, float, float | None]],
+    current: list[RangeRule],
+    *,
+    def_rostered: bool,
+    cov: _Coverage,
+) -> list[RangeRule]:
+    present_keys = [key for key, _min, _max in buckets if key in scoring_raw]
+    if not present_keys:
+        return current
+    if not def_rostered:
+        _reject_or_defer_gated_keys(scoring_raw, present_keys, cov)
+        return current
+    return _overlay_range_buckets(scoring_raw, buckets, list(current), cov)
+
+
+def _reject_or_defer_gated_keys(
+    scoring_raw: dict[str, Any],
+    keys: list[str],
+    cov: _Coverage,
+) -> None:
+    """DEF-gated keys without DEF: non-numeric/nonzero unsupported; zero deferred."""
+    for key in keys:
+        raw = scoring_raw[key]
+        if not _is_numeric(raw):
+            cov.reject(key, raw)
+            continue
+        if abs(float(raw)) > _EPS:
+            cov.reject(key, float(raw))
+
+
+def _apply_defense_scalars(
+    scoring_raw: dict[str, Any],
+    defense: DefenseRules,
+    *,
+    def_rostered: bool,
+    cov: _Coverage,
+) -> None:
+    for key, field_name in _DEFENSE_SCALARS.items():
         if key not in scoring_raw:
             continue
-        value = _as_float(scoring_raw[key])
-        if value is None:
+        if not def_rostered:
+            # Non-numeric rejected now; numeric zero/nonzero deferred to finalize.
+            if not _is_numeric(scoring_raw[key]):
+                cov.reject(key, scoring_raw[key])
             continue
-        field_name = _DEFENSE_DIRECT[key]
-        if def_rostered:
-            setattr(defense, field_name, value)
-            supported.add(key)
-            consumed.add(key)
-        # else: leave for leftover (unmapped / ignored_zero)
+        number = _take_number(scoring_raw, key, cov)
+        if number is None:
+            continue
+        setattr(defense, field_name, number)
+        cov.support(key)
 
-    # fum_rec / fum_rec_td
+
+def _apply_fum_rec(
+    scoring_raw: dict[str, Any],
+    defense: DefenseRules,
+    misc: MiscRules,
+    *,
+    def_rostered: bool,
+    cov: _Coverage,
+) -> None:
     for key, misc_field, def_field in (
         ("fum_rec", "fumble_rec", "fumble_recovery"),
         ("fum_rec_td", "fumble_rec_td", "td"),
     ):
         if key not in scoring_raw:
             continue
-        value = _as_float(scoring_raw[key])
-        if value is None:
+        number = _take_number(scoring_raw, key, cov)
+        if number is None:
             continue
-        if def_rostered:
-            if key == "fum_rec_td" and "def_td" in scoring_raw:
-                def_td_val = _as_float(scoring_raw["def_td"])
-                if def_td_val is not None and abs(def_td_val - value) > _EPS:
-                    # def_td already applied to defense.td; conflicting fum_rec_td.
-                    unsupported[key] = UnsupportedScoringKey(
-                        key=key, value=value, reason="conflict"
-                    )
-                    consumed.add(key)
-                    continue
-            setattr(defense, def_field, value)
-            supported.add(key)
-            consumed.add(key)
+        if not def_rostered:
+            setattr(misc, misc_field, number)
+            cov.support(key)
+            continue
+        if key == "fum_rec_td" and "def_td" in scoring_raw:
+            def_td_val = _peek_number(scoring_raw, "def_td")
+            if def_td_val is not None and abs(def_td_val - number) > _EPS:
+                cov.reject(key, number, reason="conflict")
+                continue
+        setattr(defense, def_field, number)
+        cov.support(key)
+
+
+def _finalize_unknown(scoring_raw: dict[str, Any], cov: _Coverage) -> None:
+    for key, raw_value in scoring_raw.items():
+        if key in cov.consumed:
+            continue
+        if not _is_numeric(raw_value):
+            cov.reject(key, raw_value)
+            continue
+        value = float(raw_value)
+        if abs(value) <= _EPS:
+            cov.ignored_zero.add(key)
+            cov.consumed.add(key)
         else:
-            setattr(misc, misc_field, value)
-            supported.add(key)
-            consumed.add(key)
+            cov.reject(key, value)
 
 
 def _compile_roster(roster_positions: list[Any] | None) -> RosterConfig:
@@ -688,10 +709,9 @@ def _compile_roster(roster_positions: list[Any] | None) -> RosterConfig:
         if slot in _IDP_SLOTS:
             counts["idp"] += 1
             continue
-        field = _ROSTER_SLOT_MAP.get(slot)
-        if field is not None:
-            counts[field] += 1
-
+        field_name = _ROSTER_SLOT_MAP.get(slot)
+        if field_name is not None:
+            counts[field_name] += 1
     return RosterConfig(**counts)
 
 
@@ -702,7 +722,51 @@ def _compile_format(settings: dict[str, Any]) -> tuple[LeagueFormat, bool]:
     league_type = _as_int(settings.get("type"))
     if league_type in _FORMAT_BY_TYPE:
         return _FORMAT_BY_TYPE[league_type], False
-    return LeagueConfig().format, False
+    # Only exact 0/1/2 map; anything else (missing/malformed) defaults redraft.
+    return "redraft", False
+
+
+def _take_number(scoring_raw: dict[str, Any], key: str, cov: _Coverage) -> float | None:
+    """Return float for numeric values; reject bool/non-numeric; None if rejected."""
+    raw = scoring_raw[key]
+    if not _is_numeric(raw):
+        cov.reject(key, raw)
+        return None
+    return float(raw)
+
+
+def _peek_number(scoring_raw: dict[str, Any], key: str) -> float | None:
+    raw = scoring_raw.get(key)
+    if not _is_numeric(raw):
+        return None
+    return float(raw)
+
+
+def _ranges_from_bounds(by_bounds: dict[tuple[float, float | None], float]) -> list[RangeRule]:
+    items = sorted(
+        by_bounds.items(),
+        key=lambda item: (item[0][0], item[0][1] is not None, item[0][1] or 0.0),
+    )
+    return [
+        RangeRule(min_value=min_value, max_value=max_value, points=points)
+        for (min_value, max_value), points in items
+    ]
+
+
+def _coverage_value(value: Any) -> UnsupportedValue:
+    if value is None or isinstance(value, bool):
+        return value
+    if isinstance(value, int) and not isinstance(value, bool):
+        return value
+    if isinstance(value, float):
+        return value
+    if isinstance(value, str):
+        return value
+    return repr(value)
+
+
+def _is_numeric(value: Any) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
 
 
 def _as_dict(value: Any) -> dict[str, Any]:
@@ -711,17 +775,9 @@ def _as_dict(value: Any) -> dict[str, Any]:
     return {}
 
 
-def _as_float(value: Any) -> float | None:
-    if isinstance(value, bool):
-        return float(value)
-    if isinstance(value, (int, float)):
-        return float(value)
-    return None
-
-
 def _as_int(value: Any) -> int | None:
-    if isinstance(value, bool):
-        return int(value)
+    if isinstance(value, bool) or value is None:
+        return None
     if isinstance(value, int):
         return value
     if isinstance(value, float) and value.is_integer():
@@ -732,3 +788,8 @@ def _as_int(value: Any) -> int | None:
         except ValueError:
             return None
     return None
+
+
+def _int_or_default(value: Any, default: int) -> int:
+    parsed = _as_int(value)
+    return default if parsed is None else parsed
