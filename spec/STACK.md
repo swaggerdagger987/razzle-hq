@@ -24,6 +24,7 @@ pnpm workspace (`apps/web`, `packages/*`) + uv workspace (`apps/api`). No turbo,
 - **TanStack Table v8 + Virtual** for the screener (headless — keeps the chunky aesthetic). **TanStack Query** for server state; explicit loading/error/empty states for every async flow.
 - **nuqs** — URL is the source of truth for screener state. Shareable URLs are a product feature, not a nicety.
 - **Zod** client-side; generate TS types from the FastAPI OpenAPI schema so the client never drifts.
+- **Recharts (v3) behind the chart kit** — `apps/web/src/features/chart-kit/` is the only import site for the chart library; panels declare data + config and the kit owns axes, tooltips, watermark, loading/empty states (`spec/DESIGN.md` Charts). Chosen for agent-fleet velocity: declarative, ubiquitous, fully styleable to the chunky standard.
 
 ## Platform
 
@@ -33,7 +34,7 @@ pnpm workspace (`apps/web`, `packages/*`) + uv workspace (`apps/api`). No turbo,
 | Cache | HTTP `Cache-Control` + CDN edge | **No app-layer cache.** Data changes weekly. If one endpoint needs memoization: `functools.lru_cache` on a service function |
 | Background work | Sync + FastAPI `BackgroundTasks` | Only jobs at this scale: weekly nflverse sync (cron), webhook handling. Real worker only when multi-step pipelines exist |
 | Rate limiting | slowapi decorators | When endpoints go public |
-| Auth | **Deferred.** Managed provider (Clerk-class) when the slice arrives | Do NOT port V1's 1,305-line JWT file. New repo, no legacy users to migrate |
+| Auth | **Deferred — but tiers are not.** One entitlement registry (feature key → minimum tier), seeded dev users (Free/Pro/Elite), localhost tier switcher, `/api/me`. A managed provider (Clerk-class) later maps real identities onto the same entitlements | Do NOT port V1's 1,305-line JWT file. New repo, no legacy users to migrate |
 | Billing | Stripe Customer Portal + idempotent webhooks | No reconciliation loop. Free + Pro $79.99/yr at launch; monthly/Elite flagged off until PMF |
 | LLM | OpenRouter, BYOK override per user | One key, all models |
 | Observability | Sentry + PostHog | When deployed. No home-rolled analytics tables |
@@ -63,3 +64,9 @@ pnpm workspace (`apps/web`, `packages/*`) + uv workspace (`apps/api`). No turbo,
 | 2026-06-09 | **Launch deadline July 28, 2026** — live and Reddit-shareable before draft season; scope bends, date doesn't | Founder direction, zero negotiation |
 | 2026-06-09 | **Factory budget:** Claude subscription primary, $150 API credits overflow-only | See factory/ROUTING.md Budget |
 | 2026-06-09 | **Pricing structure:** Free/Pro/Elite individual ladder stays; League option added as a purchase mode (whole-league access), not a replacement SKU. Rollout: Free → Pro → Elite + League in-season | Founder direction; supersedes the earlier "Free + Pro only" gate and the "league plan as second SKU" row |
+| 2026-07-22 | **Milestone Zero:** perfect localhost with zero credentials before any integration work (Stripe, deploy, LLM keys) | Founder direction. See NORTH_STAR |
+| 2026-07-22 | **T0 accuracy law + G6 gate:** crosswalk identity table, verify harness, zero tolerance on player identity | Founder direction ("absolutely 0 mistakes on player accuracy") |
+| 2026-07-22 | **Entitlements before auth:** tier registry + seeded dev users + localhost switcher ship now; auth provider later binds real users to the same registry | Founder direction (browse the product by tier) |
+| 2026-07-22 | **Chart library locked: Recharts v3 behind one chart kit** — sole import site `features/chart-kit/` | Enables ten Lab panels built in parallel with zero design drift |
+| 2026-07-22 | **Data stack expanded to 18 keyless sources** (see `spec/DATA.md`); PBP excluded until proven needed | All sources probed live 2026-07-22 |
+| 2026-07-22 | **Factory refit for swarm runs:** architect seat (Fable-class) + fleet seats (Grok 4.5-class), isolation law, wave protocol | Founder direction. See `factory/ROUTING.md` |

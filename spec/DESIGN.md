@@ -71,6 +71,20 @@ Scale: 32/700 display page titles · 20/700 display player names · 16/700 displ
 
 Personality, not spinners: *"pulling film..."* (screener) · *"checking the tape..."* (data sync) · *"running the numbers..."* (formulas).
 
+## Charts — one kit, comic-strip clarity
+
+Every chart renders through the **Razzle chart kit** (`apps/web/src/features/chart-kit/` — the only place allowed to import the chart library, per `spec/STACK.md`). A Lab panel is data + kit config, never bespoke chart code — that's what lets ten panels ship in parallel without design drift.
+
+- **Container:** chart sits on `--bg-card` inside the standard chunky card. No chart-library default frames, legends, or fonts anywhere.
+- **Axes:** 2px solid `var(--ink)`; tick labels Space Mono 12px `--ink-medium`; axis titles 11px display uppercase.
+- **Gridlines:** horizontal only, 1px dashed `--ink-faint` — or none. Never a gray grid box.
+- **Series color:** position colors when the series is a player/position; one accent otherwise. A chart earns multiple colors only when encoding position.
+- **Marks:** lines 3px with 5px ink-bordered dots; bars with 2px ink borders, radius ≤ `--radius-sm`; scatter dots ink-bordered. Never gradients, never soft shadows.
+- **Tooltip:** a chunky mini-card — 2px ink border, `--shadow-chunky`, `--bg-card`, display-font name, Space Mono values.
+- **Annotations are the differentiator:** tier lines, breakout markers, "the washed line" — drawn in Caveat, margin-note energy. A Razzle chart talks.
+- **Watermark:** every chart carries `razzle.lol` bottom-right in Caveat `--ink-light`. Charts are screenshot bait (T6) — cropped out of the app, a chart must still be unmistakably Razzle.
+- **States:** loading *"running the numbers..."* · empty gets a staff-voiced one-liner, never a bare "No data".
+
 ## Copy
 
 Clean, confident, slightly warm. Never shouty — period over exclamation mark. Assumes you're smart enough to be here. Dry wit in margins (Caveat), never headlines. Watermark: *"razzle.lol — let's razzle dazzle em baby"*. Voice rules: `spec/VOICE.md`.
