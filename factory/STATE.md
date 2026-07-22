@@ -4,11 +4,20 @@
 
 - **Mode:** constitution locked 2026-07-22 — backlog below is the **stage plan to Milestone Zero** (`spec/NORTH_STAR.md`), run by the captain loop (`factory/ROUTING.md`). Founder ignites with **"go"**; **"continue"** resumes at a checkpoint.
 - **Run lock:** no active run. If a captain starts and finds ACTIVE leases below, it resumes them from their cards — never parallel copies.
+- **Checkpoint:** Stage 0 complete; Founder walkthrough pending. Reply **"continue"** to begin Stage 1 or redirect.
 - **Milestone Zero:** the perfect localhost, zero credentials. Every source is keyless (verified live 2026-07-22) — **no CLIENT blockers exist on this path.**
 - **Launch deadline:** **2026-07-28** (unchanged; Milestone Zero gates it).
 - **Recovery source:** branch `origin/claude/jolly-turing-l4muhb` holds the S-002→S-004 train (screener, player sheet, custom scoring; +2,884 lines, forked from 199eba5, own ledger marked done 2026-06-13). **Recover, never blind-merge** — verified defects listed on R-02. `origin/claude/affectionate-dirac-vbnwzz` has nothing ahead of main; ignore.
 - **Execution budget:** 12–14 execution hours across stages; cost governance per `factory/ROUTING.md` (pyramid audited at every checkpoint).
 - **Date:** 2026-07-22
+
+## STAGE 0 CHECKPOINT — RECOVERY & RELEASE SAFETY
+
+- **Shipped:** R-01 restored root gates; R-02 recovered the three product commits (API, Scratchpad, Player Sheet, custom scoring) while rejecting stale factory/Ruff config, then rebuilt the verified accuracy, pagination, mobile-Pts, and scoring-context defects; R-03 added the read-only G6 source-replay harness.
+- **Proof:** fresh migration + health green; 78 tests; Ruff check and 52-file format check green; web lint/build green (7 routes). Live nflverse replay: players 8,363/8,363, 2024 weeks 5,849/5,849, 2025 weeks 6,020/6,020; deterministic 25/25 DB↔source samples, exhaustive filter-leak checks, zero mismatches. Scratchpad four-preset replay, URL paging/context navigation, and 1440/375 screenshots passed.
+- **Cost vs pyramid:** 17 Grok writer/auditor invocations, 3 CTO/Fable interventions, one continuous Sol captain. The harness lease's second failure escalated to CTO and was not sent to a third writer. Exact token percentages are not exposed in repo evidence; verify the dashboard before certifying the 70/20/10 target.
+- **Asks:** Founder walks `/scratchpad` in the cloud remote desktop (Free surface + Player Sheet context). No CLIENT blockers or credentials needed.
+- **Next:** on **"continue"**, Stage 1 starts with captain-serialized K-01, then frozen-contract K-02/K-03 lanes; R-03's `--require freshness` / `--require identity` make those handoffs mechanical.
 
 ## THE STAGE PLAN (dependency graph)
 
@@ -40,7 +49,7 @@ Frozen contracts land at the end of Stage 1 (`/api/context/connect` · `/api/con
 - **Golden tests:** two hand-verified 2025 player-seasons per position (incl. one two-pt-conversion case and one non-REG-filter case), asserted to the decimal against `score_week` fixtures.
 - **Gates:** G1–G6; G5: `/explore`-equivalent renders ≥20 real rows under PPR/half/standard/TEP with points matching goldens; URL round-trips; screenshot.
 
-### R-03 verify-harness-v1 [ACTIVE] · M · writer + auditors
+### R-03 verify-harness-v1 [DONE] · M · writer + auditors
 - **Pillar / Trust:** release safety; T0 accuracy law and reusable G6 substrate.
 - **Goal:** `scripts/verify_data.py` map-replays deterministic random samples in both directions between `players` / `player_week_stats` and nflverse source rows, detects filter leaks and identity/stat mismatches, never mutates the DB, and exits 0 on a freshly synced database. Checks report `PASS`, `FAIL`, or visible `UNAVAILABLE(reason)`; `--require identity|freshness` promotes unavailable table-backed checks to failures.
 - **File plan:** NEW `scripts/verify_data.py` (CLI, source loading, capability probes, report); NEW `apps/api/tests/unit/test_verify_data.py` (offline source fixtures built in `tmp_path`, temp migrated DB, no network). No edits to ingest, sync, migrations, domain, web, manifests, spec, or other factory files; `factory/STATE.md` remains captain-only for status/ledger.
@@ -107,3 +116,4 @@ All web lanes consume the frozen contracts; fences never overlap (isolation law)
 | R-01 | 2026-07-22 | (this PR) | G2, G4 | CTO/Fable | S | graveyard excluded from pytest+ruff; repo-root gates green (18 passed / all checks passed) |
 | lock | 2026-07-22 | (this PR) | G1–G4 | CTO/Fable | — | Constitution: razzle.hq north star, context kernel, accuracy law, command structure + budgets, stage plan. Verified live: 18 sources keyless, NFL weekly 1999+, college 2014+, draft_picks bridge keyed, jolly-turing defects confirmed in code |
 | R-02 | 2026-07-22 | 8811713 + 865c3f3 | G1–G6 | Writer/Grok 4.5 High + Auditor/Grok 4.5 High Fast | L + 6S audits | Recovered Scratchpad + Player Sheet; 56 passed, fresh migrate/health/build/lint green; eight 2025 goldens, four-preset live replay, URL paging/context browser replay, 1440/375 screenshots |
+| R-03 | 2026-07-22 | ce4b6a1…02f6601 | G1–G6 | Writer/Grok 4.5 High + Auditor/Grok 4.5 High Fast + CTO/Fable Max | M + audits + escalation | Read-only verifier; 22 focused / 78 total tests, deterministic bidirectional live replay, exhaustive filter leaks, capability handoff flags; two failed writer gates escalated to CTO |
