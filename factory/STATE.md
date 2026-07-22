@@ -106,7 +106,7 @@ Frozen contracts land at the end of Stage 1 (`/api/context/connect` · `/api/con
 - **Out of scope:** DB writes/crosswalk/context API/compiler/web/live credential flow.
 - **Pitfalls:** live product only but tests never live; 24h cache under gitignored data only; use Sleeper state season, not calendar year; no demo league or graveyard import.
 
-### K-03b context-and-crosswalk [ACTIVE] · L · Grok writer + auditors · after K-01, K-02, K-03a
+### K-03b context-and-crosswalk [DONE] · L · Grok writer + auditors · after K-01, K-02, K-03a
 - **Pillar / Trust:** T0 identity substrate and T2 immutable shared league context.
 - **Goal:** canonical spine seed + DynastyProcess + Sleeper builds `player_ids` with `player_ids ⊇ players`; username returns only their leagues; refresh persists a new immutable revision with snapshot, compiled rules, coverage and provenance; revision reads are offline.
 - **File plan:** NEW `ingest/crosswalk.py`, `services/context_service.py`, `api/schemas/context.py`, unit tests for crosswalk/service, integration `test_context_api.py`, and trimmed crosswalk fixtures; EDIT the K-01-owned router shell `api/routers/context.py` only. Captain adds the sole crosswalk registry row between waves, ordered after nflverse. No migrations/main/sync script/core/domain/web.
@@ -164,3 +164,4 @@ All web lanes consume the frozen contracts; fences never overlap (isolation law)
 | K-01 | 2026-07-22 | 48d94de + 31f291d | G1–G6 | Captain/Sol Max + Auditor/Grok 4.5 High Fast | L + 2S audits | 19-table kernel migration, frozen routers, lazy sync, provenance and freshness; 167 tests, migration roundtrip, live freshness required PASS |
 | K-02 | 2026-07-22 | 572c5bf…7a6c473 | G1–G5 | Writer/Grok 4.5 High + Auditor/Grok 4.5 High Fast + CTO/Fable Max | L + audits + escalation | Pure Sleeper compiler, full/partial coverage, two league goldens, exact range/bonus boundaries; second failed audit escalated to CTO |
 | K-03a | 2026-07-22 | 3ec683f + f033fe3 | G1–G5 | Writer/Grok 4.5 High + Auditor/Grok 4.5 High Fast | M + 4S audits | Keyless Sleeper graph, 30 synthetic cassettes, hermetic network tests, atomic 24h player cache; focused and full gates green |
+| K-03b | 2026-07-22 | 162a337…e1017e7 | G1–G6 | 2 Writers/Grok 4.5 High + Auditors/Grok 4.5 High Fast + CTO/Fable Max | L + parallel sublease + audits | Canonical-spine crosswalk + immutable context API; 252 tests, typed contract, 13,170 ids, live identity/freshness 25/25 PASS |
