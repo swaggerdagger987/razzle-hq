@@ -17,6 +17,10 @@ members = ["apps/api"]
 target-version = "py312"
 line-length = 100
 src = ["apps/api/src"]
+# graveyard/ holds read-only snapshots of the old repos (reference quarries).
+# Never linted, never collected — without these excludes the repo-root gate
+# commands in factory/GATES.md fail on code we will never touch.
+extend-exclude = ["graveyard"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "PL"]
@@ -32,3 +36,5 @@ indent-style = "space"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+testpaths = ["apps/api/tests"]
+norecursedirs = ["graveyard", "node_modules", ".git"]
