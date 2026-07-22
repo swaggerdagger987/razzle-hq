@@ -120,6 +120,18 @@ Frozen contracts land at the end of Stage 1 (`/api/context/connect` · `/api/con
 - **Pitfalls:** K-01 schema/module names are frozen; K-03b starts only after dependencies merge; every refresh rechecks user leagues; cassettes are the only committed league JSON; no partial revision on upstream failure.
 - **Stage-end freeze:** these three context endpoints, provenance envelope, compiled coverage shape, `GET /api/me` stub, and `POST /api/scenarios` stub. Kernel demo = Founder username → their league → revision with compiled rules + coverage.
 
+### K-04 kernel-demo-surface [OPEN — execution-ready] · M · Grok writer + auditors
+- **Pillar / Trust:** T1/T2 context holy moment and T6 warm, screenshot-readable proof.
+- **Goal:** a localhost screen lets the Founder enter a Sleeper username, see only that user's current leagues, choose one, create an immutable revision, and visibly inspect format/rules/coverage/source freshness.
+- **File plan:** NEW `apps/web/src/app/connect/page.tsx`, `apps/web/src/features/context-kernel/{api,ContextKernelDemo}.ts{x,}`; EDIT `apps/web/src/app/page.tsx` for one Connect Sleeper entry. No API/schema/root provider/package/token/factory/spec changes.
+- **Interfaces:** consume frozen `POST /api/context/connect`, `POST /api/context/leagues/{id}/refresh`, `GET /api/context/revision/{id}` via typed client functions. URL state uses `username`, `league_id`, and `revision`; refresh with a revision reloads from GET without refetching Sleeper.
+- **Surface:** username form; owned-league cards; explicit loading/error/empty states; selected revision card showing league name/season, dynasty|redraft, superflex, TEP, H2H|median, playoffs, coverage full|partial, unsupported keys, revision id, sources/as-of, and a typed Scratchpad link. Token-only sand/chunky styling, 1440/375, no user-facing AI copy.
+- **Test plan:** client rejects non-2xx with status/detail; TypeScript consumes frozen models without `any`; browser unknown-user error, empty leagues, multi-league selection, revision reload, partial-coverage display, and mobile layout. No localStorage/demo league/cassette mode in product.
+- **Gates:** G1–G4; G5 = Founder username happy path on localhost plus screenshot at 1440/375; refresh URL retains revision and reload performs only GET. Until the Founder supplies a username, cassette-backed API integration plus browser error/loading states are the non-client proof.
+- **Budget:** M, Grok High cap 40; two Grok Fast auditors.
+- **Out of scope:** global context bar, auth/tier persistence, web standings/rooms, demo league data, changing frozen API.
+- **Pitfalls:** live-only means no fake happy path; never expose raw JSON as the primary view; partial coverage is a warning chip, not a hidden success; user leagues are never searched globally.
+
 ### ═══ STAGE 2 — CASE FILE + THREE DOORS v0 (after Stage 1) ═══
 
 All web lanes consume the frozen contracts; fences never overlap (isolation law). Tier gating uses the entitlement registry from H-06.
