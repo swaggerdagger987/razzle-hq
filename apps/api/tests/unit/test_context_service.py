@@ -12,9 +12,12 @@ import pytest
 import sqlalchemy as sa
 from alembic import command
 from alembic.config import Config
+from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 
+from razzle_api.api.schemas.context import ConnectResponse, ContextRevisionResponse
+from razzle_api.config import get_settings
 from razzle_api.domain.scoring import compile_league
 from razzle_api.ingest.sleeper import SleeperUpstreamError
 from razzle_api.services import context_service
@@ -78,8 +81,6 @@ def cassette_transport(monkeypatch: pytest.MonkeyPatch):
 def session_factory(tmp_path, monkeypatch):
     db_url = f"sqlite:///{tmp_path / 'context.db'}"
     monkeypatch.setenv("RAZZLE_DATABASE_URL", db_url)
-    from razzle_api.config import get_settings
-
     get_settings.cache_clear()
     try:
         cfg = Config(str(API_DIR / "alembic.ini"))
@@ -123,6 +124,11 @@ def _revision_row(session: Session, revision_id: str) -> dict | None:
         .first()
     )
     return dict(row) if row is not None else None
+
+
+def _assert_no_writes(session: Session) -> None:
+    assert _revision_count(session) == 0
+    assert session.execute(sa.select(sa.func.count()).select_from(leagues_table)).scalar_one() == 0
 
 
 def test_connect_unknown_user(session: Session, monkeypatch: pytest.MonkeyPatch):
@@ -432,3 +438,141 @@ def test_refresh_network_before_db(session: Session, cassette_transport, monkeyp
 
     refresh_league(session, LEAGUE_ID, username=USERNAME)
     assert order == ["user", "state", "leagues", "snapshot", "db"]
+
+
+def test_service_payloads_validate_typed_schemas(session: Session, cassette_transport):
+    connect_payload = connect_username(session, USERNAME)
+    connect_model = ConnectResponse.model_validate(connect_payload)
+    assert connect_model.meta.revision is None
+
+    refresh_payload = refresh_league(session, LEAGUE_ID, username=USERNAME)
+    revision_model = ContextRevisionResponse.model_validate(refresh_payload)
+    assert revision_model.coverage.status in {"full", "partial"}
+    assert revision_model.compiled_rules.coverage == revision_model.coverage
+
+    loaded = get_revision(session, refresh_payload["revision_id"])
+    assert loaded is not None
+    ContextRevisionResponse.model_validate(loaded)
+
+
+def test_schema_rejects_garbage_coverage(session: Session, cassette_transport):
+    payload = refresh_league(session, LEAGUE_ID, username=USERNAME)
+    ContextRevisionResponse.model_validate(payload)
+
+    garbage_cases = (
+        {"status": "nope"},
+        {"status": "partial", "unsupported_keys": "not-a-list"},
+        {"status": "full", "invented": True},
+        "not-an-object",
+        None,
+    )
+    for garbage in garbage_cases:
+        bad = dict(payload)
+        bad["coverage"] = garbage
+        with pytest.raises(ValidationError):
+            ContextRevisionResponse.model_validate(bad)
+
+        bad_rules = dict(payload)
+        bad_rules["compiled_rules"] = {**payload["compiled_rules"], "coverage": garbage}
+        with pytest.raises(ValidationError):
+            ContextRevisionResponse.model_validate(bad_rules)
+
+
+@pytest.mark.parametrize(
+    "user",
+    [
+        {"username": USERNAME},
+        {"user_id": 111222333, "username": USERNAME},
+        {"user_id": "", "username": USERNAME},
+        {"user_id": None, "username": USERNAME},
+    ],
+)
+def test_bad_user_id_is_upstream_no_writes(
+    session: Session,
+    monkeypatch: pytest.MonkeyPatch,
+    user: dict,
+):
+    monkeypatch.setattr(context_service.sleeper, "fetch_user", lambda username: user)
+    with pytest.raises(ContextUpstreamError, match="user_id"):
+        connect_username(session, USERNAME)
+    _assert_no_writes(session)
+
+
+@pytest.mark.parametrize(
+    "state",
+    [
+        {},
+        {"league_season": None},
+        {"league_season": "autumn"},
+        {"league_season": True},
+        ["not-an-object"],
+    ],
+)
+def test_bad_state_season_is_upstream_no_writes(
+    session: Session,
+    monkeypatch: pytest.MonkeyPatch,
+    state: object,
+):
+    monkeypatch.setattr(
+        context_service.sleeper,
+        "fetch_user",
+        lambda username: {"user_id": USER_ID, "username": USERNAME},
+    )
+    monkeypatch.setattr(context_service.sleeper, "fetch_nfl_state", lambda: state)
+    with pytest.raises(ContextUpstreamError):
+        connect_username(session, USERNAME)
+    _assert_no_writes(session)
+
+
+def _drop_league(snap: dict) -> dict:
+    del snap["league"]
+    return snap
+
+
+def _wrong_league_payload(snap: dict) -> dict:
+    snap["league"] = "nope"
+    return snap
+
+
+def _nonnumeric_season(snap: dict) -> dict:
+    snap["league"]["season"] = "autumn"
+    return snap
+
+
+def _null_season(snap: dict) -> dict:
+    snap["league"]["season"] = None
+    return snap
+
+
+def _drop_users(snap: dict) -> dict:
+    del snap["users"]
+    return snap
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        _drop_league,
+        _wrong_league_payload,
+        _nonnumeric_season,
+        _null_season,
+        _drop_users,
+    ],
+)
+def test_bad_snapshot_is_upstream_no_writes(
+    session: Session,
+    cassette_transport,
+    monkeypatch: pytest.MonkeyPatch,
+    mutate,
+):
+    real_fetch = context_service.sleeper.fetch_league_snapshot
+
+    def bad_snapshot(league_id: str, *, state=None):  # noqa: ANN001
+        snap = dict(real_fetch(league_id, state=state))
+        snap["league"] = dict(snap["league"])
+        return mutate(snap)
+
+    monkeypatch.setattr(context_service.sleeper, "fetch_league_snapshot", bad_snapshot)
+    with pytest.raises(ContextUpstreamError):
+        refresh_league(session, LEAGUE_ID, username=USERNAME)
+    _assert_no_writes(session)

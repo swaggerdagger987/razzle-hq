@@ -6,6 +6,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 from razzle_api.api.schemas.provenance import ProvenanceMeta
+from razzle_api.domain.scoring import CompiledRules, CoverageReport
 
 
 class ConnectRequest(BaseModel):
@@ -62,6 +63,6 @@ class ContextRevisionResponse(BaseModel):
     transactions_by_week: dict[int, list[dict[str, Any]]]
     traded_picks: list[dict[str, Any]]
     state: dict[str, Any]
-    compiled_rules: dict[str, Any]
-    coverage: dict[str, Any]
+    compiled_rules: CompiledRules
+    coverage: CoverageReport
     meta: ProvenanceMeta

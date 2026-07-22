@@ -22,7 +22,11 @@ from razzle_api.services.context_service import (
 router = APIRouter(prefix="/api/context", tags=["context"])
 
 
-@router.post("/connect", response_model=ConnectResponse)
+@router.post(
+    "/connect",
+    response_model=ConnectResponse,
+    response_model_exclude_none=True,
+)
 def connect(
     body: ConnectRequest,
     session: Annotated[Session, Depends(get_session)],
@@ -42,7 +46,11 @@ def connect(
     return ConnectResponse.model_validate(payload)
 
 
-@router.post("/leagues/{league_id}/refresh", response_model=ContextRevisionResponse)
+@router.post(
+    "/leagues/{league_id}/refresh",
+    response_model=ContextRevisionResponse,
+    response_model_exclude_none=True,
+)
 def refresh(
     league_id: str,
     body: RefreshRequest,
@@ -68,7 +76,11 @@ def refresh(
     return ContextRevisionResponse.model_validate(payload)
 
 
-@router.get("/revision/{revision_id}", response_model=ContextRevisionResponse)
+@router.get(
+    "/revision/{revision_id}",
+    response_model=ContextRevisionResponse,
+    response_model_exclude_none=True,
+)
 def revision(
     revision_id: str,
     session: Annotated[Session, Depends(get_session)],

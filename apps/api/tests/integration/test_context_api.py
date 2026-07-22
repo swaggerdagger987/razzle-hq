@@ -89,6 +89,17 @@ def _revision_count(session_factory) -> int:
         return int(session.execute(sa.text("SELECT COUNT(*) FROM context_revisions")).scalar_one())
 
 
+def _league_count(session_factory) -> int:
+    with session_factory() as session:
+        return int(session.execute(sa.text("SELECT COUNT(*) FROM leagues")).scalar_one())
+
+
+def _assert_meta_optional_absence(meta: dict) -> None:
+    assert "revision" not in meta
+    assert "coverage" not in meta
+    assert "model_version" not in meta
+
+
 async def test_connect_refresh_get_cassette_flow(session_factory, cassette_transport):
     _override_session(session_factory)
     try:
@@ -101,7 +112,7 @@ async def test_connect_refresh_get_cassette_flow(session_factory, cassette_trans
             assert connect_body["season"] == 2025
             assert connect_body["leagues"][0]["league_id"] == LEAGUE_ID
             assert connect_body["meta"]["assumptions"] == ["explicitly owned leagues"]
-            assert connect_body["meta"].get("revision") is None
+            _assert_meta_optional_absence(connect_body["meta"])
             assert connect_body["meta"]["sources"][0]["name"] == "sleeper"
             assert connect_body["meta"]["sources"][0]["as_of"].endswith("Z")
 
@@ -118,6 +129,8 @@ async def test_connect_refresh_get_cassette_flow(session_factory, cassette_trans
             assert refresh_body["meta"]["sources"][0]["name"] == "sleeper"
             assert refresh_body["coverage"]["status"] in {"full", "partial"}
             assert refresh_body["compiled_rules"]["coverage"] == refresh_body["coverage"]
+            assert refresh_body["meta"]["coverage"] == refresh_body["coverage"]
+            assert "model_version" not in refresh_body["meta"]
             assert {int(k) for k in refresh_body["matchups_by_week"]} == {1, 2, 3}
             assert _revision_count(session_factory) == 1
 
@@ -128,9 +141,78 @@ async def test_connect_refresh_get_cassette_flow(session_factory, cassette_trans
             assert got_body["meta"]["revision"] == revision_id
             assert got_body["league"] == refresh_body["league"]
             assert got_body["coverage"] == refresh_body["coverage"]
+            assert got_body["compiled_rules"]["coverage"] == got_body["coverage"]
             assert {int(k) for k in got_body["matchups_by_week"]} == {1, 2, 3}
     finally:
         _clear_override()
+
+
+async def test_refresh_partial_coverage_http(
+    session_factory,
+    cassette_transport,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    real_fetch = context_service.sleeper.fetch_league_snapshot
+
+    def partial_snapshot(league_id: str, *, state=None):  # noqa: ANN001
+        snap = dict(real_fetch(league_id, state=state))
+        league = dict(snap["league"])
+        scoring = dict(league.get("scoring_settings") or {})
+        scoring["mystery_stat"] = 3.0
+        league["scoring_settings"] = scoring
+        snap["league"] = league
+        return snap
+
+    monkeypatch.setattr(context_service.sleeper, "fetch_league_snapshot", partial_snapshot)
+    _override_session(session_factory)
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            response = await client.post(
+                f"/api/context/leagues/{LEAGUE_ID}/refresh",
+                json={"username": USERNAME},
+            )
+    finally:
+        _clear_override()
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["coverage"]["status"] == "partial"
+    unsupported = body["coverage"]["unsupported_keys"]
+    assert any(item["key"] == "mystery_stat" for item in unsupported)
+    assert body["compiled_rules"]["coverage"] == body["coverage"]
+    assert body["meta"]["coverage"] == body["coverage"]
+    assert body["compiled_rules"]["coverage"]["unsupported_keys"] == unsupported
+
+
+def _schema_ref_name(node: dict[str, Any]) -> str:
+    if "$ref" in node:
+        return node["$ref"].rsplit("/", 1)[-1]
+    for item in node.get("allOf", []):
+        if isinstance(item, dict) and "$ref" in item:
+            return item["$ref"].rsplit("/", 1)[-1]
+    raise AssertionError(f"schema node missing $ref: {node}")
+
+
+async def test_openapi_exposes_compiled_rules_and_coverage_types():
+    schema = app.openapi()
+    components = schema["components"]["schemas"]
+    assert "CompiledRules" in components
+    assert "CoverageReport" in components
+    assert "UnsupportedScoringKey" in components
+
+    refresh_schema = schema["paths"]["/api/context/leagues/{league_id}/refresh"]["post"]
+    response_schema = refresh_schema["responses"]["200"]["content"]["application/json"]["schema"]
+    revision = components[_schema_ref_name(response_schema)]
+    props = revision["properties"]
+    assert _schema_ref_name(props["compiled_rules"]) == "CompiledRules"
+    assert _schema_ref_name(props["coverage"]) == "CoverageReport"
+
+    get_schema = schema["paths"]["/api/context/revision/{revision_id}"]["get"]
+    get_response = get_schema["responses"]["200"]["content"]["application/json"]["schema"]
+    get_props = components[_schema_ref_name(get_response)]["properties"]
+    assert _schema_ref_name(get_props["compiled_rules"]) == "CompiledRules"
+    assert _schema_ref_name(get_props["coverage"]) == "CoverageReport"
 
 
 async def test_refresh_foreign_league_403(
@@ -154,6 +236,7 @@ async def test_refresh_foreign_league_403(
     finally:
         _clear_override()
     assert response.status_code == 403
+    assert _revision_count(session_factory) == 0
 
 
 async def test_connect_unknown_user_404(
@@ -170,6 +253,27 @@ async def test_connect_unknown_user_404(
     finally:
         _clear_override()
     assert response.status_code == 404
+
+
+async def test_refresh_unknown_user_404(
+    session_factory,
+    cassette_transport,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.setattr(context_service.sleeper, "fetch_user", lambda username: None)
+    _override_session(session_factory)
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            response = await client.post(
+                f"/api/context/leagues/{LEAGUE_ID}/refresh",
+                json={"username": "ghost"},
+            )
+    finally:
+        _clear_override()
+    assert response.status_code == 404
+    assert _revision_count(session_factory) == 0
+    assert _league_count(session_factory) == 0
 
 
 async def test_revision_unknown_404(session_factory, cassette_transport):
@@ -207,6 +311,85 @@ async def test_refresh_upstream_502_no_partial(
         _clear_override()
     assert response.status_code == 502
     assert _revision_count(session_factory) == 0
+
+
+async def test_connect_upstream_502(
+    session_factory,
+    cassette_transport,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.setattr(
+        context_service.sleeper,
+        "fetch_user",
+        lambda username: (_ for _ in ()).throw(SleeperUpstreamError("down", status_code=503)),
+    )
+    _override_session(session_factory)
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            response = await client.post("/api/context/connect", json={"username": USERNAME})
+    finally:
+        _clear_override()
+    assert response.status_code == 502
+    assert _revision_count(session_factory) == 0
+    assert _league_count(session_factory) == 0
+
+
+async def test_bad_user_id_http_502_no_writes(
+    session_factory,
+    cassette_transport,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.setattr(
+        context_service.sleeper,
+        "fetch_user",
+        lambda username: {"username": USERNAME},
+    )
+    _override_session(session_factory)
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            connect = await client.post("/api/context/connect", json={"username": USERNAME})
+            refresh = await client.post(
+                f"/api/context/leagues/{LEAGUE_ID}/refresh",
+                json={"username": USERNAME},
+            )
+    finally:
+        _clear_override()
+    assert connect.status_code == 502
+    assert refresh.status_code == 502
+    assert _revision_count(session_factory) == 0
+    assert _league_count(session_factory) == 0
+
+
+async def test_bad_snapshot_season_http_502_no_writes(
+    session_factory,
+    cassette_transport,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    real_fetch = context_service.sleeper.fetch_league_snapshot
+
+    def bad_season(league_id: str, *, state=None):  # noqa: ANN001
+        snap = dict(real_fetch(league_id, state=state))
+        league = dict(snap["league"])
+        league["season"] = "autumn"
+        snap["league"] = league
+        return snap
+
+    monkeypatch.setattr(context_service.sleeper, "fetch_league_snapshot", bad_season)
+    _override_session(session_factory)
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            response = await client.post(
+                f"/api/context/leagues/{LEAGUE_ID}/refresh",
+                json={"username": USERNAME},
+            )
+    finally:
+        _clear_override()
+    assert response.status_code == 502
+    assert _revision_count(session_factory) == 0
+    assert _league_count(session_factory) == 0
 
 
 async def test_get_revision_network_blocked(
@@ -262,3 +445,28 @@ async def test_connect_validation_422(session_factory, cassette_transport):
             assert extra.status_code == 422
     finally:
         _clear_override()
+
+
+async def test_refresh_validation_422(session_factory, cassette_transport):
+    _override_session(session_factory)
+    try:
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            empty_user = await client.post(
+                f"/api/context/leagues/{LEAGUE_ID}/refresh",
+                json={"username": "   "},
+            )
+            assert empty_user.status_code == 422
+            missing = await client.post(
+                f"/api/context/leagues/{LEAGUE_ID}/refresh",
+                json={},
+            )
+            assert missing.status_code == 422
+            extra = await client.post(
+                f"/api/context/leagues/{LEAGUE_ID}/refresh",
+                json={"username": USERNAME, "extra": True},
+            )
+            assert extra.status_code == 422
+    finally:
+        _clear_override()
+    assert _revision_count(session_factory) == 0

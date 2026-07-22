@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import uuid
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
@@ -18,6 +19,15 @@ from razzle_api.ingest import sleeper
 _JSON_DUMP_KW = {"ensure_ascii": False, "separators": (",", ":")}
 _PERSIST_ATTEMPTS = 3
 _OWNED_ASSUMPTION = "explicitly owned leagues"
+_SNAPSHOT_KEYS = (
+    "league",
+    "users",
+    "rosters",
+    "traded_picks",
+    "matchups_by_week",
+    "transactions_by_week",
+    "state",
+)
 
 _metadata = sa.MetaData()
 
@@ -61,6 +71,39 @@ class ContextUpstreamError(Exception):
     """Sleeper (or related) upstream failure."""
 
 
+@dataclass(frozen=True)
+class _LeagueRecord:
+    league_id: str
+    owner_user_id: str
+    owner_username: str
+    name: str
+    season: int
+    sport: str
+    total_rosters: int | None
+
+
+@dataclass(frozen=True)
+class _RevisionBlobs:
+    revision_id: str
+    created_at: str
+    snapshot_json: str
+    compiled_rules_json: str
+    coverage_json: str
+    sources_json: str
+
+
+@dataclass(frozen=True)
+class _RevisionView:
+    revision_id: str
+    league_id: str
+    season: int
+    created_at: datetime
+    snapshot: dict[str, Any]
+    compiled_rules: dict[str, Any]
+    coverage: dict[str, Any]
+    meta: dict[str, Any]
+
+
 def connect_username(session: Session, username: str) -> dict:
     """List the caller's owned leagues for the current Sleeper season. No DB writes."""
     del session  # connect never touches the database
@@ -90,10 +133,11 @@ def refresh_league(session: Session, sleeper_league_id: str, *, username: str) -
         raise ContextForbiddenError(f"league not owned: {league_id}")
 
     try:
-        snapshot = sleeper.fetch_league_snapshot(league_id, state=state)
+        snapshot_raw = sleeper.fetch_league_snapshot(league_id, state=state)
     except sleeper.SleeperUpstreamError as exc:
         raise ContextUpstreamError(exc.message) from exc
 
+    snapshot = _require_snapshot(snapshot_raw)
     league_payload = snapshot["league"]
     season = _season_int(league_payload.get("season"))
     compiled = compile_league(league_payload)
@@ -110,7 +154,7 @@ def refresh_league(session: Session, sleeper_league_id: str, *, username: str) -
     coverage_json = json.dumps(coverage, **_JSON_DUMP_KW)
     sources_json = json.dumps(sources_list, **_JSON_DUMP_KW)
 
-    owner_user_id = str(user["user_id"])
+    owner_user_id = _require_user_id(user)
     owner_username = str(user.get("username") or username)
     name = str(league_payload.get("name") or "")
     sport = str(league_payload.get("sport") or "nfl")
@@ -118,19 +162,23 @@ def refresh_league(session: Session, sleeper_league_id: str, *, username: str) -
 
     _persist_revision(
         session,
-        league_id=league_id,
-        owner_user_id=owner_user_id,
-        owner_username=owner_username,
-        name=name,
-        season=season,
-        sport=sport,
-        total_rosters=total_rosters,
-        revision_id=revision_id,
-        created_at=created_at,
-        snapshot_json=snapshot_json,
-        compiled_rules_json=compiled_rules_json,
-        coverage_json=coverage_json,
-        sources_json=sources_json,
+        league=_LeagueRecord(
+            league_id=league_id,
+            owner_user_id=owner_user_id,
+            owner_username=owner_username,
+            name=name,
+            season=season,
+            sport=sport,
+            total_rosters=total_rosters,
+        ),
+        blobs=_RevisionBlobs(
+            revision_id=revision_id,
+            created_at=created_at,
+            snapshot_json=snapshot_json,
+            compiled_rules_json=compiled_rules_json,
+            coverage_json=coverage_json,
+            sources_json=sources_json,
+        ),
     )
 
     meta = build_meta(
@@ -139,14 +187,16 @@ def refresh_league(session: Session, sleeper_league_id: str, *, username: str) -
         coverage=coverage,
     )
     return _revision_payload(
-        revision_id=revision_id,
-        league_id=league_id,
-        season=season,
-        created_at=as_of,
-        snapshot=snapshot,
-        compiled_rules=compiled_rules,
-        coverage=coverage,
-        meta=meta,
+        _RevisionView(
+            revision_id=revision_id,
+            league_id=league_id,
+            season=season,
+            created_at=as_of,
+            snapshot=snapshot,
+            compiled_rules=compiled_rules,
+            coverage=coverage,
+            meta=meta,
+        )
     )
 
 
@@ -179,6 +229,8 @@ def get_revision(session: Session, revision_id: str) -> dict | None:
         return None
 
     snapshot = json.loads(row["snapshot_json"])
+    if not isinstance(snapshot, dict):
+        snapshot = {}
     snapshot["matchups_by_week"] = _coerce_week_map(snapshot.get("matchups_by_week"))
     snapshot["transactions_by_week"] = _coerce_week_map(snapshot.get("transactions_by_week"))
 
@@ -193,14 +245,16 @@ def get_revision(session: Session, revision_id: str) -> dict | None:
         coverage=coverage,
     )
     return _revision_payload(
-        revision_id=row["id"],
-        league_id=row["league_id"],
-        season=int(row["season"]),
-        created_at=created_at,
-        snapshot=snapshot,
-        compiled_rules=compiled_rules,
-        coverage=coverage,
-        meta=meta,
+        _RevisionView(
+            revision_id=row["id"],
+            league_id=row["league_id"],
+            season=int(row["season"]),
+            created_at=created_at,
+            snapshot=snapshot,
+            compiled_rules=compiled_rules,
+            coverage=coverage,
+            meta=meta,
+        )
     )
 
 
@@ -211,13 +265,22 @@ def _fetch_owned_leagues(username: str) -> tuple[dict, dict, list[dict]]:
         raise ContextUpstreamError(exc.message) from exc
     if user is None:
         raise ContextNotFoundError(f"user not found: {username}")
+    if not isinstance(user, dict):
+        raise ContextUpstreamError("user payload is not an object")
+    user_id = _require_user_id(user)
 
     try:
         state = sleeper.fetch_nfl_state()
-        season_raw = state.get("league_season")
-        # Validate season before leagues fetch so bad state fails closed.
-        _season_int(season_raw)
-        leagues = sleeper.fetch_user_leagues(str(user["user_id"]), season_raw)
+    except sleeper.SleeperUpstreamError as exc:
+        raise ContextUpstreamError(exc.message) from exc
+    if not isinstance(state, dict):
+        raise ContextUpstreamError("state payload is not an object")
+    season_raw = state.get("league_season")
+    # Validate season before leagues fetch so bad state fails closed.
+    _season_int(season_raw)
+
+    try:
+        leagues = sleeper.fetch_user_leagues(user_id, season_raw)
     except sleeper.SleeperUpstreamError as exc:
         raise ContextUpstreamError(exc.message) from exc
 
@@ -227,45 +290,24 @@ def _fetch_owned_leagues(username: str) -> tuple[dict, dict, list[dict]]:
 def _persist_revision(
     session: Session,
     *,
-    league_id: str,
-    owner_user_id: str,
-    owner_username: str,
-    name: str,
-    season: int,
-    sport: str,
-    total_rosters: int | None,
-    revision_id: str,
-    created_at: str,
-    snapshot_json: str,
-    compiled_rules_json: str,
-    coverage_json: str,
-    sources_json: str,
+    league: _LeagueRecord,
+    blobs: _RevisionBlobs,
 ) -> None:
     last_error: IntegrityError | None = None
     for _ in range(_PERSIST_ATTEMPTS):
         try:
-            _upsert_league(
-                session,
-                league_id=league_id,
-                owner_user_id=owner_user_id,
-                owner_username=owner_username,
-                name=name,
-                season=season,
-                sport=sport,
-                total_rosters=total_rosters,
-                stamp=created_at,
-            )
-            next_revision = _next_revision_number(session, league_id)
+            _upsert_league(session, league=league, stamp=blobs.created_at)
+            next_revision = _next_revision_number(session, league.league_id)
             session.execute(
                 sa.insert(context_revisions_table).values(
-                    id=revision_id,
-                    league_id=league_id,
+                    id=blobs.revision_id,
+                    league_id=league.league_id,
                     revision=next_revision,
-                    compiled_rules_json=compiled_rules_json,
-                    coverage_json=coverage_json,
-                    snapshot_json=snapshot_json,
-                    sources_json=sources_json,
-                    created_at=created_at,
+                    compiled_rules_json=blobs.compiled_rules_json,
+                    coverage_json=blobs.coverage_json,
+                    snapshot_json=blobs.snapshot_json,
+                    sources_json=blobs.sources_json,
+                    created_at=blobs.created_at,
                 )
             )
             session.commit()
@@ -277,22 +319,11 @@ def _persist_revision(
     raise last_error
 
 
-def _upsert_league(
-    session: Session,
-    *,
-    league_id: str,
-    owner_user_id: str,
-    owner_username: str,
-    name: str,
-    season: int,
-    sport: str,
-    total_rosters: int | None,
-    stamp: str,
-) -> None:
+def _upsert_league(session: Session, *, league: _LeagueRecord, stamp: str) -> None:
     existing = (
         session.execute(
             sa.select(leagues_table.c.league_id, leagues_table.c.created_at).where(
-                leagues_table.c.league_id == league_id
+                leagues_table.c.league_id == league.league_id
             )
         )
         .mappings()
@@ -301,13 +332,13 @@ def _upsert_league(
     if existing is None:
         session.execute(
             sa.insert(leagues_table).values(
-                league_id=league_id,
-                sleeper_user_id=owner_user_id,
-                username=owner_username,
-                name=name,
-                season=season,
-                sport=sport,
-                total_rosters=total_rosters,
+                league_id=league.league_id,
+                sleeper_user_id=league.owner_user_id,
+                username=league.owner_username,
+                name=league.name,
+                season=league.season,
+                sport=league.sport,
+                total_rosters=league.total_rosters,
                 created_at=stamp,
                 updated_at=stamp,
             )
@@ -316,14 +347,14 @@ def _upsert_league(
 
     session.execute(
         sa.update(leagues_table)
-        .where(leagues_table.c.league_id == league_id)
+        .where(leagues_table.c.league_id == league.league_id)
         .values(
-            sleeper_user_id=owner_user_id,
-            username=owner_username,
-            name=name,
-            season=season,
-            sport=sport,
-            total_rosters=total_rosters,
+            sleeper_user_id=league.owner_user_id,
+            username=league.owner_username,
+            name=league.name,
+            season=league.season,
+            sport=league.sport,
+            total_rosters=league.total_rosters,
             updated_at=stamp,
         )
     )
@@ -338,22 +369,13 @@ def _next_revision_number(session: Session, league_id: str) -> int:
     return int(current) + 1
 
 
-def _revision_payload(
-    *,
-    revision_id: str,
-    league_id: str,
-    season: int,
-    created_at: datetime,
-    snapshot: dict[str, Any],
-    compiled_rules: dict[str, Any],
-    coverage: dict[str, Any],
-    meta: dict[str, Any],
-) -> dict:
+def _revision_payload(view: _RevisionView) -> dict:
+    snapshot = view.snapshot
     return {
-        "revision_id": revision_id,
-        "league_id": league_id,
-        "season": season,
-        "created_at": created_at,
+        "revision_id": view.revision_id,
+        "league_id": view.league_id,
+        "season": view.season,
+        "created_at": view.created_at,
         "league": snapshot["league"],
         "users": snapshot["users"],
         "rosters": snapshot["rosters"],
@@ -361,10 +383,28 @@ def _revision_payload(
         "transactions_by_week": snapshot["transactions_by_week"],
         "traded_picks": snapshot["traded_picks"],
         "state": snapshot["state"],
-        "compiled_rules": compiled_rules,
-        "coverage": coverage,
-        "meta": meta,
+        "compiled_rules": view.compiled_rules,
+        "coverage": view.coverage,
+        "meta": view.meta,
     }
+
+
+def _require_snapshot(snapshot: Any) -> dict[str, Any]:
+    if not isinstance(snapshot, dict):
+        raise ContextUpstreamError("league snapshot is not an object")
+    for key in _SNAPSHOT_KEYS:
+        if key not in snapshot:
+            raise ContextUpstreamError(f"league snapshot missing {key}")
+    league = snapshot["league"]
+    if not isinstance(league, dict):
+        raise ContextUpstreamError("league snapshot has wrong league payload")
+    for key in ("users", "rosters", "traded_picks"):
+        if not isinstance(snapshot[key], list):
+            raise ContextUpstreamError(f"league snapshot {key} is not a list")
+    for key in ("matchups_by_week", "transactions_by_week", "state"):
+        if not isinstance(snapshot[key], dict):
+            raise ContextUpstreamError(f"league snapshot {key} is not an object")
+    return snapshot
 
 
 def _league_summary(league: dict[str, Any]) -> dict[str, Any]:
@@ -379,11 +419,18 @@ def _league_summary(league: dict[str, Any]) -> dict[str, Any]:
 
 def _user_identity(user: dict[str, Any]) -> dict[str, Any]:
     return {
-        "user_id": str(user["user_id"]),
+        "user_id": _require_user_id(user),
         "username": str(user.get("username") or ""),
         "display_name": user.get("display_name"),
         "avatar": user.get("avatar"),
     }
+
+
+def _require_user_id(user: dict[str, Any]) -> str:
+    user_id = user.get("user_id")
+    if not isinstance(user_id, str) or user_id == "":
+        raise ContextUpstreamError(f"user_id is missing or not a string: {user_id!r}")
+    return user_id
 
 
 def _season_int(raw: Any) -> int:
